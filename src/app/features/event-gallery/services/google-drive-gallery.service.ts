@@ -44,39 +44,28 @@ export class GoogleDriveGalleryService {
    * Nếu không có manifest, fallback về gọi API cũ.
    */
   listPhotosInFolder(folderId: string): Observable<GalleryPhoto[]> {
-    if (this.manifestId) {
-      // Gọi file manifest qua API (alt=media) để bypass CORS. Thêm tham số t=Date.now() để phá Cache của trình duyệt!
-      const manifestUrl = `${this.DRIVE_API}/${this.manifestId}?alt=media&key=${this.apiKey}&t=${Date.now()}`;
-      return this.http.get<any[]>(manifestUrl).pipe(
-        map(files => {
-          if (!Array.isArray(files)) return [];
-          // Sắp xếp giảm dần theo createdTime (mới nhất lên đầu)
-          return files.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
-            .map(f => ({
-              fileId: f.fileId,
-              name: f.name,
-              webViewLink: `https://drive.google.com/file/d/${f.fileId}/view`,
-              thumbnailLink: '', // Manifest không có thumbnailLink, URL helper sẽ dùng fileId
-              createdTime: f.createdTime
-            } as GalleryPhoto));
-        }),
-        catchError(err => {
-          console.error('[Gallery] Manifest download error:', err);
-          return of([]);
-        })
-      );
+    // Fallback: Gọi API nội bộ của Vercel (để tận dụng Cache Edge Network chống chết Quota Drive)
+    // Thay vì gọi thẳng Drive API, gọi qua /api/drive (Serverless Function)
+    const isLocalhost = window.location.hostname === 'localhost';
+    const proxyUrl = isLocalhost ? this.DRIVE_API : `/api/drive`;
+    
+    let params: any = {};
+    if (isLocalhost) {
+      params = {
+        q: `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`,
+        fields: 'files(id,name,thumbnailLink,webViewLink,createdTime)',
+        orderBy: 'createdTime desc',
+        pageSize: '100',
+        key: this.apiKey
+      };
+    } else {
+      params = {
+        folderId: folderId,
+        apiKey: this.apiKey
+      };
     }
 
-    // Fallback: Gọi Drive API
-    const params = {
-      q: `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`,
-      fields: 'files(id,name,thumbnailLink,webViewLink,createdTime)',
-      orderBy: 'createdTime desc',
-      pageSize: '100',
-      key: this.apiKey
-    };
-
-    return this.http.get<any>(this.DRIVE_API, { params }).pipe(
+    return this.http.get<any>(proxyUrl, { params }).pipe(
       map(res => (res.files || []).map((f: any) => ({
         fileId: f.id,
         name: f.name,
