@@ -40,7 +40,7 @@ $radius-sm: 10px;
 .gallery-header {
   flex-shrink: 0; // Không bị thu nhỏ
   text-align: center;
-  padding: 32px 24px 24px;
+  padding: 10px 24px 20px;
 
   .header-ornament {
     display: flex;
@@ -137,8 +137,17 @@ $radius-sm: 10px;
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
 }
 
 // ===== MAIN PHOTO VIEWER =====
@@ -170,17 +179,18 @@ $radius-sm: 10px;
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: contain; // Giữ nguyên tỷ lệ ảnh thật (không bị méo), phần thừa sẽ là viền màu warm
+  object-fit: contain;
   cursor: zoom-in;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease;
   will-change: opacity, transform;
+  transform: translateZ(0); // GPU compositing layer → 0 jank khi chuyển ảnh
 }
 
 .photo-counter {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   color: $white;
   font-size: 12px;
   font-weight: 600;
@@ -199,9 +209,9 @@ $radius-sm: 10px;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,11 +227,16 @@ $radius-sm: 10px;
 
   &:active {
     transform: translateY(-50%) scale(0.9);
-    background: rgba(255,255,255,0.95);
+    background: rgba(255, 255, 255, 0.95);
   }
 
-  &--left { left: 8px; }
-  &--right { right: 8px; }
+  &--left {
+    left: 8px;
+  }
+
+  &--right {
+    right: 8px;
+  }
 }
 
 // Action buttons
@@ -238,9 +253,9 @@ $radius-sm: 10px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -268,7 +283,7 @@ $radius-sm: 10px;
   padding-top: 8px;
   z-index: 100;
   // Border mờ ở trên để phân cách nhẹ
-  border-top: 1px solid rgba(183, 110, 121, 0.1); 
+  border-top: 1px solid rgba(183, 110, 121, 0.1);
 }
 
 // ===== THUMBNAIL STRIP =====
@@ -344,6 +359,7 @@ $radius-sm: 10px;
     opacity: 0;
     transform: scale(0.8) translateY(8px);
   }
+
   to {
     opacity: 0.6;
     transform: scale(1) translateY(0);
@@ -409,7 +425,8 @@ $radius-sm: 10px;
     transition: transform 0.4s ease;
   }
 
-  &:hover img, &:active img {
+  &:hover img,
+  &:active img {
     transform: scale(1.05);
   }
 
@@ -421,7 +438,7 @@ $radius-sm: 10px;
 .grid-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0);
+  background: rgba(0, 0, 0, 0);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -438,7 +455,7 @@ $radius-sm: 10px;
 }
 
 .grid-item:active .grid-overlay {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
 
   svg {
     opacity: 1;
@@ -465,6 +482,7 @@ $radius-sm: 10px;
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -472,9 +490,17 @@ $radius-sm: 10px;
 }
 
 @keyframes badge-bounce {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+
+  60% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 // ===== LOADING STATE =====
@@ -510,7 +536,9 @@ $radius-sm: 10px;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -587,8 +615,13 @@ $radius-sm: 10px;
 }
 
 @keyframes lightbox-open {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .lightbox-backdrop {
@@ -606,7 +639,7 @@ $radius-sm: 10px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border: none;
   display: flex;
   align-items: center;
@@ -620,7 +653,7 @@ $radius-sm: 10px;
   }
 
   &:active {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
   }
 }
 
@@ -630,7 +663,7 @@ $radius-sm: 10px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 13px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   z-index: 10;
   font-weight: 500;
   letter-spacing: 0.1em;
@@ -662,8 +695,8 @@ $radius-sm: 10px;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -678,12 +711,17 @@ $radius-sm: 10px;
   }
 
   &:active {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
     transform: translateY(-50%) scale(0.9);
   }
 
-  &--left { left: 12px; }
-  &--right { right: 12px; }
+  &--left {
+    left: 12px;
+  }
+
+  &--right {
+    right: 12px;
+  }
 }
 
 .lightbox-download {

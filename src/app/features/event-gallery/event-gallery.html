@@ -3,16 +3,6 @@
 
   <!-- ===== HEADER SECTION ===== -->
   <div class="gallery-header">
-    <div class="header-ornament">
-      <div class="ornament-line"></div>
-      <svg class="ornament-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path
-          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-      <div class="ornament-line"></div>
-    </div>
-
-   
     <div class="header-meta">
       <span class="meta-badge">
         <svg viewBox="0 0 20 20" fill="currentColor" class="meta-icon">
@@ -29,7 +19,7 @@
     </div>
   </div>
 
-  <!-- ===== MAIN PHOTO VIEWER ===== -->
+  <!-- ===== MAIN PHOTO VIEWER (Windowed: chỉ render ±2 ảnh) ===== -->
   <div class="gallery-main-photo" *ngIf="photoCount() > 0">
     <div class="main-photo-container">
       <!-- Counter badge -->
@@ -51,17 +41,19 @@
         </svg>
       </button>
 
-      <!-- Main Image -->
-      <!-- Image Cache DOM Layer (Tối ưu giữ nguyên DOM, chỉ đổi Opacity) -->
+      <!-- Main Image - WINDOWED: chỉ ±2 ảnh trong DOM thay vì tất cả -->
       <div class="main-photo-layer">
-        <img *ngFor="let photo of photos(); let i = index" 
-          [src]="getPhotoSrc(photo)" 
-          [alt]="photo.name || 'Ảnh sự kiện'" 
+        <img *ngFor="let item of visibleMainPhotos()"
+          [src]="getPhotoSrc(item.photo)"
+          [attr.srcset]="getRetinaSrcset(item.photo) || null"
+          [alt]="item.photo.name || 'Ảnh sự kiện'"
           class="main-photo-img"
-          [style.opacity]="i === selectedIndex() ? '1' : '0'"
-          [style.visibility]="i === selectedIndex() ? 'visible' : 'hidden'"
-          [style.pointer-events]="i === selectedIndex() ? 'auto' : 'none'"
-          (click)="openLightbox(i)" />
+          [style.opacity]="item.originalIndex === selectedIndex() ? '1' : '0'"
+          [style.visibility]="item.originalIndex === selectedIndex() ? 'visible' : 'hidden'"
+          [style.pointer-events]="item.originalIndex === selectedIndex() ? 'auto' : 'none'"
+          [attr.fetchpriority]="item.originalIndex === selectedIndex() ? 'high' : 'low'"
+          (click)="openLightbox(item.originalIndex)"
+          (error)="onMainError(item.photo)" />
       </div>
 
       <!-- Action Buttons -->
@@ -92,7 +84,7 @@
         <div *ngFor="let photo of photos(); let i = index" class="thumbnail-item"
           [class.thumbnail-item--active]="i === selectedIndex()" [class.thumbnail-item--new]="photo.isNew"
           (click)="selectPhoto(i)">
-          <img [src]="getThumbSrc(photo)" [alt]="photo.name" loading="lazy" />
+          <img [src]="getThumbSrc(photo)" [alt]="photo.name" loading="lazy" (error)="onThumbError(photo)" />
           <span class="new-badge" *ngIf="photo.isNew">Mới</span>
         </div>
       </div>
@@ -111,8 +103,6 @@
       </button>
     </div>
   </div>
-
-
 
 </div>
 
@@ -147,7 +137,7 @@
   <p class="error-text">{{ errorMessage() }}</p>
 </div>
 
-<!-- ===== FULLSCREEN LIGHTBOX ===== -->
+<!-- ===== FULLSCREEN LIGHTBOX (dùng ảnh 2160px riêng cho zoom) ===== -->
 <div class="lightbox" *ngIf="showLightbox()" (click)="closeLightbox()" (touchstart)="onTouchStart($event)"
   (touchend)="onTouchEnd($event)">
   <div class="lightbox-backdrop"></div>
@@ -165,9 +155,13 @@
     {{ lightboxIndex() + 1 }} / {{ photoCount() }}
   </div>
 
-  <!-- Lightbox Image -->
+  <!-- Lightbox Image: dùng getLightboxSrc (s2160) thay vì s1080 -->
   <div class="lightbox-content" (click)="$event.stopPropagation()">
-    <img [src]="getPhotoSrc(photos()[lightboxIndex()])" [alt]="photos()[lightboxIndex()]?.name" class="lightbox-img" />
+    <img [src]="getLightboxSrc(photos()[lightboxIndex()])"
+      [alt]="photos()[lightboxIndex()]?.name"
+      class="lightbox-img"
+      fetchpriority="high"
+      (error)="onMainError(photos()[lightboxIndex()])" />
   </div>
 
   <!-- Lightbox Nav -->

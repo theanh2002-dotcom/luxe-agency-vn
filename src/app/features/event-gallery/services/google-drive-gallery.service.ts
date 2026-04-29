@@ -10,6 +10,8 @@ export interface GalleryPhoto {
   thumbnailLink: string;
   createdTime: string;
   isNew?: boolean;
+  _thumbError?: boolean;
+  _mainError?: boolean;
 }
 
 /**
@@ -28,14 +30,44 @@ export class GoogleDriveGalleryService {
 
   private readonly DRIVE_API = 'https://www.googleapis.com/drive/v3/files';
   private readonly apiKey = environment.googleDriveApiKey;
+  private manifestId: string | null = null;
 
   constructor(private http: HttpClient) {}
 
+  setManifestId(id: string | null) {
+    this.manifestId = id;
+  }
+
   /**
    * List ảnh trong folder Drive.
-   * Gọi: GET https://www.googleapis.com/drive/v3/files?q='folderId'+in+parents&key=xxx
+   * Ưu tiên tải _manifest.json nếu có (để tránh giới hạn quota API).
+   * Nếu không có manifest, fallback về gọi API cũ.
    */
   listPhotosInFolder(folderId: string): Observable<GalleryPhoto[]> {
+    if (this.manifestId) {
+      // Gọi file manifest (0 API Quota)
+      const manifestUrl = `https://drive.google.com/uc?export=download&id=${this.manifestId}`;
+      return this.http.get<any[]>(manifestUrl).pipe(
+        map(files => {
+          if (!Array.isArray(files)) return [];
+          // Sắp xếp giảm dần theo createdTime (mới nhất lên đầu)
+          return files.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
+            .map(f => ({
+              fileId: f.fileId,
+              name: f.name,
+              webViewLink: `https://drive.google.com/file/d/${f.fileId}/view`,
+              thumbnailLink: '', // Manifest không có thumbnailLink, URL helper sẽ dùng fileId
+              createdTime: f.createdTime
+            } as GalleryPhoto));
+        }),
+        catchError(err => {
+          console.error('[Gallery] Manifest download error:', err);
+          return of([]);
+        })
+      );
+    }
+
+    // Fallback: Gọi Drive API
     const params = {
       q: `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`,
       fields: 'files(id,name,thumbnailLink,webViewLink,createdTime)',
@@ -59,27 +91,32 @@ export class GoogleDriveGalleryService {
     );
   }
 
-  /** Ảnh full (main viewer + lightbox) */
-  getHighResUrl(photo: GalleryPhoto): string {
+  /** Ảnh full (main viewer) - size tùy chỉnh, KHÔNG dùng -rw để giữ chất lượng cao cho ảnh nghệ thuật */
+  getHighResUrl(photo: GalleryPhoto, size: number = 1080): string {
     if (!photo) return '';
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      // Dùng =s1080-rw:
-      // - s1080: Resize chính xác xuống 1080px (Không load ảnh gốc 4K rác RAM, 1080px là quá nét cho màn hình đt)
-      // - -rw: Ép Google CDN trả về định dạng WEBP siêu nhẹ, giảm thêm 50% dung lượng so với JPEG
-      return photo.thumbnailLink.split('=')[0] + '=s1080-rw';
+      return photo.thumbnailLink.split('=')[0] + `=s${size}`;
     }
-    return `https://drive.google.com/uc?export=view&id=${photo.fileId}`;
+    // Fallback CDN link nếu không có thumbnailLink (khi fetch từ manifest)
+    return `https://lh3.googleusercontent.com/d/${photo.fileId}=s${size}`;
   }
 
-  /** Thumbnail (grid + strip) */
+  /** Lightbox: 2160px cho zoom retina */
+  getLightboxUrl(photo: GalleryPhoto): string {
+    if (!photo) return '';
+    if (photo.thumbnailLink?.includes('googleusercontent.com')) {
+      return photo.thumbnailLink.split('=')[0] + '=s2160';
+    }
+    return `https://lh3.googleusercontent.com/d/${photo.fileId}=s2160`;
+  }
+
+  /** Thumbnail (grid + strip) - giữ -rw cho nhẹ, size nhỏ không ảnh hưởng chất lượng */
   getThumbnailUrl(photo: GalleryPhoto): string {
     if (!photo) return '';
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      // Thumbnail hiển thị bằng ngón tay nên chỉ cần =s200-rw (size 200px + WEBP)
-      // Tránh lấy ảnh quá to rồi dùng CSS bóp xuống (gây lãng phí RAM/Băng thông)
       return photo.thumbnailLink.split('=')[0] + '=s200-rw';
     }
-    return `https://drive.google.com/thumbnail?id=${photo.fileId}&sz=w200`;
+    return `https://lh3.googleusercontent.com/d/${photo.fileId}=s200-rw`;
   }
 
   /** Download link */
