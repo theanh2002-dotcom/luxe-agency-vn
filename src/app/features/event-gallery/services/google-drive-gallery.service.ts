@@ -45,8 +45,8 @@ export class GoogleDriveGalleryService {
    */
   listPhotosInFolder(folderId: string): Observable<GalleryPhoto[]> {
     if (this.manifestId) {
-      // Gọi file manifest (0 API Quota)
-      const manifestUrl = `https://drive.google.com/uc?export=download&id=${this.manifestId}`;
+      // Gọi file manifest qua API (alt=media) để bypass CORS. Google tính đây là Media Download, KHÔNG tốn Quota API thông thường.
+      const manifestUrl = `${this.DRIVE_API}/${this.manifestId}?alt=media&key=${this.apiKey}`;
       return this.http.get<any[]>(manifestUrl).pipe(
         map(files => {
           if (!Array.isArray(files)) return [];
