@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #B76E79;
+  --color-secondary: #F8C8DC;
+  --color-surface-base: #FFFFFF;
+  --color-on-surface: #2D2D2D;
+  --color-outline: rgba(183, 110, 121, 0.2);
+
+  --font-serif: 'Noto Serif', serif;
+  --font-sans: 'Inter', sans-serif;
+  
+  --radius-soft: 12px;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-surface-base);
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+  }
+}
+
+@layer utilities {
+  /* Ambient Shadow with Rose Gold Tint (5-10%) */
+  .soft-shadow {
+    box-shadow: 0 20px 40px -10px rgba(183, 110, 121, 0.08);
+  }
+  
+  .soft-shadow:hover {
+    box-shadow: 0 30px 60px -15px rgba(183, 110, 121, 0.15);
+  }
+  
+  /* Glassmorphism: White 70% and 20px Blur */
+  .glass-pearl {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(183, 110, 121, 0.2);
+  }
+  
+  /* Rose Gold text gradient for emphasis */
+  .text-rose-gradient {
+    background: linear-gradient(135deg, #B76E79 0%, #d5a0a9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}

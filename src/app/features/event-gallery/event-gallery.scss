@@ -1,0 +1,738 @@
+// ============================================
+// EVENT GALLERY - Premium Mobile-First Design
+// Inspired by fotoshare.co wedding gallery
+// ============================================
+
+// Design tokens
+$bg-cream: #faf8f5;
+$bg-warm: #f5f0e6;
+$gold: #d4a373;
+$gold-dark: #b8864a;
+$rose: #B76E79;
+$text-dark: #2b2825;
+$text-muted: #6b645c;
+$text-light: #9b9590;
+$border-soft: #e8dfd8;
+$white: #ffffff;
+$shadow-soft: 0 2px 16px rgba(43, 40, 37, 0.08);
+$shadow-lg: 0 8px 32px rgba(43, 40, 37, 0.12);
+$radius: 16px;
+$radius-sm: 10px;
+
+// ===== HOST STYLE =====
+:host {
+  display: block;
+  background: $bg-cream;
+  min-height: 100vh;
+  padding-top: 80px; // Đẩy nội dung xuống dưới để không bị Header đè lên
+}
+
+// ===== GALLERY PAGE =====
+.gallery-page {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+// ===== HEADER =====
+.gallery-header {
+  flex-shrink: 0; // Không bị thu nhỏ
+  text-align: center;
+  padding: 32px 24px 24px;
+
+  .header-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .ornament-line {
+      width: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, $gold, transparent);
+    }
+
+    .ornament-icon {
+      width: 20px;
+      height: 20px;
+      color: $gold;
+    }
+  }
+
+  .header-subtitle {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: $gold;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .header-title {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: $text-dark;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .header-desc {
+    font-size: 13px;
+    color: $text-muted;
+    line-height: 1.7;
+    max-width: 320px;
+    margin: 0 auto 16px;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+}
+
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: $text-muted;
+  background: $white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid $border-soft;
+
+  .meta-icon {
+    width: 14px;
+    height: 14px;
+    color: $gold;
+  }
+
+  &--live {
+    color: #16a34a;
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+  }
+}
+
+// ===== PULSE DOT =====
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+
+  &--lg {
+    width: 10px;
+    height: 10px;
+    background: $gold;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+// ===== MAIN PHOTO VIEWER =====
+.gallery-main-photo {
+  padding: 0 12px;
+  margin-bottom: 16px;
+}
+
+.main-photo-container {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: $radius;
+  overflow: hidden;
+  background: $bg-warm;
+  box-shadow: $shadow-lg;
+  border: 1px solid $border-soft;
+}
+
+.main-photo-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.main-photo-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain; // Giữ nguyên tỷ lệ ảnh thật (không bị méo), phần thừa sẽ là viền màu warm
+  cursor: zoom-in;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  will-change: opacity, transform;
+}
+
+.photo-counter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.55);
+  color: $white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  letter-spacing: 0.05em;
+}
+
+// Navigation arrows
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
+  color: $text-dark;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.9);
+    background: rgba(255,255,255,0.95);
+  }
+
+  &--left { left: 8px; }
+  &--right { right: 8px; }
+}
+
+// Action buttons
+.main-photo-actions {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: $text-dark;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:active {
+    transform: scale(0.9);
+    background: $gold;
+    color: $white;
+  }
+}
+
+// ===== STICKY BOTTOM BAR =====
+.gallery-bottom-bar {
+  position: sticky;
+  bottom: 0;
+  background: $bg-cream; // Che các nội dung scroll ở dưới
+  padding-top: 8px;
+  z-index: 100;
+  // Border mờ ở trên để phân cách nhẹ
+  border-top: 1px solid rgba(183, 110, 121, 0.1); 
+}
+
+// ===== THUMBNAIL STRIP =====
+.thumbnail-section {
+  flex-shrink: 0; // Luôn giữ nguyên kích thước, cố định ở dưới
+  padding: 0 12px;
+  margin-bottom: 20px;
+}
+
+.thumbnail-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.thumbnail-item {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  cursor: pointer;
+  scroll-snap-align: start;
+  border: 2px solid transparent;
+  transition: all 0.25s ease;
+  opacity: 0.6;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+
+  &--active {
+    border-color: $gold;
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba($gold, 0.3);
+
+    img {
+      transform: scale(1.05);
+    }
+  }
+
+  &--new {
+    animation: thumb-appear 0.5s ease-out;
+  }
+
+  .new-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 8px;
+    font-weight: 700;
+    color: $white;
+    background: $rose;
+    padding: 1px 5px;
+    border-radius: 6px;
+    text-transform: uppercase;
+  }
+}
+
+@keyframes thumb-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(8px);
+  }
+  to {
+    opacity: 0.6;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// ===== DOWNLOAD ALL =====
+.download-all-section {
+  flex-shrink: 0; // Cố định ở dưới cùng
+  padding: 0 24px calc(16px + env(safe-area-inset-bottom, 0px)); // Tối ưu phần viền đáy của iPhone/Android
+  margin-bottom: 0; // Bỏ margin thừa để khối màu nền phủ kín mép dưới
+}
+
+.download-all-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $white;
+  background: linear-gradient(135deg, $gold, $gold-dark);
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 16px rgba($gold, 0.3);
+  letter-spacing: 0.03em;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba($gold, 0.2);
+  }
+}
+
+// ===== PHOTO GRID =====
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.grid-item {
+  position: relative;
+  border-radius: $radius-sm;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 1;
+  background: $bg-warm;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  &:hover img, &:active img {
+    transform: scale(1.05);
+  }
+
+  &--new {
+    animation: grid-fade-in 0.6s ease-out;
+  }
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    color: $white;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s;
+  }
+}
+
+.grid-item:active .grid-overlay {
+  background: rgba(0,0,0,0.3);
+
+  svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.grid-new-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  color: $white;
+  background: $rose;
+  padding: 2px 8px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  animation: badge-bounce 0.5s ease;
+}
+
+@keyframes grid-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes badge-bounce {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+// ===== LOADING STATE =====
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 24px;
+}
+
+.loading-spinner {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: $gold;
+  animation: spin 1s linear infinite;
+
+  &--delay {
+    border-top-color: transparent;
+    border-right-color: $rose;
+    animation-delay: 0.3s;
+    animation-duration: 1.5s;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 14px;
+  color: $text-muted;
+  letter-spacing: 0.02em;
+}
+
+// ===== EMPTY STATE =====
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.empty-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: $bg-warm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.empty-icon {
+  width: 40px;
+  height: 40px;
+  color: $gold;
+}
+
+.empty-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
+  color: $text-dark;
+  margin-bottom: 8px;
+}
+
+.empty-desc {
+  font-size: 13px;
+  color: $text-muted;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.empty-pulse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: $gold;
+  font-weight: 500;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 14px;
+}
+
+// ===== LIGHTBOX =====
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lightbox-open 0.3s ease;
+}
+
+@keyframes lightbox-open {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(20px);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: $white;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:active {
+    background: rgba(255,255,255,0.3);
+  }
+}
+
+.lightbox-counter {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  z-index: 10;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+.lightbox-content {
+  position: relative;
+  z-index: 5;
+  max-width: 95vw;
+  max-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  color: $white;
+  transition: all 0.2s;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  &:active {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-50%) scale(0.9);
+  }
+
+  &--left { left: 12px; }
+  &--right { right: 12px; }
+}
+
+.lightbox-download {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $white;
+  background: linear-gradient(135deg, $gold, $gold-dark);
+  border: none;
+  border-radius: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba($gold, 0.4);
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:active {
+    transform: translateX(-50%) scale(0.95);
+  }
+}
+
+// ===== RESPONSIVE =====
+@media (min-width: 768px) {
+  .gallery-page {
+    max-width: 640px;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .header-title {
+    font-size: 42px;
+  }
+
+  .thumbnail-item {
+    width: 88px;
+    height: 88px;
+  }
+}

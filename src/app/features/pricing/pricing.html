@@ -1,0 +1,126 @@
+@if (standalone()) {
+  <div class="w-full min-h-screen bg-[#fdfbf7] pt-32 pb-24 px-6">
+    <div class="text-center mb-16">
+      <h1 class="text-4xl md:text-[42px] font-serif text-[#814C53] font-semibold mb-3">Dịch Vụ &amp; Bảng Giá</h1>
+      <p class="text-[#2D2D2D]/60 font-sans text-sm">Minh bạch, trọn gói và đẳng cấp.</p>
+    </div>
+    <ng-container [ngTemplateOutlet]="pricingGrid"></ng-container>
+  </div>
+} @else {
+  <ng-container [ngTemplateOutlet]="pricingGrid"></ng-container>
+}
+
+<ng-template #pricingGrid>
+  <!-- Photobooth Packages -->
+  <div class="mb-8">
+    <h3 class="text-center text-xl font-serif text-[#814C53] mb-6 tracking-wide uppercase text-sm">📸 Photobooth Kiosk</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto w-full">
+
+      <!-- Gói Bae -->
+      <div class="bg-white rounded-[32px] p-8 flex flex-col soft-shadow border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+        <div class="mb-6">
+          <span class="text-xs font-sans tracking-widest uppercase text-[#B76E79] font-semibold">Gói Bae</span>
+          <h3 class="text-xl font-serif text-[#2D2D2D] font-bold mt-1">Mini Session</h3>
+          <div class="text-[#B76E79] font-sans font-bold text-2xl mt-2">Liên hệ báo giá</div>
+          <div class="text-[#2D2D2D]/40 font-sans text-xs mt-1">Phù hợp tiệc nhỏ ≤100 khách</div>
+        </div>
+        <ul class="space-y-3 mb-8 flex-1 text-sm">
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> 3 tiếng hoạt động liên tục</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Chụp &amp; in ảnh không giới hạn</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> 1 background theo chủ đề</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Props &amp; phụ kiện cơ bản</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> USB ảnh gốc toàn bộ</li>
+        </ul>
+        <a routerLink="/contact" class="block w-full py-3 rounded-[12px] bg-gray-50 border border-gray-200 text-[#2D2D2D] font-sans font-medium hover:bg-[#B76E79] hover:text-white hover:border-[#B76E79] transition-all text-center text-sm">Nhận Báo Giá</a>
+      </div>
+
+      <!-- Gói Premium -->
+      <div class="bg-white rounded-[32px] p-8 flex flex-col soft-shadow border-2 border-[#B76E79] hover:-translate-y-2 transition-transform duration-300 relative">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span class="bg-[#B76E79] text-white text-xs font-sans font-semibold px-4 py-1 rounded-full">Phổ biến nhất</span>
+        </div>
+        <div class="mb-6">
+          <span class="text-xs font-sans tracking-widest uppercase text-[#B76E79] font-semibold">Gói Premium</span>
+          <h3 class="text-xl font-serif text-[#2D2D2D] font-bold mt-1">Standard Event</h3>
+          <div class="text-[#B76E79] font-sans font-bold text-2xl mt-2">Liên hệ báo giá</div>
+          <div class="text-[#2D2D2D]/40 font-sans text-xs mt-1">Phù hợp tiệc cưới 100–200 khách</div>
+        </div>
+        <ul class="space-y-3 mb-8 flex-1 text-sm">
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> 5 tiếng hoạt động liên tục</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Chụp &amp; in ảnh không giới hạn</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> 2 background cao cấp</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> AI làm đẹp &amp; filter nghệ thuật</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Props &amp; phụ kiện phong phú</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> USB ảnh gốc + album digital</li>
+        </ul>
+        <a routerLink="/contact" class="block w-full py-3 rounded-[12px] bg-[#B76E79] text-white font-sans font-medium hover:bg-[#a6616b] transition-all text-center text-sm">Nhận Báo Giá</a>
+      </div>
+
+      <!-- Gói VIP Full Day -->
+      <div class="bg-gradient-to-br from-[#1c181f] to-[#120F15] rounded-[32px] p-8 flex flex-col soft-shadow border border-[#B76E79]/30 hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-[#B76E79]/20 rounded-full blur-[40px] pointer-events-none"></div>
+        <div class="mb-6 relative z-10">
+          <span class="text-xs font-sans tracking-widest uppercase text-[#E7B8C2] font-semibold">Gói VIP</span>
+          <h3 class="text-xl font-serif text-white font-bold mt-1">Full Day Luxury</h3>
+          <div class="text-[#E7B8C2] font-sans font-bold text-2xl mt-2">Liên hệ báo giá</div>
+          <div class="text-white/40 font-sans text-xs mt-1">Phù hợp sự kiện cao cấp 200+ khách</div>
+        </div>
+        <ul class="space-y-3 mb-8 flex-1 text-sm relative z-10">
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Full day 8 tiếng không giới hạn</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Chụp &amp; in ảnh không giới hạn</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> 3 background đổi theme tùy ý</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> AI filter + retouching cao cấp</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Kỹ thuật viên riêng xuyên suốt</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> USB + In canvas 30x40 (5 tấm)</li>
+        </ul>
+        <a routerLink="/contact" class="block w-full py-3 rounded-[12px] bg-[#B76E79] text-white font-sans font-medium hover:bg-[#a6616b] transition-all text-center text-sm relative z-10">Nhận Báo Giá</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drone & Bướm LED -->
+  <div class="mt-8">
+    <h3 class="text-center text-xl font-serif text-[#814C53] mb-6 tracking-wide uppercase text-sm">✨ Dịch Vụ Đặc Biệt</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
+
+      <!-- Drone Trao Nhẫn -->
+      <div class="bg-white rounded-[32px] p-8 flex flex-col soft-shadow border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+        <div class="mb-6">
+          <span class="text-xs font-sans tracking-widest uppercase text-[#B76E79] font-semibold">Dịch vụ đặc biệt</span>
+          <h3 class="text-xl font-serif text-[#2D2D2D] font-bold mt-1">Drone Trao Nhẫn</h3>
+          <div class="text-[#B76E79] font-sans font-bold text-2xl mt-2">Liên hệ báo giá</div>
+          <div class="text-[#2D2D2D]/40 font-sans text-xs mt-1">Khảo sát địa điểm trước khi thực hiện</div>
+        </div>
+        <ul class="space-y-3 mb-8 flex-1 text-sm">
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Robot bay tự động &amp; chính xác</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Kịch bản bay lập trình riêng</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Khay nhẫn thiết kế theo chủ đề</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> Kỹ thuật viên giám sát trực tiếp</li>
+          <li class="flex gap-3 text-[#2D2D2D]/80"><span class="text-[#B76E79]">✓</span> An toàn tuyệt đối trong nhà &amp; ngoài trời</li>
+        </ul>
+        <a routerLink="/contact" class="block w-full py-3 rounded-[12px] bg-gray-50 border border-gray-200 text-[#2D2D2D] font-sans font-medium hover:bg-[#B76E79] hover:text-white hover:border-[#B76E79] transition-all text-center text-sm">Liên Hệ Tư Vấn</a>
+      </div>
+
+      <!-- Bướm LED -->
+      <div class="bg-gradient-to-br from-[#1c181f] to-[#120F15] rounded-[32px] p-8 flex flex-col soft-shadow border border-[#B76E79]/30 hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-[#B76E79]/20 rounded-full blur-[40px] pointer-events-none"></div>
+        <div class="mb-6 relative z-10">
+          <span class="text-xs font-sans tracking-widest uppercase text-[#E7B8C2] font-semibold">Nghệ thuật ánh sáng</span>
+          <h3 class="text-xl font-serif text-white font-bold mt-1">Bướm LED Nghệ Thuật</h3>
+          <div class="text-[#E7B8C2] font-sans font-bold text-2xl mt-2">Liên hệ báo giá</div>
+          <div class="text-white/40 font-sans text-xs mt-1">Sải cánh 40–50cm · Tư vấn số lượng theo không gian</div>
+        </div>
+        <ul class="space-y-3 mb-8 flex-1 text-sm relative z-10">
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Mỗi con bướm là 1 thiết bị LED riêng</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Bay theo kịch bản lập trình sẵn</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Nhiều màu sắc LED tùy chọn</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Kỹ thuật viên điều khiển trực tiếp</li>
+          <li class="flex gap-3 text-white/80"><span class="text-[#E7B8C2]">✓</span> Phù hợp tiệc cưới trong nhà</li>
+        </ul>
+        <a routerLink="/contact" class="block w-full py-3 rounded-[12px] bg-[#B76E79] text-white font-sans font-medium hover:bg-[#a6616b] transition-all text-center text-sm relative z-10">Nhận Báo Giá</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-center text-[#2D2D2D]/40 font-sans text-xs mt-8">Liên hệ trực tiếp để Aura&amp;Event tư vấn gói dịch vụ phù hợp nhất cho sự kiện của bạn</p>
+</ng-template>
