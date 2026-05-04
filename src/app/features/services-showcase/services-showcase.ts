@@ -38,7 +38,7 @@ export class ServicesShowcase {
         'Kịch bản trình diễn được lập trình trước',
         'Clip Tiktok Highlights độc quyền'
       ],
-      bgUrl: 'https://scontent.fhan4-1.fna.fbcdn.net/v/t39.30808-6/654198936_1965328817439064_1616175635499315100_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=e06c5d&_nc_eui2=AeGL0cIgetiZjJXqd--yd-hUtJ2AZjQUage0nYBmNBRqBw0ykIvUNn-LhSjq1DkTsiFkkkhKPgdnMtVNEchOg71q&_nc_ohc=k-x5Tp5nPZkQ7kNvwF3LtHk&_nc_oc=AdrZsx1awuzh1pQlHktz1VTfDRp-Au2E3hif-SSx0AU-2YZICZWHt0LBEuNunq6HBdI&_nc_zt=23&_nc_ht=scontent.fhan4-1.fna&_nc_gid=Qp5uLNkRU4_ZMMMsDPvSRQ&_nc_ss=7b2a8&oh=00_Af0lJHPxDt3UavM80ZXmhOqjF9xM5h9fp2cJ1d--tchX_w&oe=69F393CE',
+      bgUrl: '/651642661_1493075489487474_4584014746046335289_n.jpg',
       transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)',
       glareOpacity: 0, glareTx: 50, glareTy: 50
     },

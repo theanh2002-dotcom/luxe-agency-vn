@@ -48,6 +48,7 @@
           [attr.srcset]="getRetinaSrcset(item.photo) || null"
           [alt]="item.photo.name || 'Ảnh sự kiện'"
           class="main-photo-img"
+          referrerpolicy="no-referrer"
           [style.opacity]="item.originalIndex === selectedIndex() ? '1' : '0'"
           [style.visibility]="item.originalIndex === selectedIndex() ? 'visible' : 'hidden'"
           [style.pointer-events]="item.originalIndex === selectedIndex() ? 'auto' : 'none'"
@@ -84,7 +85,7 @@
         <div *ngFor="let photo of photos(); let i = index" class="thumbnail-item"
           [class.thumbnail-item--active]="i === selectedIndex()" [class.thumbnail-item--new]="photo.isNew"
           (click)="selectPhoto(i)">
-          <img [src]="getThumbSrc(photo)" [alt]="photo.name" loading="lazy" (error)="onThumbError(photo)" />
+          <img [src]="getThumbSrc(photo)" [alt]="photo.name" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
           <span class="new-badge" *ngIf="photo.isNew">Mới</span>
         </div>
       </div>
@@ -161,6 +162,7 @@
       [alt]="photos()[lightboxIndex()]?.name"
       class="lightbox-img"
       fetchpriority="high"
+      referrerpolicy="no-referrer"
       (error)="onMainError(photos()[lightboxIndex()])" />
   </div>
 
