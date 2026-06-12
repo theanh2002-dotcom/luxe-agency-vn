@@ -1,0 +1,37 @@
+.pricing-badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.soft-shadow {
+  box-shadow: 0 10px 30px -10px rgba(129, 76, 83, 0.06), 
+              0 1px 3px -1px rgba(129, 76, 83, 0.02);
+}
+
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+input {
+  transition: all 0.2s ease-in-out;
+}
+
+.max-h-40 {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129, 76, 83, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(129, 76, 83, 0.2);
+    border-radius: 4px;
+    &:hover {
+      background: rgba(129, 76, 83, 0.4);
+    }
+  }
+}

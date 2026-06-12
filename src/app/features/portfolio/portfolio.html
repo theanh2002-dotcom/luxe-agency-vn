@@ -1,45 +1,197 @@
-<div class="max-w-7xl mx-auto px-6 pt-32 pb-24">
+<div class="max-w-7xl mx-auto px-6 pt-24 pb-8">
 
-  <!-- 1. THƯ VIỆN ĐÁM MÂY BÍ MẬT (Chuyển từ Home sang) -->
-  <div class="w-full bg-white rounded-[30px] p-12 soft-shadow border border-gray-100 mb-16 relative z-10">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-8">
-      <div class="max-w-2xl">
-        <h2 class="text-4xl md:text-[42px] font-serif text-[#814C53] font-semibold mb-4">Thư Viện Ảnh</h2>
-        <p class="font-sans text-[#2D2D2D]/70 text-lg leading-relaxed">
-          Khoảnh khắc của riêng bạn
-        </p>
-      </div>
-      <div
-        class="shrink-0 bg-white p-6 rounded-[24px] soft-shadow border border-gray-100 flex items-center justify-center">
-        <img
-          src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fweb.facebook.com%2Fthetanhh%2F"
-          alt="QR Code" class="w-20 h-20 opacity-80 mix-blend-multiply">
-      </div>
-    </div>
+  <!-- 1. THƯ VIỆN ĐÁM MÂY & FORM IN ẢNH -->
+  <div class="w-full bg-white rounded-[30px] p-6 md:p-8 soft-shadow border border-gray-100 mb-6 relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-6">
+      <!-- Cột Trái: Giới thiệu và Thư viện ảnh -->
+      <div class="lg:col-span-6 flex flex-col justify-between">
+        <div class="mb-4">
+          <h2 class="text-4xl md:text-[42px] font-serif text-[#814C53] font-semibold mb-3">Thư Viện Ảnh</h2>
+          <p class="font-sans text-[#2D2D2D]/70 text-base leading-relaxed mb-4">
+            Lưu giữ những khoảnh khắc đẹp nhất của riêng bạn. Tải ảnh của bạn lên trực tiếp để chúng tôi in và gửi tới
+            tận tay bạn với chất lượng tốt nhất.
+          </p>
 
-    <!-- Gallery Grid Thumbnail Mini -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-      <div class="w-full aspect-[4/5] rounded-[24px] overflow-hidden soft-shadow relative cursor-pointer group">
-        <img src="https://i.pinimg.com/736x/02/fe/e1/02fee15949c3cc86c0d7700cf8480834.jpg"
-          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130" alt="Wedding Cake">
+        </div>
+
+        <!-- Gallery Grid Thumbnail Mini -->
+        <div class="grid grid-cols-4 gap-4 mt-auto">
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
+            <img src="https://i.pinimg.com/736x/02/fe/e1/02fee15949c3cc86c0d7700cf8480834.jpg"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130"
+              alt="Wedding Cake">
+          </div>
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
+            <img src="https://i.pinimg.com/736x/12/68/fe/1268fe0d6d74333c9cb1965266497e34.jpg"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130"
+              alt="Holding Hands">
+          </div>
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
+            <img src="https://i.pinimg.com/1200x/82/ba/36/82ba366b26bfdbb3649c1534ba5ef0e1.jpg"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130 "
+              alt="Couple View">
+          </div>
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
+            <img src="https://i.pinimg.com/736x/68/84/c4/6884c48a4ea684ce34bb43e1efd1988f.jpg"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130" alt="Cheers">
+          </div>
+        </div>
       </div>
-      <div class="w-full aspect-[4/5] rounded-[24px] overflow-hidden soft-shadow relative cursor-pointer group">
-        <img src="https://i.pinimg.com/736x/12/68/fe/1268fe0d6d74333c9cb1965266497e34.jpg"
-          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130"
-          alt="Holding Hands">
-      </div>
-      <div class="w-full aspect-[4/5] rounded-[24px] overflow-hidden soft-shadow relative cusor-pointer group">
-        <img src="https://i.pinimg.com/1200x/82/ba/36/82ba366b26bfdbb3649c1534ba5ef0e1.jpg"
-          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130 " alt="Couple View">
-      </div>
-      <div class="w-full aspect-[4/5] rounded-[24px] overflow-hidden soft-shadow relative cursor-pointer group">
-        <img src="https://i.pinimg.com/736x/68/84/c4/6884c48a4ea684ce34bb43e1efd1988f.jpg"
-          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-130" alt="Cheers">
+
+      <!-- Cột Phải: Form Tải ảnh & Đặt in -->
+      <div class="lg:col-span-6 bg-[#FAF6F0] p-6 md:p-8 rounded-[24px] border border-[#814C53]/10 relative">
+        <div class="form-title-wrapper mb-6">
+          <h3 class="text-2xl font-serif text-[#814C53] font-semibold">Đặt In Ảnh Nhanh</h3>
+          <p class="text-xs text-[#2D2D2D]/60 mt-1">Đơn hàng sẽ được xử lý và thông báo trực tiếp qua điện thoại.</p>
+        </div>
+
+        <!-- Trạng thái Thành Công -->
+        <div *ngIf="isSuccess" class="text-center py-8">
+          <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round" class="w-8 h-8">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h4 class="text-xl font-semibold text-green-800 mb-2">Đặt in ảnh thành công!</h4>
+          <p class="text-sm text-gray-600 mb-6">Đơn hàng của bạn đã được gửi. Chúng tôi sẽ liên hệ sớm nhất để xác nhận
+            in ảnh.</p>
+          <button (click)="resetOrder()"
+            class="px-6 py-2.5 bg-[#814C53] text-white font-medium rounded-xl hover:bg-[#814C53]/90 transition">
+            Đặt đơn mới
+          </button>
+        </div>
+
+        <!-- Form Đặt Hàng -->
+        <div *ngIf="!isSuccess">
+          <div class="space-y-4">
+            <!-- Họ tên -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Họ tên *</label>
+              <input type="text" [(ngModel)]="clientName" [disabled]="isSubmitting"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#814C53]/20 focus:border-[#814C53] text-sm"
+                placeholder="Nhập họ tên của bạn">
+            </div>
+
+            <!-- Số điện thoại -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
+              <input type="tel" [(ngModel)]="clientPhone" [disabled]="isSubmitting"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#814C53]/20 focus:border-[#814C53] text-sm"
+                placeholder="Nhập số điện thoại nhận ảnh">
+            </div>
+
+            <!-- Tải ảnh -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Chọn ảnh cần in *</label>
+              <div
+                class="relative border-2 border-dashed border-[#814C53]/20 rounded-xl p-6 text-center cursor-pointer hover:bg-white hover:border-[#814C53]/40 transition"
+                (click)="fileInput.click()">
+                <input type="file" #fileInput (change)="onFilesSelected($event)" multiple
+                  accept="image/*,.3fr,.arw,.cr2,.cr3,.dcr,.dng,.erf,.iiq,.k25,.kdc,.mef,.mos,.mrw,.nef,.nrw,.orf,.pef,.raf,.raw,.rw2,.rwl,.sr2,.srf,.srw,.x3f"
+                  class="hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" class="w-8 h-8 text-[#814C53]/60 mx-auto mb-2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                <p class="text-sm font-medium text-gray-700">Kéo thả hoặc Nhấp để chọn ảnh</p>
+                <p class="text-xs text-gray-500 mt-1">Hỗ trợ tải lên nhiều file cùng lúc</p>
+              </div>
+            </div>
+
+            <!-- Danh sách ảnh đã chọn -->
+            <div *ngIf="selectedPhotos.length > 0" class="max-h-48 overflow-y-auto space-y-2 pr-1">
+              <div *ngFor="let item of selectedPhotos; let idx = index"
+                class="flex items-center justify-between bg-white px-3 py-2.5 rounded-xl border border-gray-100 text-xs gap-3">
+                <div class="flex flex-col min-w-0 flex-1">
+                  <span class="truncate font-medium text-gray-700">{{ item.file.name }}</span>
+                  <span class="text-[10px] text-gray-400">({{ (item.file.size / 1024 / 1024) | number:'1.1-2' }} MB)</span>
+                </div>
+                
+                <div class="flex items-center gap-3 shrink-0">
+                  <!-- Stepper Số Lượng -->
+                  <div class="flex items-center bg-gray-50 rounded-lg border border-gray-100 p-0.5">
+                    <button type="button" (click)="decreaseQty(idx)" [disabled]="isSubmitting || item.quantity <= 1" 
+                      class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-[#814C53] hover:bg-white rounded transition disabled:opacity-30">
+                      -
+                    </button>
+                    <span class="w-6 text-center font-semibold text-gray-800 text-xs">{{ item.quantity }}</span>
+                    <button type="button" (click)="increaseQty(idx)" [disabled]="isSubmitting" 
+                      class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-[#814C53] hover:bg-white rounded transition">
+                      +
+                    </button>
+                  </div>
+
+                  <!-- Xóa -->
+                  <button (click)="removeFile(idx)" [disabled]="isSubmitting" class="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                      stroke-linejoin="round" class="w-4 h-4">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tính giá tiền tạm tính -->
+            <div *ngIf="selectedPhotos.length > 0" class="bg-white p-4 rounded-xl border border-[#814C53]/10 space-y-2">
+              <div class="flex justify-between text-sm text-gray-600">
+                <span>Số lượng ảnh độc bản:</span>
+                <span class="font-semibold text-gray-800">{{ selectedPhotos.length }} ảnh</span>
+              </div>
+              <div class="flex justify-between text-sm text-gray-600">
+                <span>Tổng số bản in:</span>
+                <span class="font-semibold text-gray-800">{{ totalQuantity }} bản</span>
+              </div>
+              <div class="flex justify-between text-sm text-gray-600">
+                <span>Đơn giá in:</span>
+                <span class="font-semibold text-[#814C53]">{{ unitPrice | number }}đ / ảnh</span>
+              </div>
+              <div class="w-full h-[1px] bg-gray-100 my-1"></div>
+              <div class="flex justify-between text-base font-medium">
+                <span class="text-gray-700">Tạm tính:</span>
+                <span class="font-bold text-[#814C53]">{{ totalPrice | number }}đ</span>
+              </div>
+            </div>
+
+            <!-- Thông báo Lỗi -->
+            <div *ngIf="errorMessage" class="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl">
+              {{ errorMessage }}
+            </div>
+
+            <!-- Uploading Progress Bar -->
+            <div *ngIf="isSubmitting" class="space-y-2">
+              <div class="flex justify-between text-xs font-medium text-gray-600">
+                <span>Đang tải lên ảnh {{ currentUploadingIndex }}/{{ selectedPhotos.length }}...</span>
+                <span>{{ uploadProgress }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-[#814C53] h-full rounded-full transition-all duration-300"
+                  [style.width.%]="uploadProgress"></div>
+              </div>
+            </div>
+
+            <!-- Nút gửi đơn hàng -->
+            <button (click)="submitOrder()" [disabled]="isSubmitting"
+              class="w-full py-3 bg-[#814C53] text-white font-medium rounded-xl hover:bg-[#814C53]/90 active:scale-98 transition disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm">
+              <svg *ngIf="isSubmitting" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              {{ isSubmitting ? 'Đang xử lý & tải lên...' : 'Đặt In Ảnh Ngay' }}
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-[#d4a373]/30 to-transparent mb-16"></div>
-
+  <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-[#d4a373]/30 to-transparent mb-4"></div>
 
 </div>

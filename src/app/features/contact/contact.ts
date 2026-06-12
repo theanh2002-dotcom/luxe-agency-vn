@@ -27,36 +27,25 @@ export class Contact {
   }
 
   async sendToTelegram() {
-    // ID của anh Thế Anh đã bắt được
-    const token = '8352009369:AAHlp3LG5JX-r_xYsRIYIswgrgYSl5NqLxE';
-    const chatId = '5673994427'; 
-
-    const text = `
-🎉 <b>CÓ KHÁCH HÀNG ĐẶT LỊCH / BÁO GIÁ</b> 🎉
-
-👤 <b>Tên:</b> ${this.form.name}
-📞 <b>SĐT:</b> ${this.form.phone}
-🛍 <b>Dịch vụ quan tâm:</b> ${this.form.service}
-📝 <b>Ghi chú:</b> 
-${this.form.note || '<i>Không có</i>'}
-    `;
-
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-    
     try {
-      await fetch(url, {
+      const response = await fetch('/api/submit-quote', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          chat_id: chatId,
-          text: text,
-          parse_mode: 'HTML'
+          name: this.form.name,
+          phone: this.form.phone,
+          service: this.form.service,
+          note: this.form.note
         })
       });
+
+      if (!response.ok) {
+        throw new Error('Gửi yêu cầu báo giá thất bại');
+      }
     } catch(err) {
-      console.error('Lỗi khi gửi Telegram:', err);
+      console.error('Lỗi khi gửi báo giá qua Telegram:', err);
     }
   }
 

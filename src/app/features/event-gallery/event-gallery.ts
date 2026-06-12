@@ -27,6 +27,7 @@ export class EventGallery implements OnInit, OnDestroy {
   showLightbox = signal<boolean>(false);
   lightboxIndex = signal<number>(0);
   errorMessage = signal<string | null>(null);
+  viewMode = signal<'slideshow' | 'grid'>('slideshow');
 
   // ===== COMPUTED =====
   selectedPhoto = computed(() => this.photos()[this.selectedIndex()]);
@@ -297,6 +298,14 @@ export class EventGallery implements OnInit, OnDestroy {
     if (Math.abs(diff) > 50) {
       if (diff > 0) this.lightboxNext();
       else this.lightboxPrev();
+    }
+  }
+
+  onTouchEndMain(event: TouchEvent) {
+    const diff = this.touchStartX - event.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) this.navigateNext();
+      else this.navigatePrev();
     }
   }
 
