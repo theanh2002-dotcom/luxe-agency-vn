@@ -177,7 +177,11 @@ export class Portfolio {
           phone: this.clientPhone,
           quantity: this.totalQuantity,
           uniquePhotos: totalItems,
-          folderLink
+          folderLink,
+          photos: this.selectedPhotos.map(item => ({
+            name: item.file.name,
+            quantity: item.quantity
+          }))
         })
       });
 

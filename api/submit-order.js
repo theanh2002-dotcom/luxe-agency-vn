@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { name, phone, quantity, uniquePhotos, folderLink } = req.body;
+  const { name, phone, quantity, uniquePhotos, folderLink, photos } = req.body;
   if (!name || !phone || quantity === undefined || uniquePhotos === undefined || !folderLink) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
@@ -62,11 +62,19 @@ export default async function handler(req, res) {
   const safeName = escapeHTML(name);
   const safePhone = escapeHTML(phone);
 
+  let photosList = '';
+  if (Array.isArray(photos) && photos.length > 0) {
+    photosList = '\n📋 <b>Chi tiết in ảnh:</b>\n' + photos.map((p, idx) => {
+      const safeFileName = escapeHTML(p.name);
+      return `${idx + 1}. <code>${safeFileName}</code> x <b>${p.quantity} bản</b>`;
+    }).join('\n') + '\n--------------------------------------\n';
+  }
+
   const htmlMessage = `<b>📸 ĐƠN IN ẢNH MỚI!</b>
 --------------------------------------
 👤 <b>Khách hàng:</b> ${safeName}
 📞 <b>Điện thoại:</b> ${safePhone}
-🖼️ <b>Số lượng file:</b> ${numUnique} ảnh độc bản
+${photosList}🖼️ <b>Số lượng file:</b> ${numUnique} ảnh độc bản
 🖨️ <b>Tổng số bản in:</b> ${numPhotos} bản in
 💰 <b>Đơn giá:</b> ${formatVND(unitPrice)} / ảnh${pricingNote}
 💵 <b>Tổng thanh toán:</b> <b>${formatVND(totalPrice)}</b>
