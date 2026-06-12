@@ -4,55 +4,33 @@
   <div class="w-full bg-white rounded-[30px] p-6 md:p-8 soft-shadow border border-gray-100 mb-6 relative z-10">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-6">
       <!-- Cột Trái: Giới thiệu và Thư viện ảnh -->
-      <div class="lg:col-span-6 flex flex-col justify-start gap-4">
-        <div>
+      <div class="lg:col-span-6 flex flex-col justify-between">
+        <div class="mb-6 lg:mb-4">
           <h2 class="text-4xl md:text-[42px] font-serif text-[#814C53] font-semibold mb-3">Thư Viện Ảnh</h2>
-          <p class="font-sans text-[#2D2D2D]/70 text-base leading-relaxed mb-4">
+          <p class="font-sans text-[#2D2D2D]/70 text-base leading-relaxed">
             Lưu giữ những khoảnh khắc đẹp nhất của riêng bạn. Tải ảnh của bạn lên trực tiếp để chúng tôi in và gửi tới
             tận tay bạn với chất lượng tốt nhất.
           </p>
         </div>
 
-        <!-- Showcase ảnh lớn (chỉ hiển thị trên desktop để lấp khoảng trống và tạo tính năng xem thử) -->
-        <div class="hidden lg:block w-full h-[220px] rounded-[20px] overflow-hidden soft-shadow relative group">
-          <img [src]="featuredImages[activeFeaturedIndex]"
-            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            alt="Featured Showcase">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-            <span class="text-white text-xs font-sans tracking-wide">Nhấp vào ảnh nhỏ bên dưới để thay đổi hình ảnh xem trước</span>
-          </div>
-        </div>
-
-        <!-- Gallery Grid Thumbnail Mini -->
-        <div class="grid grid-cols-4 gap-4 mt-0">
-          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group transition-all duration-300"
-            (click)="setFeatured(0)"
-            [class.ring-2]="activeFeaturedIndex === 0" [class.ring-[#814C53]]="activeFeaturedIndex === 0"
-            [class.scale-95]="activeFeaturedIndex === 0">
+        <!-- Gallery Grid Thumbnail - Mobile: 1x4, Desktop: 2x2 để giữ nguyên tỷ lệ ảnh dọc 4:5 không bị cắt đầu -->
+        <div class="grid grid-cols-4 lg:grid-cols-2 gap-3 lg:gap-4 mt-auto">
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
             <img src="https://i.pinimg.com/736x/02/fe/e1/02fee15949c3cc86c0d7700cf8480834.jpg"
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               alt="Wedding Cake">
           </div>
-          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group transition-all duration-300"
-            (click)="setFeatured(1)"
-            [class.ring-2]="activeFeaturedIndex === 1" [class.ring-[#814C53]]="activeFeaturedIndex === 1"
-            [class.scale-95]="activeFeaturedIndex === 1">
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
             <img src="https://i.pinimg.com/736x/12/68/fe/1268fe0d6d74333c9cb1965266497e34.jpg"
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               alt="Holding Hands">
           </div>
-          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group transition-all duration-300"
-            (click)="setFeatured(2)"
-            [class.ring-2]="activeFeaturedIndex === 2" [class.ring-[#814C53]]="activeFeaturedIndex === 2"
-            [class.scale-95]="activeFeaturedIndex === 2">
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
             <img src="https://i.pinimg.com/1200x/82/ba/36/82ba366b26bfdbb3649c1534ba5ef0e1.jpg"
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 "
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               alt="Couple View">
           </div>
-          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group transition-all duration-300"
-            (click)="setFeatured(3)"
-            [class.ring-2]="activeFeaturedIndex === 3" [class.ring-[#814C53]]="activeFeaturedIndex === 3"
-            [class.scale-95]="activeFeaturedIndex === 3">
+          <div class="w-full aspect-[4/5] rounded-[18px] overflow-hidden soft-shadow relative cursor-pointer group">
             <img src="https://i.pinimg.com/736x/68/84/c4/6884c48a4ea684ce34bb43e1efd1988f.jpg"
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Cheers">
           </div>

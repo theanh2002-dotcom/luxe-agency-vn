@@ -28,19 +28,6 @@ export class Portfolio {
     { url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070', category: 'Tiệc Đêm', title: 'Ánh Sáng Nhiệm Màu' }
   ];
 
-  // ===== SHOWCASE FEATURED GALLERY =====
-  activeFeaturedIndex = 2; // Default to Couple View (Index 2)
-  featuredImages = [
-    'https://i.pinimg.com/736x/02/fe/e1/02fee15949c3cc86c0d7700cf8480834.jpg',
-    'https://i.pinimg.com/736x/12/68/fe/1268fe0d6d74333c9cb1965266497e34.jpg',
-    'https://i.pinimg.com/1200x/82/ba/36/82ba366b26bfdbb3649c1534ba5ef0e1.jpg',
-    'https://i.pinimg.com/736x/68/84/c4/6884c48a4ea684ce34bb43e1efd1988f.jpg'
-  ];
-
-  setFeatured(index: number) {
-    this.activeFeaturedIndex = index;
-  }
-
   // ===== NEW ORDER PRINTING FEATURE =====
   clientName = '';
   clientPhone = '';
