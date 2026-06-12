@@ -22,9 +22,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+  const phoneRegex = /^0\d{9}$/;
   if (!phoneRegex.test(phone.trim())) {
-    return res.status(400).json({ error: 'Số điện thoại không hợp lệ (phải bắt đầu bằng 03/05/07/08/09 và đủ 10 chữ số).' });
+    return res.status(400).json({ error: 'Số điện thoại không hợp lệ (phải bắt đầu bằng số 0 và có đúng 10 chữ số).' });
   }
 
   const numPhotos = parseInt(quantity, 10);

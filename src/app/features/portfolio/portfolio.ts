@@ -106,9 +106,9 @@ export class Portfolio {
       this.errorMessage = 'Vui lòng nhập số điện thoại.';
       return;
     }
-    const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+    const phoneRegex = /^0\d{9}$/;
     if (!phoneRegex.test(this.clientPhone.trim())) {
-      this.errorMessage = 'Số điện thoại không hợp lệ (phải bắt đầu bằng 03/05/07/08/09 và đủ 10 chữ số).';
+      this.errorMessage = 'Số điện thoại không hợp lệ (phải bắt đầu bằng số 0 và có đúng 10 chữ số).';
       return;
     }
     if (this.selectedPhotos.length === 0) {
