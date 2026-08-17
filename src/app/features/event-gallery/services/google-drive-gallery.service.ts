@@ -45,7 +45,7 @@ export class GoogleDriveGalleryService {
    */
   listPhotosInFolder(folderId: string): Observable<GalleryPhoto[]> {
     if (this.manifestId) {
-      return this.http.get<any[]>(`https://drive.google.com/uc?export=download&id=${this.manifestId}`).pipe(
+      return this.http.get<any[]>(`https://www.googleapis.com/drive/v3/files/${this.manifestId}?alt=media&key=${this.apiKey}`).pipe(
         map(manifest => {
           // Lọc ra các session
           const sessions = manifest.filter(item => item.type === 'session' && item.folderId);
