@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, of, switchMap } from 'rxjs';
+import { Observable, map, catchError, of, switchMap, forkJoin } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface GalleryPhoto {
@@ -45,16 +45,41 @@ export class GoogleDriveGalleryService {
    */
   listPhotosInFolder(folderId: string): Observable<GalleryPhoto[]> {
     if (this.manifestId) {
-      return this.http.get<any[]>(`https://www.googleapis.com/drive/v3/files/${this.manifestId}?alt=media&key=${this.apiKey}`).pipe(
+      // Dùng cache-buster để tránh browser cache file JSON cũ
+      const cb = new Date().getTime();
+      return this.http.get<any>(`https://www.googleapis.com/drive/v3/files/${this.manifestId}?alt=media&key=${this.apiKey}&t=${cb}`).pipe(
         map(manifest => {
+          const manifestArray = Array.isArray(manifest) ? manifest : [];
           // Lọc ra các session
-          const sessions = manifest.filter(item => item.type === 'session' && item.folderId);
+          const sessions = manifestArray.filter(item => item?.type === 'session' && item?.folderId);
           if (sessions.length > 0) {
-            const folderIds = sessions.map(s => s.folderId).join(',');
-            return this.fetchFromDriveProxy(folderId, folderIds);
+            const allFolderIds = sessions.map(s => s.folderId);
+            
+            // CHUNKING: Google Drive API 'q' parameter có giới hạn độ phức tạp.
+            // Chia nhỏ thành các batch (tối đa 5 folder mỗi batch)
+            const BATCH_SIZE = 5;
+            const batches: Observable<GalleryPhoto[]>[] = [];
+            
+            for (let i = 0; i < allFolderIds.length; i += BATCH_SIZE) {
+              const chunk = allFolderIds.slice(i, i + BATCH_SIZE);
+              const folderIdsStr = chunk.join(',');
+              batches.push(this.fetchFromDriveProxy(folderId, folderIdsStr));
+            }
+            
+            // Gộp kết quả của tất cả các batch lại
+            return forkJoin(batches).pipe(
+              map((results: any[]) => {
+                let combined: GalleryPhoto[] = [];
+                for (const res of results) {
+                  combined = combined.concat(res);
+                }
+                // Sắp xếp lại theo thời gian mới nhất
+                return combined.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
+              })
+            );
           }
           // Nếu không phải event manifest (hoặc rỗng), fallback
-          return this.fetchFromDriveProxy(folderId);
+          return of(this.fetchFromDriveProxy(folderId));
         }),
         catchError(err => {
           console.error('[Gallery] Failed to fetch manifest, falling back to folderId', err);
