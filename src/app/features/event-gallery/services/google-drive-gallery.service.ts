@@ -50,9 +50,24 @@ export class GoogleDriveGalleryService {
       return this.http.get<any>(`https://www.googleapis.com/drive/v3/files/${this.manifestId}?alt=media&key=${this.apiKey}&t=${cb}`).pipe(
         map(manifest => {
           const manifestArray = Array.isArray(manifest) ? manifest : [];
-          // Lọc ra các session
-          const sessions = manifestArray.filter(item => item?.type === 'session' && item?.folderId);
-          if (sessions.length > 0) {
+          // Lọc ra các session có chứa fileId (phiên bản backend mới)
+          const sessionsWithFiles = manifestArray.filter(item => item?.type === 'session' && item?.fileId);
+          
+          if (sessionsWithFiles.length > 0) {
+            // KHÔNG CẦN CHUNKING, KHÔNG CẦN API DRIVE NỮA!
+            // Map trực tiếp từ json ra giao diện luôn
+            return sessionsWithFiles.map(s => ({
+              fileId: s.fileId,
+              name: `Session ${s.sessionId}`,
+              webViewLink: s.sessionUrl || `https://drive.google.com/file/d/${s.fileId}/view`,
+              thumbnailLink: `https://lh3.googleusercontent.com/d/${s.fileId}=s200-rw`,
+              createdTime: s.createdTime || new Date().toISOString()
+            } as GalleryPhoto)).sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
+          }
+          
+          // Lọc các session cũ không có fileId (tương thích ngược với phiên bản cũ)
+          const sessionsLegacy = manifestArray.filter(item => item?.type === 'session' && !item?.fileId && item?.folderId);
+          if (sessionsLegacy.length > 0) {
             const allFolderIds = sessions.map(s => s.folderId);
             
             // CHUNKING: Google Drive API 'q' parameter có giới hạn độ phức tạp.
