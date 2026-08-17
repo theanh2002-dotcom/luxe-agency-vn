@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, map, catchError, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface GalleryPhoto {
@@ -44,25 +44,53 @@ export class GoogleDriveGalleryService {
    * Nếu không có manifest, fallback về gọi API cũ.
    */
   listPhotosInFolder(folderId: string): Observable<GalleryPhoto[]> {
-    // Fallback: Gọi API nội bộ của Vercel (để tận dụng Cache Edge Network chống chết Quota Drive)
-    // Thay vì gọi thẳng Drive API, gọi qua /api/drive (Serverless Function)
+    if (this.manifestId) {
+      return this.http.get<any[]>(`https://drive.google.com/uc?export=download&id=${this.manifestId}`).pipe(
+        map(manifest => {
+          // Lọc ra các session
+          const sessions = manifest.filter(item => item.type === 'session' && item.folderId);
+          if (sessions.length > 0) {
+            const folderIds = sessions.map(s => s.folderId).join(',');
+            return this.fetchFromDriveProxy(folderId, folderIds);
+          }
+          // Nếu không phải event manifest (hoặc rỗng), fallback
+          return this.fetchFromDriveProxy(folderId);
+        }),
+        catchError(err => {
+          console.error('[Gallery] Failed to fetch manifest, falling back to folderId', err);
+          return of(this.fetchFromDriveProxy(folderId));
+        }),
+        switchMap((obs: any) => obs instanceof Observable ? obs : of(obs))
+      ) as any;
+    }
+
+    return this.fetchFromDriveProxy(folderId);
+  }
+
+  private fetchFromDriveProxy(folderId: string, folderIds?: string): Observable<GalleryPhoto[]> {
     const isLocalhost = window.location.hostname === 'localhost';
     const proxyUrl = isLocalhost ? this.DRIVE_API : `/api/drive`;
     
     let params: any = {};
     if (isLocalhost) {
+      let parentQuery = '';
+      if (folderIds) {
+        const ids = folderIds.split(',').map(id => `'${id.trim()}' in parents`);
+        parentQuery = `(${ids.join(' or ')})`;
+      } else {
+        parentQuery = `'${folderId}' in parents`;
+      }
       params = {
-        q: `'${folderId}' in parents and trashed = false and mimeType contains 'image/'`,
+        q: `${parentQuery} and trashed = false and mimeType contains 'image/'`,
         fields: 'files(id,name,thumbnailLink,webViewLink,createdTime)',
         orderBy: 'createdTime desc',
         pageSize: '100',
         key: this.apiKey
       };
     } else {
-      params = {
-        folderId: folderId,
-        apiKey: this.apiKey
-      };
+      params = { apiKey: this.apiKey };
+      if (folderIds) params.folderIds = folderIds;
+      else params.folderId = folderId;
     }
 
     return this.http.get<any>(proxyUrl, { params }).pipe(

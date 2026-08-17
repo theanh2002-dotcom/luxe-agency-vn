@@ -14,10 +14,10 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { folderId, apiKey } = req.query;
+  const { folderId, folderIds, apiKey } = req.query;
 
-  if (!folderId || !apiKey) {
-    return res.status(400).json({ error: 'Missing folderId or apiKey' });
+  if ((!folderId && !folderIds) || !apiKey) {
+    return res.status(400).json({ error: 'Missing folderId(s) or apiKey' });
   }
 
   // Cache Configuration (The Secret Weapon):
@@ -26,7 +26,15 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10');
 
   try {
-    const driveUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}' in parents and trashed = false and mimeType contains 'image/'&fields=files(id,name,thumbnailLink,webViewLink,createdTime)&orderBy=createdTime desc&pageSize=100&key=${apiKey}`;
+    let parentQuery = '';
+    if (folderIds) {
+      const ids = folderIds.split(',').map(id => `'${id.trim()}' in parents`);
+      parentQuery = `(${ids.join(' or ')})`;
+    } else {
+      parentQuery = `'${folderId}' in parents`;
+    }
+
+    const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(parentQuery + " and trashed = false and mimeType contains 'image/'")}&fields=files(id,name,thumbnailLink,webViewLink,createdTime)&orderBy=createdTime desc&pageSize=100&key=${apiKey}`;
     
     const response = await fetch(driveUrl);
     if (!response.ok) {
