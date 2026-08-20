@@ -171,7 +171,7 @@ export class GoogleDriveGalleryService {
     const baseUrl = proxy ? proxy : 'https://lh3.googleusercontent.com';
 
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      const path = new URL(photo.thumbnailLink).pathname;
+      const path = new URL(photo.thumbnailLink).pathname.split('=')[0];
       return `${proxy ? proxy : 'https://lh3.googleusercontent.com'}${path}=s${size}-rw`;
     }
     // Fallback CDN link nếu không có thumbnailLink
@@ -185,7 +185,7 @@ export class GoogleDriveGalleryService {
     const baseUrl = proxy ? proxy : 'https://lh3.googleusercontent.com';
 
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      const path = new URL(photo.thumbnailLink).pathname;
+      const path = new URL(photo.thumbnailLink).pathname.split('=')[0];
       return `${proxy ? proxy : 'https://lh3.googleusercontent.com'}${path}=s2560-rw`;
     }
     return `${baseUrl}/d/${photo.fileId}=s2560-rw`;
@@ -198,7 +198,7 @@ export class GoogleDriveGalleryService {
     const baseUrl = proxy ? proxy : 'https://lh3.googleusercontent.com';
 
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      const path = new URL(photo.thumbnailLink).pathname;
+      const path = new URL(photo.thumbnailLink).pathname.split('=')[0];
       return `${proxy ? proxy : 'https://lh3.googleusercontent.com'}${path}=s200-rw`;
     }
     return `${baseUrl}/d/${photo.fileId}=s200-rw`;
