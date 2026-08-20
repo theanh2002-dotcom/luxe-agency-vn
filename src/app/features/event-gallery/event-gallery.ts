@@ -277,8 +277,9 @@ export class EventGallery implements OnInit, OnDestroy {
                  (navigator.userAgent.includes("Mac") && "ontouchend" in document);
 
     if (isIOS) {
-      // Trên iOS, iframe ẩn bị chặn tải xuống, phải mở tab mới hoặc chuyển hướng
-      window.open(url, '_blank');
+      // Trên iOS, dùng window.location.href sẽ kích hoạt bảng thông báo tải xuống (Download prompt) của Safari mượt hơn
+      // mà không bị dính lỗi mở tab mới chỉ xem ảnh.
+      window.location.href = url;
     } else {
       // Các trình duyệt khác có thể dùng iframe ẩn để tải mượt mà không bị giật nháy tab
       const iframe = document.createElement('iframe');
