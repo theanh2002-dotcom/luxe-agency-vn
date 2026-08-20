@@ -27,28 +27,43 @@ export default {
       return new Response('Not Found', { status: 404 });
     }
 
-    try {
-      // Gọi lên Google
-      const response = await fetch(targetUrl, {
-        method: request.method,
-        headers: request.headers
-      });
+    // -----------------------------------------------------
+    // CƠ CHẾ EDGE CACHE TOÀN CẦU CỦA CLOUDFLARE
+    // -----------------------------------------------------
+    const cacheUrl = new URL(request.url);
+    // Xóa bớt tham số linh tinh không cần thiết khi lưu cache nếu có
+    const cacheKey = new Request(cacheUrl.toString(), request);
+    const cache = caches.default;
 
-      // Trả về dữ liệu cho người dùng
-      // Cấu hình lại Header để cho phép trình duyệt hiển thị bình thường (CORS)
-      const newResponse = new Response(response.body, response);
-      
-      // Chặn trình duyệt chuyển hướng (Google thường chuyển hướng 302 cho /uc download)
-      // Nhưng Cloudflare fetch sẽ tự follow redirects, nên body trả về là file thật.
-      
-      newResponse.headers.set('Access-Control-Allow-Origin', '*');
-      newResponse.headers.set('Access-Control-Allow-Methods', 'GET, HEAD, POST, OPTIONS');
-      newResponse.headers.set('Access-Control-Allow-Headers', '*');
-      
-      // Khuyến khích trình duyệt Cache ảnh trong 30 ngày để giảm tải
-      newResponse.headers.set('Cache-Control', 'public, max-age=2592000, s-maxage=2592000');
-      
-      return newResponse;
+    try {
+      // 1. Kiểm tra xem ảnh đã được lưu ở Datacenter của VN chưa
+      let response = await cache.match(cacheKey);
+
+      if (!response) {
+        // 2. Nếu chưa có, tiến hành tải ảnh từ Google Drive về
+        const fetchedResponse = await fetch(targetUrl, {
+          method: request.method,
+          headers: request.headers
+        });
+
+        // 3. Tạo một response mới để tùy chỉnh lại bộ Headers
+        response = new Response(fetchedResponse.body, fetchedResponse);
+        
+        response.headers.set('Access-Control-Allow-Origin', '*');
+        response.headers.set('Access-Control-Allow-Methods', 'GET, HEAD, POST, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', '*');
+        
+        // Cực kỳ quan trọng: Báo cho Cloudflare Edge VÀ trình duyệt biết là được phép lưu Cache trong 30 ngày (2592000 giây)
+        response.headers.set('Cache-Control', 'public, max-age=2592000, s-maxage=2592000');
+        
+        // 4. Đẩy ảnh vừa tải vào kho lưu trữ Edge Cache ở VN (chạy ngầm không làm chậm tốc độ của người dùng)
+        if (fetchedResponse.status === 200) {
+          ctx.waitUntil(cache.put(cacheKey, response.clone()));
+        }
+      }
+
+      // Trả ảnh về cho người dùng
+      return response;
 
     } catch (e) {
       return new Response(`Error fetching image: ${e.message}`, { status: 500 });
