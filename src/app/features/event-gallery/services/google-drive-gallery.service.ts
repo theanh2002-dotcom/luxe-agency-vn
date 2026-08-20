@@ -164,36 +164,50 @@ export class GoogleDriveGalleryService {
     );
   }
 
-  /** Ảnh full (main viewer) - size tùy chỉnh, KHÔNG dùng -rw để giữ chất lượng cao cho ảnh nghệ thuật */
-  getHighResUrl(photo: GalleryPhoto, size: number = 1080): string {
+  /** Ảnh full (main viewer) - tự động nén WebP (-rw) để tải nhanh mà vẫn nét căng */
+  getHighResUrl(photo: GalleryPhoto, size: number = 1440): string {
     if (!photo) return '';
+    const proxy = environment.imageProxyUrl;
+    const baseUrl = proxy ? proxy : 'https://lh3.googleusercontent.com';
+
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      return photo.thumbnailLink.split('=')[0] + `=s${size}`;
+      const path = new URL(photo.thumbnailLink).pathname;
+      return `${proxy ? proxy : 'https://lh3.googleusercontent.com'}${path}=s${size}-rw`;
     }
-    // Fallback CDN link nếu không có thumbnailLink (khi fetch từ manifest)
-    return `https://lh3.googleusercontent.com/d/${photo.fileId}=s${size}`;
+    // Fallback CDN link nếu không có thumbnailLink
+    return `${baseUrl}/d/${photo.fileId}=s${size}-rw`;
   }
 
-  /** Lightbox: 2160px cho zoom retina */
+  /** Lightbox: 2560px cho zoom retina + nén WebP */
   getLightboxUrl(photo: GalleryPhoto): string {
     if (!photo) return '';
+    const proxy = environment.imageProxyUrl;
+    const baseUrl = proxy ? proxy : 'https://lh3.googleusercontent.com';
+
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      return photo.thumbnailLink.split('=')[0] + '=s2160';
+      const path = new URL(photo.thumbnailLink).pathname;
+      return `${proxy ? proxy : 'https://lh3.googleusercontent.com'}${path}=s2560-rw`;
     }
-    return `https://lh3.googleusercontent.com/d/${photo.fileId}=s2160`;
+    return `${baseUrl}/d/${photo.fileId}=s2560-rw`;
   }
 
   /** Thumbnail (grid + strip) - giữ -rw cho nhẹ, size nhỏ không ảnh hưởng chất lượng */
   getThumbnailUrl(photo: GalleryPhoto): string {
     if (!photo) return '';
+    const proxy = environment.imageProxyUrl;
+    const baseUrl = proxy ? proxy : 'https://lh3.googleusercontent.com';
+
     if (photo.thumbnailLink?.includes('googleusercontent.com')) {
-      return photo.thumbnailLink.split('=')[0] + '=s200-rw';
+      const path = new URL(photo.thumbnailLink).pathname;
+      return `${proxy ? proxy : 'https://lh3.googleusercontent.com'}${path}=s200-rw`;
     }
-    return `https://lh3.googleusercontent.com/d/${photo.fileId}=s200-rw`;
+    return `${baseUrl}/d/${photo.fileId}=s200-rw`;
   }
 
   /** Download link */
   getDownloadUrl(photo: GalleryPhoto): string {
-    return `https://drive.google.com/uc?export=download&id=${photo.fileId}`;
+    const proxy = environment.imageProxyUrl;
+    const baseUrl = proxy ? proxy : 'https://drive.google.com';
+    return `${baseUrl}/uc?export=download&id=${photo.fileId}`;
   }
 }

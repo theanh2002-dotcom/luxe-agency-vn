@@ -28,6 +28,7 @@ export class EventGallery implements OnInit, OnDestroy {
   lightboxIndex = signal<number>(0);
   errorMessage = signal<string | null>(null);
   viewMode = signal<'slideshow' | 'grid'>('slideshow');
+  loadedImages = signal<Set<string>>(new Set());
 
   // ===== COMPUTED =====
   selectedPhoto = computed(() => this.photos()[this.selectedIndex()]);
@@ -270,18 +271,30 @@ export class EventGallery implements OnInit, OnDestroy {
   downloadPhoto(photo: GalleryPhoto) {
     if (!photo) return;
     const url = this.driveService.getDownloadUrl(photo);
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = url;
-    document.body.appendChild(iframe);
-    setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 5000);
+    
+    // Phát hiện thiết bị iOS (iPhone/iPad/iPod)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+
+    if (isIOS) {
+      // Trên iOS, iframe ẩn bị chặn tải xuống, phải mở tab mới hoặc chuyển hướng
+      window.open(url, '_blank');
+    } else {
+      // Các trình duyệt khác có thể dùng iframe ẩn để tải mượt mà không bị giật nháy tab
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 5000);
+    }
   }
 
   async downloadAllPhotos() {
     const photos = this.photos();
     for (let i = 0; i < photos.length; i++) {
       this.downloadPhoto(photos[i]);
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Tăng delay trên iOS để Safari kịp xử lý popup tải về, hoặc giữ nguyên 800ms
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
 
@@ -319,15 +332,30 @@ export class EventGallery implements OnInit, OnDestroy {
     return this.driveService.getHighResUrl(photo, 1080);
   }
 
-  /** Retina srcset: 1x=1080, 2x=2160 → iPhone/Mac nét căng, mobile thường nhẹ */
+  /** Retina srcset: Cung cấp nhiều mốc kích thước để trình duyệt tự chọn */
   getRetinaSrcset(photo: GalleryPhoto): string {
     if (!photo || photo.fileId.startsWith('demo') || photo._mainError) return '';
-    const s1x = this.driveService.getHighResUrl(photo, 1080);
-    const s2x = this.driveService.getHighResUrl(photo, 2160);
-    return `${s1x} 1x, ${s2x} 2x`;
+    const s800 = this.driveService.getHighResUrl(photo, 800);
+    const s1440 = this.driveService.getHighResUrl(photo, 1440);
+    const s2160 = this.driveService.getHighResUrl(photo, 2160);
+    return `${s800} 800w, ${s1440} 1440w, ${s2160} 2160w`;
   }
 
-  /** Lightbox: s2160 cho zoom */
+  getSizesAttr(): string {
+    return "(max-width: 768px) 100vw, 80vw";
+  }
+
+  onImageLoad(fileId: string) {
+    if (fileId) {
+      this.loadedImages.update(set => {
+        const newSet = new Set(set);
+        newSet.add(fileId);
+        return newSet;
+      });
+    }
+  }
+
+  /** Lightbox: 2560px cho zoom */
   getLightboxSrc(photo: GalleryPhoto): string {
     if (!photo) return '';
     if (photo.fileId.startsWith('demo')) return photo.thumbnailLink;

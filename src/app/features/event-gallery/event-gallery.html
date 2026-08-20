@@ -63,18 +63,32 @@
 
       <!-- Main Image - WINDOWED: chỉ ±2 ảnh trong DOM thay vì tất cả -->
       <div class="main-photo-layer">
-        <img *ngFor="let item of visibleMainPhotos()"
-          [src]="getPhotoSrc(item.photo)"
-          [attr.srcset]="getRetinaSrcset(item.photo) || null"
-          [alt]="item.photo.name || 'Ảnh sự kiện'"
-          class="main-photo-img"
-          referrerpolicy="no-referrer"
-          [style.opacity]="item.originalIndex === selectedIndex() ? '1' : '0'"
-          [style.visibility]="item.originalIndex === selectedIndex() ? 'visible' : 'hidden'"
-          [style.pointer-events]="item.originalIndex === selectedIndex() ? 'auto' : 'none'"
-          [attr.fetchpriority]="item.originalIndex === selectedIndex() ? 'high' : 'low'"
-          (click)="openLightbox(item.originalIndex)"
-          (error)="onMainError(item.photo)" />
+        <ng-container *ngFor="let item of visibleMainPhotos()">
+          <div class="image-wrapper"
+               [style.opacity]="item.originalIndex === selectedIndex() ? '1' : '0'"
+               [style.visibility]="item.originalIndex === selectedIndex() ? 'visible' : 'hidden'"
+               [style.pointer-events]="item.originalIndex === selectedIndex() ? 'auto' : 'none'">
+            
+            <!-- Blur placeholder (hiện trước) -->
+            <img [src]="getThumbSrc(item.photo)"
+                 class="blur-background"
+                 [alt]="''"
+                 referrerpolicy="no-referrer" />
+                 
+            <!-- Ảnh nét (tải ngầm và đè lên sau) -->
+            <img [src]="getPhotoSrc(item.photo)"
+                 [attr.srcset]="getRetinaSrcset(item.photo) || null"
+                 [attr.sizes]="getSizesAttr()"
+                 [alt]="item.photo.name || 'Ảnh sự kiện'"
+                 class="main-photo-img"
+                 [class.main-photo-img--loaded]="loadedImages().has(item.photo.fileId)"
+                 referrerpolicy="no-referrer"
+                 [attr.fetchpriority]="item.originalIndex === selectedIndex() ? 'high' : 'low'"
+                 (load)="onImageLoad(item.photo.fileId)"
+                 (click)="openLightbox(item.originalIndex)"
+                 (error)="onMainError(item.photo)" />
+          </div>
+        </ng-container>
       </div>
 
       <!-- Action Buttons -->
