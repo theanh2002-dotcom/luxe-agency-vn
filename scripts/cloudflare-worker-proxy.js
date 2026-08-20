@@ -15,16 +15,13 @@ export default {
 
     let targetUrl = '';
 
-    // Nếu đường dẫn bắt đầu bằng /d/ (Ảnh proxy qua lh3.googleusercontent.com)
-    if (url.pathname.startsWith('/d/')) {
-      targetUrl = `https://lh3.googleusercontent.com${path}`;
-    }
-    // Nếu đường dẫn bắt đầu bằng /uc (Ảnh gốc tải từ drive.google.com)
-    else if (url.pathname.startsWith('/uc')) {
+    // Nếu đường dẫn là tải file (/uc) thì trỏ về drive.google.com
+    if (url.pathname.startsWith('/uc')) {
       targetUrl = `https://drive.google.com${path}`;
     }
+    // Còn lại (như /d/ hoặc /u/0/d/...) thì trỏ về server ảnh lh3.googleusercontent.com
     else {
-      return new Response('Not Found', { status: 404 });
+      targetUrl = `https://lh3.googleusercontent.com${path}`;
     }
 
     // -----------------------------------------------------
