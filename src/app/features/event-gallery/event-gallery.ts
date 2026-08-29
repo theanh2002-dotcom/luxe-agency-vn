@@ -135,7 +135,7 @@ export class EventGallery implements OnInit, OnDestroy {
 
     this.driveService.listPhotosInFolder(this.eventId).subscribe({
       next: (photos) => {
-        this.photos.set(photos);
+        this.photos.set(this.sortPhotos(photos));
         photos.forEach(p => this.knownMediaIds.add(p.mediaId));
         this.isLoading.set(false);
         this.startPolling();
@@ -171,7 +171,13 @@ export class EventGallery implements OnInit, OnDestroy {
 
         if (newFiles.length > 0) {
           newFiles.forEach(f => { f.isNew = true; this.knownMediaIds.add(f.mediaId); });
-          this.photos.update(current => [...newFiles, ...current]);
+          const selectedMediaId = this.selectedPhoto()?.mediaId;
+          const merged = this.sortPhotos([...this.photos(), ...newFiles]);
+          this.photos.set(merged);
+          if (selectedMediaId) {
+            const nextIndex = merged.findIndex(photo => photo.mediaId === selectedMediaId);
+            if (nextIndex >= 0) this.selectedIndex.set(nextIndex);
+          }
           this.noNewPhotosSince = Date.now();
           this.pollIntervalMs = this.POLL_BASE_MS; // Reset → poll nhanh lại
 
@@ -193,6 +199,21 @@ export class EventGallery implements OnInit, OnDestroy {
         this.pollIntervalMs = Math.min(this.pollIntervalMs * 2, this.POLL_MAX_MS);
         this.schedulePollTick();
       }
+    });
+  }
+
+  private sortPhotos(photos: GalleryPhoto[]): GalleryPhoto[] {
+    return [...photos].sort((left, right) => {
+      const leftVideo = this.isVideo(left) ? 1 : 0;
+      const rightVideo = this.isVideo(right) ? 1 : 0;
+      if (leftVideo !== rightVideo) return leftVideo - rightVideo;
+
+      const leftTime = Date.parse(left.createdTime || '');
+      const rightTime = Date.parse(right.createdTime || '');
+      if (!Number.isNaN(leftTime) && !Number.isNaN(rightTime) && leftTime !== rightTime) {
+        return rightTime - leftTime;
+      }
+      return 0;
     });
   }
 

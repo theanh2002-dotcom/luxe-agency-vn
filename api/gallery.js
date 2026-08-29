@@ -1,5 +1,5 @@
-import { fetchWithTimeout } from './_google-oauth.js';
-import { createMediaToken } from './_media-token.js';
+import { fetchWithTimeout, getGoogleAccessToken } from './_google-oauth.js';
+import { createMediaToken, createStableMediaId } from './_media-token.js';
 
 const DRIVE_FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 const DRIVE_API_KEY = process.env.GOOGLE_DRIVE_API_KEY;
@@ -30,7 +30,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    if (!DRIVE_API_KEY) throw new Error('Missing GOOGLE_DRIVE_API_KEY');
     const source = await resolveGallerySource(requestedId, legacyQueryValue);
     const media = source.files
       ? source.files.map(file => toPublicMedia(file))
@@ -58,21 +57,46 @@ async function listMediaFiles(folderId) {
     'trashed = false',
     `(mimeType contains 'image/' or mimeType contains 'video/')`
   ].join(' and ');
-  return driveList(query, 'files(id,name,mimeType,size,createdTime,modifiedTime)');
+  const files = await driveList(query, 'files(id,name,mimeType,size,createdTime,modifiedTime)');
+  return files.sort(compareMediaItems);
 }
 
 async function readDriveJson(fileId) {
-  const response = await fetchWithTimeout(`${DRIVE_FILES_URL}/${encodeURIComponent(fileId)}?alt=media&key=${encodeURIComponent(DRIVE_API_KEY)}`);
+  const response = await driveFetch(`${DRIVE_FILES_URL}/${encodeURIComponent(fileId)}?alt=media`);
   if (!response.ok) throw new Error(`Manifest request failed (${response.status})`);
   return response.json();
 }
 
 async function driveList(query, fields) {
-  const url = `${DRIVE_FILES_URL}?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}&orderBy=createdTime desc&pageSize=100&key=${encodeURIComponent(DRIVE_API_KEY)}`;
-  const response = await fetchWithTimeout(url);
+  const url = `${DRIVE_FILES_URL}?q=${encodeURIComponent(query)}&fields=${encodeURIComponent(fields)}&orderBy=createdTime desc&pageSize=100`;
+  const response = await driveFetch(url);
   if (!response.ok) throw new Error(`Drive list failed (${response.status})`);
   const data = await response.json();
   return Array.isArray(data.files) ? data.files : [];
+}
+
+async function driveFetch(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  if (hasOAuthConfiguration()) {
+    const accessToken = await getGoogleAccessToken();
+    headers.set('Authorization', `Bearer ${accessToken}`);
+    return fetchWithTimeout(url, { ...options, headers });
+  }
+
+  if (!DRIVE_API_KEY) throw new Error('Missing Google Drive authentication');
+  const separator = url.includes('?') ? '&' : '?';
+  return fetchWithTimeout(`${url}${separator}key=${encodeURIComponent(DRIVE_API_KEY)}`, {
+    ...options,
+    headers
+  });
+}
+
+function hasOAuthConfiguration() {
+  return Boolean(
+    process.env.GOOGLE_CLIENT_ID &&
+    process.env.GOOGLE_CLIENT_SECRET &&
+    process.env.GOOGLE_REFRESH_TOKEN
+  );
 }
 
 function normalizeManifest(manifest) {
@@ -80,7 +104,7 @@ function normalizeManifest(manifest) {
   const sessionItems = items.filter(item =>
     item?.fileId && ['final', 'photo', 'video'].includes(String(item.type || '').toLowerCase())
   );
-  if (sessionItems.length > 0) return sessionItems;
+  if (sessionItems.length > 0) return sessionItems.sort(compareMediaItems);
 
   // Event manifests historically contain one final file per session.
   return items
@@ -90,7 +114,8 @@ function normalizeManifest(manifest) {
       type: 'final',
       name: `Session ${item.sessionId || ''}`.trim(),
       createdTime: item.createdTime
-    }));
+    }))
+    .sort(compareMediaItems);
 }
 
 function toPublicMedia(item) {
@@ -108,7 +133,7 @@ function toPublicMedia(item) {
   const mediaBase = `${MEDIA_PROXY_URL.replace(/\/$/, '')}/media/${mediaToken}`;
 
   return {
-    id: mediaToken,
+    id: createStableMediaId({ fileId, kind }),
     name: sanitizeName(item.name || (kind === 'video' ? 'Video sự kiện' : 'Ảnh sự kiện')),
     kind,
     mimeType,
@@ -118,6 +143,28 @@ function toPublicMedia(item) {
     lightboxUrl: kind === 'video' ? mediaBase : `${mediaBase}?variant=image&size=2560`,
     downloadUrl: `${mediaBase}/download`
   };
+}
+
+function compareMediaItems(left, right) {
+  const leftKind = mediaKindRank(left);
+  const rightKind = mediaKindRank(right);
+  if (leftKind !== rightKind) return leftKind - rightKind;
+
+  const leftTime = parseMediaTime(left);
+  const rightTime = parseMediaTime(right);
+  if (leftTime !== rightTime) return rightTime - leftTime;
+  return 0;
+}
+
+function mediaKindRank(item) {
+  const mimeType = item?.mimeType || inferMimeType(item?.type, item?.name);
+  return mimeType.startsWith('video/') || String(item?.type || '').toLowerCase() === 'video' ? 1 : 0;
+}
+
+function parseMediaTime(item) {
+  const raw = item?.createdTime || item?.createdAt || item?.modifiedTime;
+  const value = Date.parse(raw || '');
+  return Number.isNaN(value) ? 0 : value;
 }
 
 function inferMimeType(type, name) {

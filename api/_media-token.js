@@ -1,4 +1,4 @@
-import { createCipheriv, createHash, randomBytes } from 'node:crypto';
+import { createCipheriv, createHash, createHmac, randomBytes } from 'node:crypto';
 
 const TOKEN_VERSION = 'v1';
 const TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
@@ -21,6 +21,17 @@ export function createMediaToken(payload) {
   return [TOKEN_VERSION, iv, tag, encrypted]
     .map(value => value.toString('base64url'))
     .join('.');
+}
+
+/**
+ * Stable, opaque identity used only for client-side polling/deduplication.
+ * The media URL itself remains an encrypted capability token; this value is
+ * a one-way HMAC and never reveals the provider file id.
+ */
+export function createStableMediaId({ fileId, kind }) {
+  return `m1_${createHmac('sha256', getKey())
+    .update(`${kind}:${fileId}`, 'utf8')
+    .digest('base64url')}`;
 }
 
 function getKey() {
