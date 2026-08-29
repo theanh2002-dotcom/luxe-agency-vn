@@ -298,9 +298,17 @@ export class EventGallery implements OnInit, OnDestroy {
                  (navigator.userAgent.includes("Mac") && "ontouchend" in document);
 
     if (isIOS) {
-      // Trên iOS, dùng window.location.href sẽ kích hoạt bảng thông báo tải xuống (Download prompt) của Safari mượt hơn
-      // mà không bị dính lỗi mở tab mới chỉ xem ảnh.
-      window.location.href = url;
+      // Safari iOS xử lý download cross-origin ổn định hơn khi navigation được
+      // tạo bởi chính click gesture. Worker sẽ trả Content-Disposition: attachment.
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.download = photo.name || 'event-media';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } else {
       // Các trình duyệt khác có thể dùng iframe ẩn để tải mượt mà không bị giật nháy tab
       const iframe = document.createElement('iframe');
@@ -323,13 +331,32 @@ export class EventGallery implements OnInit, OnDestroy {
   // ========== SWIPE GESTURES ==========
 
   private touchStartX = 0;
+  private touchStartTouchCount = 0;
+  private touchGestureCancelled = false;
 
   onTouchStart(event: TouchEvent) {
-    this.touchStartX = event.touches[0].clientX;
+    this.touchStartTouchCount = event.touches.length;
+    this.touchGestureCancelled = event.touches.length !== 1;
+    if (!this.touchGestureCancelled) {
+      this.touchStartX = event.touches[0].clientX;
+    }
+  }
+
+  onTouchMove(event: TouchEvent) {
+    // A second finger means pinch/viewport zoom, never a gallery swipe.
+    if (event.touches.length !== 1) {
+      this.touchGestureCancelled = true;
+    }
   }
 
   onTouchEnd(event: TouchEvent) {
+    if (this.touchGestureCancelled || this.touchStartTouchCount !== 1 || event.changedTouches.length !== 1) {
+      this.resetTouchGesture();
+      return;
+    }
+
     const diff = this.touchStartX - event.changedTouches[0].clientX;
+    this.resetTouchGesture();
     if (Math.abs(diff) > 50) {
       if (diff > 0) this.lightboxNext();
       else this.lightboxPrev();
@@ -337,11 +364,23 @@ export class EventGallery implements OnInit, OnDestroy {
   }
 
   onTouchEndMain(event: TouchEvent) {
+    if (this.touchGestureCancelled || this.touchStartTouchCount !== 1 || event.changedTouches.length !== 1) {
+      this.resetTouchGesture();
+      return;
+    }
+
     const diff = this.touchStartX - event.changedTouches[0].clientX;
+    this.resetTouchGesture();
     if (Math.abs(diff) > 50) {
       if (diff > 0) this.navigateNext();
       else this.navigatePrev();
     }
+  }
+
+  private resetTouchGesture() {
+    this.touchStartX = 0;
+    this.touchStartTouchCount = 0;
+    this.touchGestureCancelled = false;
   }
 
   // ========== IMAGE URL HELPERS ==========

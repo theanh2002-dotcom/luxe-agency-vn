@@ -795,6 +795,7 @@ $radius-sm: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 .lightbox-img {
@@ -804,6 +805,7 @@ $radius-sm: 10px;
   border-radius: 4px;
   user-select: none;
   -webkit-user-drag: none;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 .lightbox-video {

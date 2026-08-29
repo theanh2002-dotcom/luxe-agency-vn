@@ -62,6 +62,19 @@ async function proxyOpaqueMedia(request, url, route, env) {
 
   const size = clampImageSize(url.searchParams.get('size'));
   const isThumbnail = url.searchParams.get('variant') === 'thumbnail';
+  const hasRange = request.headers.has('Range');
+  const shouldUseEdgeCache = request.method === 'GET'
+    && !hasRange
+    && !route.download
+    && (payload.kind === 'image' || isThumbnail);
+  const cache = caches.default;
+  const cacheKey = new Request(url.toString(), { method: 'GET' });
+
+  if (shouldUseEdgeCache) {
+    const cached = await cache.match(cacheKey);
+    if (cached) return withCors(cached, request);
+  }
+
   const targetUrl = buildOpaqueTarget(payload, route.download, isThumbnail, size);
   const upstreamHeaders = forwardRangeHeaders(request.headers);
   const upstream = await fetch(targetUrl, {
@@ -87,14 +100,21 @@ async function proxyOpaqueMedia(request, url, route, env) {
   }
 
   if (route.download) {
+    headers.set('Content-Type', 'application/octet-stream');
     headers.set('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(safeFileName(payload.name, payload.kind))}`);
+    headers.set('Cache-Control', 'no-store');
   }
 
-  return withCors(new Response(upstream.body, {
+  const response = withCors(new Response(upstream.body, {
     status: upstream.status,
     statusText: upstream.statusText,
     headers
   }), request);
+
+  if (shouldUseEdgeCache && upstream.status === 200) {
+    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+  }
+  return response;
 }
 
 async function proxyOpaqueUpload(request, route, env) {

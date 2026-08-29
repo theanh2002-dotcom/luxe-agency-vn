@@ -40,7 +40,7 @@
 
   <!-- ===== MAIN PHOTO VIEWER (Windowed: chỉ render ±2 ảnh) ===== -->
   <div class="gallery-main-photo" *ngIf="photoCount() > 0 && viewMode() === 'slideshow'"
-       (touchstart)="onTouchStart($event)" (touchend)="onTouchEndMain($event)">
+       (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEndMain($event)">
     <div class="main-photo-container">
       <!-- Counter badge -->
       <div class="photo-counter">
@@ -220,7 +220,7 @@
 
 <!-- ===== FULLSCREEN LIGHTBOX (ảnh 2560px hoặc video stream) ===== -->
 <div class="lightbox" *ngIf="showLightbox()" (click)="closeLightbox()" (touchstart)="onTouchStart($event)"
-  (touchend)="onTouchEnd($event)">
+  (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd($event)">
   <div class="lightbox-backdrop"></div>
 
   <!-- Close Button -->

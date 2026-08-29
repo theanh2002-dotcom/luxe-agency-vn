@@ -35,7 +35,9 @@ export default async function handler(req, res) {
       ? source.files.map(file => toPublicMedia(file))
       : normalizeManifest(source.manifest).map(item => toPublicMedia(item));
 
-    res.setHeader('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=10');
+    // Giữ polling tối đa 5 giây nhưng cho phép browser cache cùng response,
+    // tránh gọi lại API vô ích giữa các lần render trên mobile.
+    res.setHeader('Cache-Control', 'public, max-age=5, s-maxage=5, stale-while-revalidate=10');
     res.status(200).json({ items: media });
   } catch (error) {
     console.error('[gallery] server-side resolver failed:', error?.message || error);
