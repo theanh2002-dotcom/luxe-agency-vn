@@ -1,4 +1,5 @@
 import { fetchWithTimeout, getGoogleAccessToken } from './_google-oauth.js';
+import { createResumableUploadToken, decryptUploadToken } from './_upload-token.js';
 
 const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -21,13 +22,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { folderId, fileName, mimeType, fileSize } = req.body || {};
-  if (!folderId || !fileName || !isSupportedImage(fileName, mimeType)
+  const { uploadSessionToken, fileName, mimeType, fileSize } = req.body || {};
+  if (!uploadSessionToken || !fileName || !isSupportedImage(fileName, mimeType)
       || !Number.isSafeInteger(fileSize) || fileSize <= 0 || fileSize > MAX_FILE_SIZE_BYTES) {
     return res.status(400).json({ error: 'Invalid upload metadata' });
   }
 
   try {
+    const uploadSession = decryptUploadToken(uploadSessionToken);
+    const folderId = uploadSession?.folderId;
+    if (uploadSession?.purpose !== 'folder' || !folderId) {
+      return res.status(403).json({ error: 'Upload session is invalid or expired' });
+    }
+
     const origin = getAllowedOrigin(req);
     if (!origin) {
       return res.status(403).json({ error: 'Upload origin is not allowed' });
@@ -57,20 +64,23 @@ export default async function handler(req, res) {
 
     if (!driveResponse.ok) {
       const details = await driveResponse.text();
-      return res.status(driveResponse.status).json({ error: 'Failed to create Drive upload session', details });
+      console.error('[create-upload-session] storage provider rejected upload session:', details);
+      return res.status(502).json({ error: 'Could not prepare upload' });
     }
 
     const uploadUrl = driveResponse.headers.get('location');
     if (!uploadUrl) {
-      return res.status(502).json({ error: 'Google Drive did not return an upload URL' });
+      return res.status(502).json({ error: 'Could not prepare upload' });
     }
 
-    return res.status(200).json({ uploadUrl });
+    const proxyBaseUrl = process.env.PUBLIC_MEDIA_PROXY_URL || 'https://image-photobooth.laihoanganh456.workers.dev';
+    const uploadProxyToken = createResumableUploadToken({ uploadUrl, mimeType, fileSize });
+    return res.status(200).json({
+      uploadUrl: `${proxyBaseUrl.replace(/\/$/, '')}/upload/${uploadProxyToken}`
+    });
   } catch (error) {
-    const message = error?.name === 'AbortError'
-      ? 'Google Drive request timed out'
-      : error.message;
-    return res.status(500).json({ error: 'Could not prepare Google Drive upload', message });
+    console.error('[create-upload-session] failed:', error?.message || error);
+    return res.status(500).json({ error: 'Could not prepare upload' });
   }
 }
 

@@ -10,7 +10,7 @@
             d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
             clip-rule="evenodd" />
         </svg>
-        {{ photoCount() }} ảnh
+        {{ photoCount() }} ảnh/video
       </span>
       <span class="meta-badge meta-badge--live" *ngIf="isPolling()">
         <span class="pulse-dot"></span>
@@ -69,24 +69,38 @@
                [style.visibility]="item.originalIndex === selectedIndex() ? 'visible' : 'hidden'"
                [style.pointer-events]="item.originalIndex === selectedIndex() ? 'auto' : 'none'">
             
-            <!-- Blur placeholder (hiện trước) -->
-            <img [src]="getThumbSrc(item.photo)"
-                 class="blur-background"
-                 [alt]="''"
-                 referrerpolicy="no-referrer" />
-                 
-            <!-- Ảnh nét (tải ngầm và đè lên sau) -->
-            <img [src]="getPhotoSrc(item.photo)"
-                 [attr.srcset]="getRetinaSrcset(item.photo) || null"
-                 [attr.sizes]="getSizesAttr()"
-                 [alt]="item.photo.name || 'Ảnh sự kiện'"
-                 class="main-photo-img"
-                 [class.main-photo-img--loaded]="loadedImages().has(item.photo.fileId)"
-                 referrerpolicy="no-referrer"
-                 [attr.fetchpriority]="item.originalIndex === selectedIndex() ? 'high' : 'low'"
-                 (load)="onImageLoad(item.photo.fileId)"
-                 (click)="openLightbox(item.originalIndex)"
-                 (error)="onMainError(item.photo)" />
+            <ng-container *ngIf="isVideo(item.photo); else mainPhotoImage">
+              <video [src]="getVideoSrc(item.photo)"
+                     [poster]="getThumbSrc(item.photo)"
+                     class="main-photo-video"
+                     controls
+                     playsinline
+                     preload="metadata"
+                     [attr.aria-label]="item.photo.name || 'Video sự kiện'"
+                     (click)="$event.stopPropagation()"
+                     (error)="onMainError(item.photo)"></video>
+            </ng-container>
+
+            <ng-template #mainPhotoImage>
+              <!-- Blur placeholder (hiện trước) -->
+              <img [src]="getThumbSrc(item.photo)"
+                   class="blur-background"
+                   [alt]="''"
+                   referrerpolicy="no-referrer" />
+
+              <!-- Ảnh nét (tải ngầm và đè lên sau) -->
+              <img [src]="getPhotoSrc(item.photo)"
+                   [attr.srcset]="getRetinaSrcset(item.photo) || null"
+                   [attr.sizes]="getSizesAttr()"
+                   [alt]="item.photo.name || 'Ảnh sự kiện'"
+                   class="main-photo-img"
+                   [class.main-photo-img--loaded]="loadedImages().has(item.photo.mediaId)"
+                   referrerpolicy="no-referrer"
+                   [attr.fetchpriority]="item.originalIndex === selectedIndex() ? 'high' : 'low'"
+                   (load)="onImageLoad(item.photo.mediaId)"
+                   (click)="openLightbox(item.originalIndex)"
+                   (error)="onMainError(item.photo)" />
+            </ng-template>
           </div>
         </ng-container>
       </div>
@@ -118,6 +132,7 @@
          [class.grid-item--new]="photo.isNew"
          (click)="openLightbox(i)">
       <img [src]="getThumbSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+      <span class="video-badge" *ngIf="isVideo(photo)">▶ VIDEO</span>
       
       <div class="grid-overlay">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -137,6 +152,7 @@
           [class.thumbnail-item--active]="i === selectedIndex()" [class.thumbnail-item--new]="photo.isNew"
           (click)="selectPhoto(i)">
           <img [src]="getThumbSrc(photo)" [alt]="photo.name" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+          <span class="video-badge video-badge--small" *ngIf="isVideo(photo)">▶</span>
           <span class="new-badge" *ngIf="photo.isNew">Mới</span>
         </div>
       </div>
@@ -151,7 +167,7 @@
           <polyline points="7 10 12 15 17 10" />
           <line x1="12" y1="15" x2="12" y2="3" />
         </svg>
-        Tải tất cả ảnh
+        Tải tất cả file
       </button>
     </div>
   </div>
@@ -165,7 +181,7 @@
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      Tải tất cả ảnh
+      Tải tất cả file
     </button>
   </div>
 
@@ -202,7 +218,7 @@
   <p class="error-text">{{ errorMessage() }}</p>
 </div>
 
-<!-- ===== FULLSCREEN LIGHTBOX (dùng ảnh 2160px riêng cho zoom) ===== -->
+<!-- ===== FULLSCREEN LIGHTBOX (ảnh 2560px hoặc video stream) ===== -->
 <div class="lightbox" *ngIf="showLightbox()" (click)="closeLightbox()" (touchstart)="onTouchStart($event)"
   (touchend)="onTouchEnd($event)">
   <div class="lightbox-backdrop"></div>
@@ -220,14 +236,26 @@
     {{ lightboxIndex() + 1 }} / {{ photoCount() }}
   </div>
 
-  <!-- Lightbox Image: dùng getLightboxSrc (s2160) thay vì s1080 -->
+  <!-- Lightbox media: video phải dùng URL stream, không dùng image CDN -->
   <div class="lightbox-content" (click)="$event.stopPropagation()">
-    <img [src]="getLightboxSrc(photos()[lightboxIndex()])"
-      [alt]="photos()[lightboxIndex()]?.name"
-      class="lightbox-img"
-      fetchpriority="high"
-      referrerpolicy="no-referrer"
-      (error)="onMainError(photos()[lightboxIndex()])" />
+    <ng-container *ngIf="isVideo(photos()[lightboxIndex()]); else lightboxPhotoImage">
+      <video [src]="getVideoSrc(photos()[lightboxIndex()])"
+             [poster]="getThumbSrc(photos()[lightboxIndex()])"
+             class="lightbox-video"
+             controls
+             playsinline
+             preload="metadata"
+             [attr.aria-label]="photos()[lightboxIndex()]?.name || 'Video sự kiện'"
+             (error)="onMainError(photos()[lightboxIndex()])"></video>
+    </ng-container>
+    <ng-template #lightboxPhotoImage>
+      <img [src]="getLightboxSrc(photos()[lightboxIndex()])"
+        [alt]="photos()[lightboxIndex()]?.name"
+        class="lightbox-img"
+        fetchpriority="high"
+        referrerpolicy="no-referrer"
+        (error)="onMainError(photos()[lightboxIndex()])" />
+    </ng-template>
   </div>
 
   <!-- Lightbox Nav -->
@@ -254,6 +282,6 @@
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
-    Tải ảnh này
+    Tải file này
   </button>
 </div>

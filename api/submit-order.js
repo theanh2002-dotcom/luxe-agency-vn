@@ -1,3 +1,5 @@
+import { decryptUploadToken } from './_upload-token.js';
+
 export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -17,8 +19,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { name, phone, quantity, uniquePhotos, folderLink, photos } = req.body;
-  if (!name || !phone || quantity === undefined || uniquePhotos === undefined || !folderLink) {
+  const { name, phone, quantity, uniquePhotos, uploadSessionToken, photos } = req.body;
+  if (!name || !phone || quantity === undefined || uniquePhotos === undefined || !uploadSessionToken) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -32,6 +34,13 @@ export default async function handler(req, res) {
   if (isNaN(numPhotos) || numPhotos <= 0 || isNaN(numUnique) || numUnique <= 0) {
     return res.status(400).json({ error: 'Invalid photo quantity' });
   }
+
+  const uploadSession = decryptUploadToken(uploadSessionToken);
+  const folderId = uploadSession?.folderId;
+  if (uploadSession?.purpose !== 'folder' || !folderId) {
+    return res.status(403).json({ error: 'Upload session is invalid or expired' });
+  }
+  const folderLink = `https://drive.google.com/drive/folders/${encodeURIComponent(folderId)}`;
 
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;

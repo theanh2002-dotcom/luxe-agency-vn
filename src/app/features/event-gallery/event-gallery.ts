@@ -60,7 +60,7 @@ export class EventGallery implements OnInit, OnDestroy {
 
   // ===== POLLING CONFIG (Exponential Backoff) =====
   private pollTimeoutId: any = null;
-  private knownFileIds = new Set<string>();
+  private knownMediaIds = new Set<string>();
   private noNewPhotosSince = 0;
   private pollIntervalMs = 5000;
   private readonly POLL_BASE_MS = 5000;
@@ -73,10 +73,10 @@ export class EventGallery implements OnInit, OnDestroy {
 
   // Demo mode
   private demoPhotos: GalleryPhoto[] = [
-    { fileId: 'demo1', name: 'Khoảnh khắc hạnh phúc', webViewLink: '', thumbnailLink: 'photos/photo1.png', createdTime: new Date().toISOString() },
-    { fileId: 'demo2', name: 'Lễ cắt bánh', webViewLink: '', thumbnailLink: 'photos/photo2.png', createdTime: new Date().toISOString() },
-    { fileId: 'demo3', name: 'Trao nhẫn cưới', webViewLink: '', thumbnailLink: 'photos/photo3.png', createdTime: new Date().toISOString() },
-    { fileId: 'demo4', name: 'Chân dung cặp đôi', webViewLink: '', thumbnailLink: 'photos/photo4.png', createdTime: new Date().toISOString() },
+    { mediaId: 'demo1', name: 'Khoảnh khắc hạnh phúc', kind: 'image', thumbnailUrl: 'photos/photo1.png', mediaUrl: 'photos/photo1.png', lightboxUrl: 'photos/photo1.png', downloadUrl: 'photos/photo1.png', createdTime: new Date().toISOString() },
+    { mediaId: 'demo2', name: 'Lễ cắt bánh', kind: 'image', thumbnailUrl: 'photos/photo2.png', mediaUrl: 'photos/photo2.png', lightboxUrl: 'photos/photo2.png', downloadUrl: 'photos/photo2.png', createdTime: new Date().toISOString() },
+    { mediaId: 'demo3', name: 'Trao nhẫn cưới', kind: 'image', thumbnailUrl: 'photos/photo3.png', mediaUrl: 'photos/photo3.png', lightboxUrl: 'photos/photo3.png', downloadUrl: 'photos/photo3.png', createdTime: new Date().toISOString() },
+    { mediaId: 'demo4', name: 'Chân dung cặp đôi', kind: 'image', thumbnailUrl: 'photos/photo4.png', mediaUrl: 'photos/photo4.png', lightboxUrl: 'photos/photo4.png', downloadUrl: 'photos/photo4.png', createdTime: new Date().toISOString() },
   ];
 
   constructor(
@@ -105,8 +105,8 @@ export class EventGallery implements OnInit, OnDestroy {
     this.route.paramMap.subscribe(params => {
       this.eventId = params.get('id');
       this.route.queryParamMap.subscribe(queryParams => {
-        const manifestId = queryParams.get('m');
-        this.driveService.setManifestId(manifestId);
+        const legacyQueryValue = queryParams.get('m');
+        this.driveService.setLegacyQueryValue(legacyQueryValue);
         this.loadInitialPhotos();
       });
     });
@@ -125,7 +125,7 @@ export class EventGallery implements OnInit, OnDestroy {
     if (this.eventId && this.eventId.startsWith('demo')) {
       setTimeout(() => {
         this.photos.set(this.demoPhotos);
-        this.demoPhotos.forEach(p => this.knownFileIds.add(p.fileId));
+        this.demoPhotos.forEach(p => this.knownMediaIds.add(p.mediaId));
         this.isLoading.set(false);
       }, 800);
       return;
@@ -136,7 +136,7 @@ export class EventGallery implements OnInit, OnDestroy {
     this.driveService.listPhotosInFolder(this.eventId).subscribe({
       next: (photos) => {
         this.photos.set(photos);
-        photos.forEach(p => this.knownFileIds.add(p.fileId));
+        photos.forEach(p => this.knownMediaIds.add(p.mediaId));
         this.isLoading.set(false);
         this.startPolling();
       },
@@ -167,10 +167,10 @@ export class EventGallery implements OnInit, OnDestroy {
 
     this.driveService.listPhotosInFolder(this.eventId).subscribe({
       next: (files) => {
-        const newFiles = files.filter(f => !this.knownFileIds.has(f.fileId));
+        const newFiles = files.filter(f => !this.knownMediaIds.has(f.mediaId));
 
         if (newFiles.length > 0) {
-          newFiles.forEach(f => { f.isNew = true; this.knownFileIds.add(f.fileId); });
+          newFiles.forEach(f => { f.isNew = true; this.knownMediaIds.add(f.mediaId); });
           this.photos.update(current => [...newFiles, ...current]);
           this.noNewPhotosSince = Date.now();
           this.pollIntervalMs = this.POLL_BASE_MS; // Reset → poll nhanh lại
@@ -325,17 +325,25 @@ export class EventGallery implements OnInit, OnDestroy {
 
   // ========== IMAGE URL HELPERS ==========
 
+  isVideo(photo: GalleryPhoto): boolean {
+    return this.driveService.isVideo(photo);
+  }
+
   /** Main photo: s1080 (không -rw, chất lượng cao) */
   getPhotoSrc(photo: GalleryPhoto): string {
     if (!photo) return '';
-    if (photo.fileId.startsWith('demo')) return photo.thumbnailLink;
-    if (photo._mainError) return this.driveService.getDownloadUrl(photo);
+    if (photo.mediaId.startsWith('demo')) return photo.mediaUrl;
     return this.driveService.getHighResUrl(photo, 1080);
+  }
+
+  getVideoSrc(photo: GalleryPhoto): string {
+    if (!photo) return '';
+    return this.driveService.getVideoUrl(photo);
   }
 
   /** Retina srcset: Cung cấp nhiều mốc kích thước để trình duyệt tự chọn */
   getRetinaSrcset(photo: GalleryPhoto): string {
-    if (!photo || photo.fileId.startsWith('demo') || photo._mainError) return '';
+    if (!photo || this.isVideo(photo) || photo.mediaId.startsWith('demo') || photo._mainError) return '';
     const s800 = this.driveService.getHighResUrl(photo, 800);
     const s1440 = this.driveService.getHighResUrl(photo, 1440);
     const s2160 = this.driveService.getHighResUrl(photo, 2160);
@@ -346,11 +354,11 @@ export class EventGallery implements OnInit, OnDestroy {
     return "(max-width: 768px) 100vw, 80vw";
   }
 
-  onImageLoad(fileId: string) {
-    if (fileId) {
+  onImageLoad(mediaId: string) {
+    if (mediaId) {
       this.loadedImages.update(set => {
         const newSet = new Set(set);
-        newSet.add(fileId);
+        newSet.add(mediaId);
         return newSet;
       });
     }
@@ -359,15 +367,14 @@ export class EventGallery implements OnInit, OnDestroy {
   /** Lightbox: 2560px cho zoom */
   getLightboxSrc(photo: GalleryPhoto): string {
     if (!photo) return '';
-    if (photo.fileId.startsWith('demo')) return photo.thumbnailLink;
-    if (photo._mainError) return this.driveService.getDownloadUrl(photo);
+    if (photo.mediaId.startsWith('demo')) return photo.mediaUrl;
     return this.driveService.getLightboxUrl(photo);
   }
 
   /** Thumbnail: s200-rw (nhẹ, WebP) */
   getThumbSrc(photo: GalleryPhoto): string {
     if (!photo) return '';
-    if (photo.fileId.startsWith('demo')) return photo.thumbnailLink;
+    if (photo.mediaId.startsWith('demo')) return photo.thumbnailUrl;
     if (photo._thumbError) return this.driveService.getHighResUrl(photo, 400);
     return this.driveService.getThumbnailUrl(photo);
   }
@@ -395,7 +402,9 @@ export class EventGallery implements OnInit, OnDestroy {
    * Cache giữ tối đa MAX_CACHE ảnh, evict ảnh cũ nhất khi đầy.
    */
   private preloadSingle(photo: GalleryPhoto, size: number = 1080) {
-    if (!photo) return;
+    // Video playback is intentionally user initiated. Preloading it as an
+    // Image would request a poster/HTML response and waste bandwidth.
+    if (!photo || this.isVideo(photo)) return;
     const url = size <= 1080
       ? this.getPhotoSrc(photo)
       : this.driveService.getHighResUrl(photo, size);

@@ -1,7 +1,7 @@
 import { fetchWithTimeout, getGoogleAccessToken } from './_google-oauth.js';
+import { createUploadToken } from './_upload-token.js';
 
 export default async function handler(req, res) {
-  // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { name, phone } = req.body;
+  const { name, phone } = req.body || {};
   if (!name || !phone) {
     return res.status(400).json({ error: 'Missing name or phone number' });
   }
@@ -31,12 +31,11 @@ export default async function handler(req, res) {
 
   const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
   if (!rootFolderId) {
-    return res.status(500).json({ error: 'Missing Google Drive root folder ID' });
+    return res.status(500).json({ error: 'Storage configuration is missing' });
   }
 
   try {
     const accessToken = await getGoogleAccessToken();
-
     const dateStr = new Intl.DateTimeFormat('vi-VN', {
       timeZone: 'Asia/Ho_Chi_Minh',
       day: '2-digit',
@@ -50,7 +49,7 @@ export default async function handler(req, res) {
       parents: [rootFolderId]
     };
 
-    const driveResponse = await fetchWithTimeout('https://www.googleapis.com/drive/v3/files?fields=id,name,webViewLink', {
+    const storageResponse = await fetchWithTimeout('https://www.googleapis.com/drive/v3/files?fields=id,name', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -59,14 +58,23 @@ export default async function handler(req, res) {
       body: JSON.stringify(folderMetadata)
     });
 
-    if (!driveResponse.ok) {
-      const errorText = await driveResponse.text();
-      return res.status(driveResponse.status).json({ error: 'Failed to create Drive folder', details: errorText });
+    if (!storageResponse.ok) {
+      const errorText = await storageResponse.text();
+      console.error('[create-upload-folder] storage provider rejected folder creation:', errorText);
+      return res.status(502).json({ error: 'Could not prepare storage folder' });
     }
 
-    const folderData = await driveResponse.json();
-    return res.status(200).json(folderData);
+    const folderData = await storageResponse.json();
+    if (!folderData.id) {
+      return res.status(502).json({ error: 'Storage folder was not created' });
+    }
+
+    // The browser only receives a short-lived opaque capability. The actual
+    // storage folder id stays inside server-side state and Telegram delivery.
+    const uploadSessionToken = createUploadToken({ purpose: 'folder', folderId: folderData.id });
+    return res.status(200).json({ uploadSessionToken });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    console.error('[create-upload-folder] failed:', error?.message || error);
+    return res.status(500).json({ error: 'Could not prepare storage folder' });
   }
 }

@@ -122,20 +122,20 @@ export class Portfolio {
     this.currentUploadingIndex = 0;
 
     try {
-      // 1. Create customer folder in Google Drive via Serverless Endpoint
-      const folderRes = await this.fetchWithTimeout('/api/create-drive-folder', {
+      // 1. Create the server-side customer upload session.
+      const folderRes = await this.fetchWithTimeout('/api/create-upload-folder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: this.clientName, phone: this.clientPhone })
       });
       if (!folderRes.ok) {
-        throw new Error(await this.getApiError(folderRes, 'Lỗi khi tạo thư mục khách hàng trên Drive.'));
+        throw new Error(await this.getApiError(folderRes, 'Không thể chuẩn bị thư mục lưu ảnh.'));
       }
       const folderData = await folderRes.json();
-      const folderId = folderData.id;
-      const folderLink = folderData.webViewLink;
+      const uploadSessionToken = folderData.uploadSessionToken;
+      if (!uploadSessionToken) throw new Error('Phiên tải ảnh không hợp lệ.');
 
-      // 2. Create a resumable session on the server, then upload directly to Drive.
+      // 2. Create a resumable session on the server, then upload the file.
       const totalItems = this.selectedPhotos.length;
       for (let i = 0; i < totalItems; i++) {
         this.currentUploadingIndex = i + 1;
@@ -154,14 +154,14 @@ export class Portfolio {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            folderId,
+            uploadSessionToken,
             fileName: driveFileName,
             mimeType: file.type || 'application/octet-stream',
             fileSize: file.size
           })
         });
         if (!sessionRes.ok) {
-          throw new Error(await this.getApiError(sessionRes, `Không thể chuẩn bị tải ảnh: ${file.name}`));
+          throw new Error(await this.getApiError(sessionRes, `Không thể chuẩn bị tải file: ${file.name}`));
         }
         const { uploadUrl } = await sessionRes.json();
 
@@ -177,7 +177,7 @@ export class Portfolio {
           phone: this.clientPhone,
           quantity: this.totalQuantity,
           uniquePhotos: totalItems,
-          folderLink,
+          uploadSessionToken,
           photos: this.selectedPhotos.map(item => ({
             name: item.file.name,
             quantity: item.quantity
