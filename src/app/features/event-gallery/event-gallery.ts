@@ -323,12 +323,14 @@ export class EventGallery implements OnInit, OnDestroy {
       }
 
       navigator.share({ files: [file] }).catch(error => {
-        if (this.isShareAbortError(error)) return;
+        if (this.isShareNoFallbackError(error)) return;
 
         console.warn('[Gallery] Image share failed; falling back to direct download:', error);
         this.directDownloadPhoto(photo);
       });
     } catch (error) {
+      if (this.isShareNoFallbackError(error)) return;
+
       console.warn('[Gallery] Image share could not start; falling back to direct download:', error);
       this.directDownloadPhoto(photo);
     }
@@ -427,6 +429,13 @@ export class EventGallery implements OnInit, OnDestroy {
   private isShareAbortError(error: unknown): boolean {
     return typeof error === 'object' && error !== null &&
       'name' in error && (error as { name?: unknown }).name === 'AbortError';
+  }
+
+  private isShareNoFallbackError(error: unknown): boolean {
+    if (typeof error !== 'object' || error === null || !('name' in error)) return false;
+
+    const name = (error as { name?: unknown }).name;
+    return name === 'AbortError' || name === 'NotAllowedError' || name === 'InvalidStateError';
   }
 
   // ========== SWIPE GESTURES ==========
