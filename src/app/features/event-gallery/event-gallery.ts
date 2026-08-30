@@ -71,6 +71,11 @@ export class EventGallery implements OnInit, OnDestroy {
   private lruCache = new Map<string, HTMLImageElement>();
   private readonly MAX_CACHE = 20;
 
+  // ===== IOS WEB SHARE PREPARATION =====
+  private preparedShareFile: File | null = null;
+  private preparedShareMediaId: string | null = null;
+  private sharePrepareAbort: AbortController | null = null;
+
   // Demo mode
   private demoPhotos: GalleryPhoto[] = [
     { mediaId: 'demo1', name: 'Khoảnh khắc hạnh phúc', kind: 'image', thumbnailUrl: 'photos/photo1.png', mediaUrl: 'photos/photo1.png', lightboxUrl: 'photos/photo1.png', downloadUrl: 'photos/photo1.png', createdTime: new Date().toISOString() },
@@ -87,7 +92,10 @@ export class EventGallery implements OnInit, OnDestroy {
     effect(() => {
       const idx = this.selectedIndex();
       const all = this.photos();
-      if (all.length === 0) return;
+      if (all.length === 0) {
+        this.prepareShareFile(undefined);
+        return;
+      }
 
       const total = all.length;
       const targets = [
@@ -98,6 +106,8 @@ export class EventGallery implements OnInit, OnDestroy {
       for (const i of targets) {
         this.preloadSingle(all[i]);
       }
+
+      this.prepareShareFile(all[idx]);
     });
   }
 
@@ -115,6 +125,10 @@ export class EventGallery implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.stopPolling();
     this.lruCache.clear();
+    this.sharePrepareAbort?.abort();
+    this.sharePrepareAbort = null;
+    this.preparedShareFile = null;
+    this.preparedShareMediaId = null;
   }
 
   // ========== DATA LOADING ==========
@@ -291,13 +305,48 @@ export class EventGallery implements OnInit, OnDestroy {
 
   downloadPhoto(photo: GalleryPhoto) {
     if (!photo) return;
-    const url = this.driveService.getDownloadUrl(photo);
-    
-    // Phát hiện thiết bị iOS (iPhone/iPad/iPod)
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                 (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+    if (!this.isIOSDevice() || this.isVideo(photo)) {
+      this.directDownloadPhoto(photo);
+      return;
+    }
 
-    if (isIOS) {
+    const file = this.preparedShareFile;
+    if (!file || this.preparedShareMediaId !== photo.mediaId || !navigator.share) {
+      this.directDownloadPhoto(photo);
+      return;
+    }
+
+    try {
+      if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
+        this.directDownloadPhoto(photo);
+        return;
+      }
+
+      navigator.share({ files: [file] }).catch(error => {
+        if (this.isShareAbortError(error)) return;
+
+        console.warn('[Gallery] Image share failed; falling back to direct download:', error);
+        this.directDownloadPhoto(photo);
+      });
+    } catch (error) {
+      console.warn('[Gallery] Image share could not start; falling back to direct download:', error);
+      this.directDownloadPhoto(photo);
+    }
+  }
+
+  async downloadAllPhotos() {
+    const photos = this.photos();
+    for (let i = 0; i < photos.length; i++) {
+      this.directDownloadPhoto(photos[i]);
+      // Tăng delay trên iOS để Safari kịp xử lý popup tải về, hoặc giữ nguyên 800ms
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  private directDownloadPhoto(photo: GalleryPhoto): void {
+    const url = this.driveService.getDownloadUrl(photo);
+
+    if (this.isIOSDevice()) {
       // Safari iOS xử lý download cross-origin ổn định hơn khi navigation được
       // tạo bởi chính click gesture. Worker sẽ trả Content-Disposition: attachment.
       const link = document.createElement('a');
@@ -319,13 +368,65 @@ export class EventGallery implements OnInit, OnDestroy {
     }
   }
 
-  async downloadAllPhotos() {
-    const photos = this.photos();
-    for (let i = 0; i < photos.length; i++) {
-      this.downloadPhoto(photos[i]);
-      // Tăng delay trên iOS để Safari kịp xử lý popup tải về, hoặc giữ nguyên 800ms
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  private prepareShareFile(photo: GalleryPhoto | undefined): void {
+    if (photo && this.preparedShareMediaId === photo.mediaId &&
+      (this.preparedShareFile || this.sharePrepareAbort)) {
+      return;
     }
+
+    this.sharePrepareAbort?.abort();
+    this.sharePrepareAbort = null;
+    this.preparedShareFile = null;
+    this.preparedShareMediaId = null;
+
+    if (!photo || !this.isIOSDevice() || this.isVideo(photo)) return;
+
+    const url = this.driveService.getDownloadUrl(photo);
+    if (!url) return;
+
+    const controller = new AbortController();
+    this.sharePrepareAbort = controller;
+    this.preparedShareMediaId = photo.mediaId;
+
+    void fetch(url, { signal: controller.signal })
+      .then(response => {
+        if (!response.ok) throw new Error(`Download request failed with status ${response.status}`);
+        return response.blob();
+      })
+      .then(blob => {
+        if (controller.signal.aborted || this.sharePrepareAbort !== controller) return;
+
+        const mimeType = this.getShareMimeType(photo);
+        const fileName = photo.name?.trim() || 'event-media.jpg';
+        this.preparedShareFile = new File([blob], fileName, { type: mimeType });
+        this.sharePrepareAbort = null;
+      })
+      .catch(error => {
+        if (this.isShareAbortError(error) || controller.signal.aborted) return;
+        if (this.sharePrepareAbort === controller) {
+          this.sharePrepareAbort = null;
+          this.preparedShareFile = null;
+          this.preparedShareMediaId = null;
+          console.warn('[Gallery] Could not prepare image for sharing:', error);
+        }
+      });
+  }
+
+  private getShareMimeType(photo: GalleryPhoto): string {
+    const mimeType = photo.mimeType?.trim();
+    return mimeType && /^image\/[a-z0-9.+-]+$/i.test(mimeType) ? mimeType : 'image/jpeg';
+  }
+
+  private isIOSDevice(): boolean {
+    if (typeof navigator === 'undefined') return false;
+
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.userAgent.includes('Mac') && typeof document !== 'undefined' && 'ontouchend' in document);
+  }
+
+  private isShareAbortError(error: unknown): boolean {
+    return typeof error === 'object' && error !== null &&
+      'name' in error && (error as { name?: unknown }).name === 'AbortError';
   }
 
   // ========== SWIPE GESTURES ==========
