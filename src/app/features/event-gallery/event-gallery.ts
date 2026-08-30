@@ -305,7 +305,7 @@ export class EventGallery implements OnInit, OnDestroy {
 
   downloadPhoto(photo: GalleryPhoto) {
     if (!photo) return;
-    if (!this.isIOSDevice() || this.isVideo(photo)) {
+    if (!this.isIOSDevice()) {
       this.directDownloadPhoto(photo);
       return;
     }
@@ -323,7 +323,8 @@ export class EventGallery implements OnInit, OnDestroy {
 
     try {
       if (typeof navigator.canShare !== 'function' || !navigator.canShare({ files: [file] })) {
-        console.warn('[Gallery] Prepared image cannot be shared on this iOS browser');
+        const mediaType = this.isVideo(photo) ? 'video' : 'image';
+        console.warn(`[Gallery] Prepared ${mediaType} cannot be shared on this iOS browser`);
         return;
       }
 
@@ -386,7 +387,7 @@ export class EventGallery implements OnInit, OnDestroy {
     this.preparedShareFile = null;
     this.preparedShareMediaId = null;
 
-    if (!photo || !this.isIOSDevice() || this.isVideo(photo)) return;
+    if (!photo || !this.isIOSDevice()) return;
 
     const url = this.driveService.getDownloadUrl(photo);
     if (!url) return;
@@ -404,7 +405,7 @@ export class EventGallery implements OnInit, OnDestroy {
         if (controller.signal.aborted || this.sharePrepareAbort !== controller) return;
 
         const mimeType = this.getShareMimeType(photo);
-        const fileName = photo.name?.trim() || 'event-media.jpg';
+        const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-media.mp4' : 'event-media.jpg');
         this.preparedShareFile = new File([blob], fileName, { type: mimeType });
         this.sharePrepareAbort = null;
       })
@@ -421,7 +422,9 @@ export class EventGallery implements OnInit, OnDestroy {
 
   private getShareMimeType(photo: GalleryPhoto): string {
     const mimeType = photo.mimeType?.trim();
-    return mimeType && /^image\/[a-z0-9.+-]+$/i.test(mimeType) ? mimeType : 'image/jpeg';
+    const mediaType = this.isVideo(photo) ? 'video' : 'image';
+    const fallback = this.isVideo(photo) ? 'video/mp4' : 'image/jpeg';
+    return mimeType && new RegExp(`^${mediaType}/[a-z0-9.+-]+$`, 'i').test(mimeType) ? mimeType : fallback;
   }
 
   private isIOSDevice(): boolean {
