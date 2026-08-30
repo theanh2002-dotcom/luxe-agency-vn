@@ -310,15 +310,20 @@ export class EventGallery implements OnInit, OnDestroy {
       return;
     }
 
-    const file = this.preparedShareFile;
-    if (!file || this.preparedShareMediaId !== photo.mediaId || !navigator.share) {
+    if (typeof navigator.share !== 'function') {
       this.directDownloadPhoto(photo);
       return;
     }
 
+    const file = this.preparedShareFile;
+    if (!file || this.preparedShareMediaId !== photo.mediaId) {
+      this.prepareShareFile(photo);
+      return;
+    }
+
     try {
-      if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
-        this.directDownloadPhoto(photo);
+      if (typeof navigator.canShare !== 'function' || !navigator.canShare({ files: [file] })) {
+        console.warn('[Gallery] Prepared image cannot be shared on this iOS browser');
         return;
       }
 
