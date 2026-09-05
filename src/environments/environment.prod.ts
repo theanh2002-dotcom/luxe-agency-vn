@@ -1,3 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  softwareReleaseApiUrl: 'https://tanhbooth-api.laihoanganh456.workers.dev'
 };

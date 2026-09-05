@@ -1,6 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface ReleaseUpdate {
   version: string;
@@ -36,18 +39,27 @@ interface FaqItem {
   isOpen: boolean;
 }
 
+interface PublicReleaseResponse {
+  ok: boolean;
+  release: { version: string; notes: string | null; publishedAt: string } | null;
+  installer: { available: boolean; size: number | null; downloadUrl: string };
+}
+
 @Component({
   selector: 'app-software-page',
   imports: [CommonModule, RouterModule],
   templateUrl: './software-page.html',
   styleUrl: './software-page.scss',
 })
-export class SoftwarePage {
-  readonly currentVersion = 'v2.4.0';
-  readonly releaseDate = '05/09/2026';
-  readonly fileSize = '142 MB';
+export class SoftwarePage implements OnInit {
+  private readonly http = inject(HttpClient);
+  private installerUrl: string | null = null;
+
+  readonly currentVersion = signal('Đang kiểm tra');
+  readonly releaseDate = signal('Đang kiểm tra');
+  readonly fileSize = signal('—');
   readonly platform = 'Windows 10 / 11 (64-bit)';
-  readonly downloadLink = '#download-section'; // Can be replaced with actual download URL (e.g. Google Drive / S3)
+  readonly installerAvailable = signal(false);
 
   downloadToastMessage = signal<string | null>(null);
 
@@ -94,8 +106,8 @@ export class SoftwarePage {
     {
       step: '01',
       title: 'Tải bộ cài đặt LumiBooth',
-      description: 'Nhấp vào nút "Tải Bản Cài Đặt (64-bit)" ở đầu trang để tải file cài đặt LumiBooth_Setup_v2.4.0.exe về máy tính của bạn.',
-      note: 'Dung lượng ~142 MB, hãy đảm bảo đường truyền ổn định.'
+      description: 'Nhấp vào nút "Tải Bản Cài Đặt (64-bit)" ở đầu trang để tải bộ cài LumiBooth về máy tính của bạn.',
+      note: 'Dung lượng được hiển thị theo bộ cài đang phát hành. Hãy đảm bảo đường truyền ổn định.'
     },
     {
       step: '02',
@@ -107,111 +119,17 @@ export class SoftwarePage {
       step: '03',
       title: 'Cài đặt Driver Máy Ảnh & Máy In',
       description: 'Đảm bảo máy tính đã cài Canon EOS Utility/EDSDK để nhận diện máy ảnh DSLR, và driver chính hãng cho máy in nhiệt sự kiện (DNP, Citizen...).',
-      note: 'Bộ driver thông dụng đã được đóng gói sẵn trong thư mục Drivers của phần mềm.'
+      note: 'Cài driver chính hãng phù hợp với máy ảnh và máy in trước khi vận hành sự kiện.'
     },
     {
       step: '04',
       title: 'Kích hoạt License & Vận hành',
       description: 'Mở biểu tượng LumiBooth ngoài màn hình Desktop. Đăng nhập hoặc kích hoạt License Key để bắt đầu setup sự kiện ngay lập tức.',
-      note: 'Tặng kèm 14 ngày dùng thử đầy đủ tính năng cho người dùng mới.'
+      note: 'Liên hệ bộ phận vận hành để nhận mã kích hoạt phù hợp với thiết bị của bạn.'
     }
   ];
 
-  releaseUpdates: ReleaseUpdate[] = [
-    {
-      version: 'v2.4.0',
-      releaseDate: '05/09/2026',
-      isLatest: true,
-      tagText: 'Bản Mới Nhất',
-      summary: 'Phiên bản đột phá bổ sung hỗ trợ responsive toàn diện cho mọi tỉ lệ màn hình Kiosk, tích hợp Screen Designer trực quan và tối ưu hoá luồng Live View Canon.',
-      downloadSize: '142 MB',
-      changes: [
-        {
-          category: 'new',
-          label: 'Tính năng mới',
-          text: 'Tích hợp bộ điều chỉnh tỉ lệ khung hình Kiosk đa dạng: 16:9 ngang (1920x1080), 9:16 dọc (1080x1920) và 1:1 vuông (800x800).'
-        },
-        {
-          category: 'new',
-          label: 'Tính năng mới',
-          text: 'Trình biên tập màn hình Screen Designer thời gian thực, cho phép tuỳ chỉnh vị trí camera countdown, icon và giao diện chào mừng.'
-        },
-        {
-          category: 'improved',
-          label: 'Cải tiến',
-          text: 'Giảm thiểu độ trễ Live View Canon DSLR/Mirrorless xuống dưới 30ms, tối ưu tốc độ render khung ảnh 4K song song.'
-        },
-        {
-          category: 'improved',
-          label: 'Cải tiến',
-          text: 'Nâng cấp hệ thống bảo mật Kiosk với tính năng xác thực mã PIN bảo vệ trang cài đặt cấu hình.'
-        },
-        {
-          category: 'fixed',
-          label: 'Sửa lỗi',
-          text: 'Khắc phục sự cố không nhận máy in nhiệt DNP khi rút cáp USB đột ngột; tự động tái kết nối mà không cần khởi động lại phần mềm.'
-        },
-        {
-          category: 'fixed',
-          label: 'Sửa lỗi',
-          text: 'Sửa lỗi sinh mã QR Code khi sự kiện hoạt động ở chế độ Offline (mạng nội bộ không có kết nối Internet quốc tế).'
-        }
-      ]
-    },
-    {
-      version: 'v2.3.5',
-      releaseDate: '15/08/2026',
-      tagText: 'Ổn Định',
-      summary: 'Bổ sung tính năng quay Boomerang & Video GIF ngắn kèm hiệu ứng nhạc nền, nâng cấp giao diện người dùng Pearl Luxury sang trọng.',
-      downloadSize: '138 MB',
-      changes: [
-        {
-          category: 'new',
-          label: 'Tính năng mới',
-          text: 'Hỗ trợ quay clip Boomerang 3 giây và Video ngắn kèm watermark sự kiện động.'
-        },
-        {
-          category: 'improved',
-          label: 'Cải tiến',
-          text: 'Giao diện phong cách Modern Pearl Luxury với hiệu ứng chuyển động mượt mà, thân thiện với màn hình cảm ứng.'
-        },
-        {
-          category: 'improved',
-          label: 'Cải tiến',
-          text: 'Tự động giải phóng bộ nhớ đệm (cache) sau mỗi lượt chụp, giúp máy hoạt động liên tục 24/7 không bị giật lag.'
-        },
-        {
-          category: 'fixed',
-          label: 'Sửa lỗi',
-          text: 'Xử lý lỗi lệch màu sắc khi in ảnh bằng máy in Citizen CX-02.'
-        }
-      ]
-    },
-    {
-      version: 'v2.2.0',
-      releaseDate: '20/07/2026',
-      tagText: 'Ổn Định',
-      summary: 'Nâng cấp hệ thống quản lý sự kiện offline và đồng bộ hàng đợi Cloud Sync khi có mạng trở lại.',
-      downloadSize: '135 MB',
-      changes: [
-        {
-          category: 'new',
-          label: 'Tính năng mới',
-          text: 'Cơ chế lưu trữ hàng đợi ngoại tuyến (Offline Queue), tự động tải ảnh lên Cloud Gallery khi thiết bị kết nối lại Wi-Fi.'
-        },
-        {
-          category: 'improved',
-          label: 'Cải tiến',
-          text: 'Bổ sung thống kê số lượt chụp, số bản in và tỷ lệ chia sẻ mã QR theo thời gian thực.'
-        },
-        {
-          category: 'fixed',
-          label: 'Sửa lỗi',
-          text: 'Sửa lỗi treo ứng dụng khi máy ảnh Canon cạn pin giữa chừng.'
-        }
-      ]
-    }
-  ];
+  releaseUpdates: ReleaseUpdate[] = [];
 
   faqs: FaqItem[] = [
     {
@@ -236,11 +154,60 @@ export class SoftwarePage {
     }
   ];
 
-  triggerDownload() {
-    this.downloadToastMessage.set('Đang chuẩn bị gói cài đặt LumiBooth v2.4.0 (Windows 64-bit)...');
+  ngOnInit(): void {
+    void this.loadPublishedRelease();
+  }
+
+  async loadPublishedRelease(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.http.get<PublicReleaseResponse>(
+        `${environment.softwareReleaseApiUrl}/download/latest/metadata`
+      ));
+      if (!response.ok || !response.release) throw new Error('No published release');
+
+      this.currentVersion.set(`v${response.release.version}`);
+      this.releaseDate.set(this.formatDate(response.release.publishedAt));
+      this.fileSize.set(response.installer.size == null ? 'Chưa công bố' : this.formatBytes(response.installer.size));
+      this.installerUrl = response.installer.downloadUrl;
+      this.installerAvailable.set(response.installer.available);
+      this.releaseUpdates = [{
+        version: `v${response.release.version}`,
+        releaseDate: this.formatDate(response.release.publishedAt),
+        isLatest: true,
+        tagText: 'Bản mới nhất',
+        summary: response.release.notes?.trim() || 'Thông tin phát hành đang được cập nhật.',
+        downloadSize: response.installer.size == null ? undefined : this.formatBytes(response.installer.size),
+        changes: []
+      }];
+    } catch {
+      this.currentVersion.set('Chưa thể kiểm tra');
+      this.releaseDate.set('Chưa thể kết nối máy chủ');
+      this.fileSize.set('—');
+      this.installerAvailable.set(false);
+    }
+  }
+
+  triggerDownload(): void {
+    if (!this.installerAvailable() || !this.installerUrl) {
+      this.downloadToastMessage.set('Bộ cài đặt chưa được phát hành. Vui lòng quay lại sau hoặc liên hệ bộ phận vận hành.');
+      setTimeout(() => this.downloadToastMessage.set(null), 4500);
+      return;
+    }
+
+    this.downloadToastMessage.set(`Đang tải bộ cài LumiBooth ${this.currentVersion()} (Windows 64-bit)...`);
+    window.location.assign(this.installerUrl);
     setTimeout(() => {
       this.downloadToastMessage.set(null);
     }, 4500);
+  }
+
+  private formatDate(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('vi-VN').format(date);
+  }
+
+  private formatBytes(bytes: number): string {
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   }
 
   toggleFaq(index: number) {
