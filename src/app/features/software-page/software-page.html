@@ -1,0 +1,276 @@
+<!-- Toast Notification -->
+<div *ngIf="downloadToastMessage()" class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#2D2D2D] text-white px-5 py-4 rounded-xl shadow-2xl border border-[#B76E79]/30 transition-all duration-300 animate-bounce">
+  <svg class="w-6 h-6 text-[#F8C8DC] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+  </svg>
+  <div>
+    <p class="text-sm font-medium">{{ downloadToastMessage() }}</p>
+    <p class="text-xs text-gray-300 mt-0.5">Liên hệ bộ phận kỹ thuật nếu bạn cần hỗ trợ cài đặt từ xa (UltraViewer/AnyDesk).</p>
+  </div>
+</div>
+
+<main class="min-h-screen pt-28 pb-20 bg-gradient-to-b from-[#fdfbf7] via-white to-[#fdfbf7]">
+  <!-- 1. HERO SECTION -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-8 mb-20 text-center">
+    <!-- Version Badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F8C8DC]/30 border border-[#B76E79]/30 mb-6 backdrop-blur-sm">
+      <span class="w-2 h-2 rounded-full bg-[#B76E79] animate-ping"></span>
+      <span class="text-xs font-semibold uppercase tracking-wider text-[#814C53]">Phiên Bản Mới Nhất • {{ currentVersion }}</span>
+      <span class="text-xs text-[#814C53]/70 font-medium">| Cập nhật: {{ releaseDate }}</span>
+    </div>
+
+    <!-- Main Title -->
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#2D2D2D] tracking-tight leading-tight max-w-4xl mx-auto mb-6">
+      Phần Mềm Chụp Ảnh <span class="text-rose-gradient">LumiBooth Kiosk</span>
+    </h1>
+
+    <!-- Subtitle -->
+    <p class="text-lg md:text-xl text-[#2D2D2D]/75 font-sans font-light max-w-3xl mx-auto mb-10 leading-relaxed">
+      Giải pháp điều khiển máy chụp ảnh sự kiện cao cấp: Tích hợp Live View Canon DSLR siêu nét, trình tuỳ biến khung hình & màn hình kéo thả tức thì, tự động in ảnh nhiệt và chia sẻ mã QR đám mây thời gian thực.
+    </p>
+
+    <!-- CTA Buttons & Download Info -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+      <a 
+        href="#download-section"
+        (click)="triggerDownload()"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-[#B76E79] to-[#814C53] text-white font-medium text-base shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+        <svg class="w-5 h-5 text-white group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+        <span>Tải Bản Cài Đặt (Windows 64-bit)</span>
+      </a>
+
+      <button 
+        (click)="scrollToSection('release-notes')"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white/80 border border-[#B76E79]/30 text-[#814C53] font-medium text-base hover:bg-[#F8C8DC]/20 transition-all duration-300">
+        <svg class="w-5 h-5 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <span>Xem Nhật Ký Cập Nhật</span>
+      </button>
+    </div>
+
+    <!-- Quick Meta Info -->
+    <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-[#2D2D2D]/60">
+      <div class="flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        <span>{{ platform }}</span>
+      </div>
+      <span>•</span>
+      <div class="flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7z"></path>
+        </svg>
+        <span>Dung lượng: {{ fileSize }}</span>
+      </div>
+      <span>•</span>
+      <div class="flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+        <span>Đã quét sạch virus & chữ ký số bảo mật</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. KEY FEATURES GRID -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-8 mb-24">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <h2 class="text-2xl md:text-3xl font-serif font-bold text-[#2D2D2D] mb-3">Tính Năng Vượt Trội</h2>
+      <p class="text-sm md:text-base text-[#2D2D2D]/70 font-light">Được thiết kế tinh chỉnh đặc quyền cho các sự kiện cưới hỏi, tiệc VIP, hội nghị và lễ hội triển lãm.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let feat of features" class="glass-pearl rounded-2xl p-7 soft-shadow hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-[#F8C8DC]/40 border border-[#B76E79]/20 flex items-center justify-center text-[#814C53]">
+              <svg *ngIf="feat.icon === 'camera'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <circle cx="12" cy="13" r="4" stroke-width="2"></circle>
+              </svg>
+              <svg *ngIf="feat.icon === 'palette'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+              </svg>
+              <svg *ngIf="feat.icon === 'screen'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+              <svg *ngIf="feat.icon === 'printer'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+              </svg>
+              <svg *ngIf="feat.icon === 'qr'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+              </svg>
+              <svg *ngIf="feat.icon === 'shield'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+            <span *ngIf="feat.badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#B76E79]/10 text-[#814C53] border border-[#B76E79]/20">
+              {{ feat.badge }}
+            </span>
+          </div>
+          <h3 class="text-lg font-serif font-semibold text-[#2D2D2D] mb-2">{{ feat.title }}</h3>
+          <p class="text-sm text-[#2D2D2D]/70 font-light leading-relaxed">{{ feat.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. STEP-BY-STEP INSTALLATION GUIDE -->
+  <section class="max-w-7xl mx-auto px-6 lg:px-8 mb-24">
+    <div class="bg-white/80 rounded-3xl border border-[#B76E79]/20 p-8 md:p-12 soft-shadow">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs font-semibold uppercase tracking-wider text-[#814C53]">Khởi Đầu Đơn Giản</span>
+        <h2 class="text-2xl md:text-3xl font-serif font-bold text-[#2D2D2D] mt-2 mb-3">4 Bước Cài Đặt &amp; Sẵn Sàng Sự Kiện</h2>
+        <p class="text-sm text-[#2D2D2D]/70 font-light">Chỉ mất khoảng 3 đến 5 phút để hoàn tất thiết lập trọn gói một quầy Photobooth hoàn chỉnh.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div *ngFor="let step of installSteps" class="relative bg-[#fdfbf7] rounded-2xl p-6 border border-[#B76E79]/15 flex flex-col justify-between">
+          <div>
+            <div class="text-3xl font-serif font-bold text-rose-gradient mb-3">{{ step.step }}</div>
+            <h3 class="text-base font-serif font-semibold text-[#2D2D2D] mb-2">{{ step.title }}</h3>
+            <p class="text-xs md:text-sm text-[#2D2D2D]/70 font-light leading-relaxed mb-4">{{ step.description }}</p>
+          </div>
+          <div *ngIf="step.note" class="text-[11px] text-[#814C53] bg-[#F8C8DC]/30 p-2.5 rounded-lg border border-[#B76E79]/20 flex items-start gap-1.5">
+            <svg class="w-3.5 h-3.5 text-[#B76E79] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ step.note }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. RELEASE NOTES & CHANGELOG -->
+  <section id="release-notes" class="max-w-5xl mx-auto px-6 lg:px-8 mb-24">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="text-xs font-semibold uppercase tracking-wider text-[#814C53]">Lịch Sử Phát Triển</span>
+      <h2 class="text-2xl md:text-3xl font-serif font-bold text-[#2D2D2D] mt-2 mb-3">Thông Tin Cập Nhật Phần Mềm</h2>
+      <p class="text-sm text-[#2D2D2D]/70 font-light">Chúng tôi liên tục hoàn thiện tính năng, sửa lỗi và tối ưu hiệu suất nhằm đem lại trải nghiệm trọn vẹn nhất cho bạn.</p>
+    </div>
+
+    <!-- Timeline Wrapper -->
+    <div class="space-y-8 relative before:absolute before:inset-0 before:left-4 md:before:left-1/2 before:-translate-x-px before:w-0.5 before:bg-[#B76E79]/25">
+      <div *ngFor="let release of releaseUpdates" class="relative flex flex-col md:flex-row items-start group">
+        <!-- Center Dot on Desktop -->
+        <div class="hidden md:flex absolute left-1/2 -translate-x-1/2 w-8 h-8 rounded-full items-center justify-center bg-white border-2 border-[#B76E79] z-10 soft-shadow">
+          <div class="w-2.5 h-2.5 rounded-full" [ngClass]="release.isLatest ? 'bg-[#814C53] animate-ping' : 'bg-[#B76E79]'"></div>
+        </div>
+
+        <!-- Release Card -->
+        <div class="w-full pl-10 md:pl-0" [ngClass]="{'md:pr-12 md:text-right': false}">
+          <div class="bg-white/90 rounded-2xl p-6 md:p-8 border border-[#B76E79]/20 soft-shadow">
+            <!-- Header of Release -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <span class="text-xl md:text-2xl font-serif font-bold text-[#2D2D2D]">{{ release.version }}</span>
+                <span 
+                  [ngClass]="release.isLatest ? 'bg-[#814C53] text-white' : 'bg-[#F8C8DC]/50 text-[#814C53]'"
+                  class="text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                  {{ release.tagText }}
+                </span>
+              </div>
+              <div class="text-xs text-[#2D2D2D]/60 flex items-center gap-2">
+                <span>Phát hành: {{ release.releaseDate }}</span>
+                <span *ngIf="release.downloadSize">• Dung lượng: {{ release.downloadSize }}</span>
+              </div>
+            </div>
+
+            <!-- Summary -->
+            <p class="text-sm md:text-base text-[#2D2D2D]/80 font-light mt-4 mb-5 leading-relaxed">
+              {{ release.summary }}
+            </p>
+
+            <!-- Detailed Changes List -->
+            <div class="space-y-3">
+              <div *ngFor="let item of release.changes" class="flex items-start gap-3 text-sm">
+                <!-- Badge Category -->
+                <span 
+                  *ngIf="item.category === 'new'" 
+                  class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">
+                  Mới
+                </span>
+                <span 
+                  *ngIf="item.category === 'improved'" 
+                  class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 uppercase tracking-wide">
+                  Cải tiến
+                </span>
+                <span 
+                  *ngIf="item.category === 'fixed'" 
+                  class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 uppercase tracking-wide">
+                  Sửa lỗi
+                </span>
+
+                <span class="text-[#2D2D2D]/80 font-light leading-relaxed">{{ item.text }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. FAQ SECTION -->
+  <section class="max-w-4xl mx-auto px-6 lg:px-8 mb-24">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="text-xs font-semibold uppercase tracking-wider text-[#814C53]">Giải Đáp Thắc Mắc</span>
+      <h2 class="text-2xl md:text-3xl font-serif font-bold text-[#2D2D2D] mt-2 mb-3">Câu Hỏi Thường Gặp</h2>
+      <p class="text-sm text-[#2D2D2D]/70 font-light">Những câu hỏi phổ biến khi cài đặt và vận hành phần mềm LumiBooth.</p>
+    </div>
+
+    <div class="space-y-4">
+      <div *ngFor="let item of faqs; let i = index" class="bg-white/80 rounded-xl border border-[#B76E79]/20 overflow-hidden soft-shadow transition-all duration-200">
+        <button 
+          (click)="toggleFaq(i)"
+          class="w-full flex items-center justify-between p-5 text-left font-serif font-medium text-base text-[#2D2D2D] hover:text-[#814C53] transition-colors">
+          <span>{{ item.question }}</span>
+          <svg 
+            [ngClass]="{'rotate-180 text-[#814C53]': item.isOpen}"
+            class="w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        <div *ngIf="item.isOpen" class="px-5 pb-5 text-sm text-[#2D2D2D]/70 font-light leading-relaxed border-t border-gray-100 pt-3">
+          {{ item.answer }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. CONTACT / SUPPORT CTA BANNER -->
+  <section class="max-w-5xl mx-auto px-6 lg:px-8" id="download-section">
+    <div class="bg-gradient-to-r from-[#814C53] via-[#B76E79] to-[#814C53] rounded-3xl p-8 md:p-12 text-white text-center soft-shadow relative overflow-hidden">
+      <div class="relative z-10 max-w-3xl mx-auto">
+        <h2 class="text-2xl md:text-3xl lg:text-4xl font-serif font-bold mb-4">
+          Sẵn Sàng Nâng Tầm Quầy Photobooth Sự Kiện?
+        </h2>
+        <p class="text-white/85 text-sm md:text-base font-light mb-8 max-w-2xl mx-auto leading-relaxed">
+          Tải về ngay hôm nay để trải nghiệm bản dùng thử 14 ngày. Cần hỗ trợ cấu hình máy ảnh Canon, tích hợp máy in nhiệt hoặc thiết kế giao diện độc quyền cho thương hiệu của bạn?
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a 
+            href="#"
+            (click)="triggerDownload()"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-white text-[#814C53] font-medium text-base hover:bg-[#F8C8DC] hover:text-[#814C53] shadow-md hover:shadow-xl transition-all duration-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>Tải Bộ Cài Đặt v2.4.0 (142 MB)</span>
+          </a>
+
+          <a 
+            routerLink="/contact"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-transparent border border-white/60 text-white font-medium text-base hover:bg-white/10 transition-all duration-300">
+            <span>Liên Hệ Tư Vấn &amp; License</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
