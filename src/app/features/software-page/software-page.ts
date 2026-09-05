@@ -60,6 +60,7 @@ export class SoftwarePage implements OnInit {
   readonly fileSize = signal('—');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(false);
+  readonly downloadUrl = 'https://drive.google.com/uc?export=download&id=12owkzayPImmnx6xRumjcrPZaLjiVm1-8';
 
   downloadToastMessage = signal<string | null>(null);
 
@@ -189,19 +190,10 @@ export class SoftwarePage implements OnInit {
   }
 
   triggerDownload(): void {
-    this.downloadToastMessage.set(`Đang kết nối tải xuống LumiBooth (${this.fileSize() || '222 MB'})... File đang được tải trực tiếp.`);
-    
-    // Tải trực tiếp không nhảy vào Google Drive giao diện
-    const link = document.createElement('a');
-    link.href = '/api/download-software';
-    link.setAttribute('download', 'LumiBoothSetup.zip');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
+    this.downloadToastMessage.set('Đang mở trang tải ở tab mới... Vui lòng bấm "Vẫn tải xuống" trên màn hình Google Drive để tải file về máy.');
     setTimeout(() => {
       this.downloadToastMessage.set(null);
-    }, 4500);
+    }, 6000);
   }
 
   private formatDate(value: string): string {
