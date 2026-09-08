@@ -54,11 +54,11 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('Đang kiểm tra');
-  readonly releaseDate = signal('Đang kiểm tra');
-  readonly fileSize = signal('—');
+  readonly currentVersion = signal('v1.0.5');
+  readonly releaseDate = signal('08/09/2026');
+  readonly fileSize = signal('170.6 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
-  readonly installerAvailable = signal(false);
+  readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
 
   downloadToastMessage = signal<string | null>(null);
@@ -129,7 +129,21 @@ export class SoftwarePage implements OnInit {
     }
   ];
 
-  releaseUpdates: ReleaseUpdate[] = [];
+  releaseUpdates: ReleaseUpdate[] = [
+    {
+      version: 'v1.0.5',
+      releaseDate: '08/09/2026',
+      isLatest: true,
+      tagText: 'Bản mới nhất',
+      summary: 'Frontend obfuscation and signed update manifest.',
+      downloadSize: '170.6 MB',
+      changes: [
+        { category: 'new', label: 'Tính năng mới', text: 'Bổ sung xác nhận chuyển khoản ngân hàng và duyệt thanh toán từ xa 1 chạm.' },
+        { category: 'improved', label: 'Bảo mật', text: 'Tích hợp làm rối mã nguồn (Frontend Obfuscation) và khoá phân quyền bảo mật mạng LAN.' },
+        { category: 'improved', label: 'Hệ thống', text: 'Hỗ trợ cập nhật tự động an toàn với chữ ký số RSA-SHA256.' }
+      ]
+    }
+  ];
 
   faqs: FaqItem[] = [
     {
@@ -167,21 +181,28 @@ export class SoftwarePage implements OnInit {
 
       this.currentVersion.set(`v${response.release.version}`);
       this.releaseDate.set(this.formatDate(response.release.publishedAt));
-      this.fileSize.set(response.installer.size == null ? '222 MB' : this.formatBytes(response.installer.size));
+      this.fileSize.set(response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size));
       this.installerAvailable.set(true);
-      this.releaseUpdates = [{
-        version: `v${response.release.version}`,
-        releaseDate: this.formatDate(response.release.publishedAt),
-        isLatest: true,
-        tagText: 'Bản mới nhất',
-        summary: response.release.notes?.trim() || 'Thông tin phát hành đang được cập nhật.',
-        downloadSize: response.installer.size == null ? '222 MB' : this.formatBytes(response.installer.size),
-        changes: []
-      }];
+
+      if (response.release.version === '1.0.5' && this.releaseUpdates.length > 0) {
+        this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
+        this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size);
+      } else {
+        this.releaseUpdates = [{
+          version: `v${response.release.version}`,
+          releaseDate: this.formatDate(response.release.publishedAt),
+          isLatest: true,
+          tagText: 'Bản mới nhất',
+          summary: response.release.notes?.trim() || 'Thông tin phát hành đang được cập nhật.',
+          downloadSize: response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size),
+          changes: []
+        }];
+      }
     } catch {
-      this.currentVersion.set('v2.4.0');
-      this.releaseDate.set('05/09/2026');
-      this.fileSize.set('222 MB');
+      this.currentVersion.set('v1.0.5');
+      this.releaseDate.set('08/09/2026');
+      this.fileSize.set('170.6 MB');
       this.installerAvailable.set(true);
     }
   }
