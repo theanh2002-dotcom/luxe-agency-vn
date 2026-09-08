@@ -53,14 +53,13 @@ interface PublicReleaseResponse {
 })
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
-  private installerUrl: string | null = null;
 
   readonly currentVersion = signal('Đang kiểm tra');
   readonly releaseDate = signal('Đang kiểm tra');
   readonly fileSize = signal('—');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(false);
-  readonly downloadUrl = 'https://drive.google.com/uc?export=download&id=12owkzayPImmnx6xRumjcrPZaLjiVm1-8';
+  readonly downloadUrl = environment.softwareDownloadUrl;
 
   downloadToastMessage = signal<string | null>(null);
 
@@ -169,7 +168,6 @@ export class SoftwarePage implements OnInit {
       this.currentVersion.set(`v${response.release.version}`);
       this.releaseDate.set(this.formatDate(response.release.publishedAt));
       this.fileSize.set(response.installer.size == null ? '222 MB' : this.formatBytes(response.installer.size));
-      this.installerUrl = '/api/download-software';
       this.installerAvailable.set(true);
       this.releaseUpdates = [{
         version: `v${response.release.version}`,
@@ -184,13 +182,12 @@ export class SoftwarePage implements OnInit {
       this.currentVersion.set('v2.4.0');
       this.releaseDate.set('05/09/2026');
       this.fileSize.set('222 MB');
-      this.installerUrl = '/api/download-software';
       this.installerAvailable.set(true);
     }
   }
 
   triggerDownload(): void {
-    this.downloadToastMessage.set('Đang mở trang tải ở tab mới... Vui lòng bấm "Vẫn tải xuống" trên màn hình Google Drive để tải file về máy.');
+    this.downloadToastMessage.set('Đang mở trang tải bản mới nhất ở tab mới...');
     setTimeout(() => {
       this.downloadToastMessage.set(null);
     }, 6000);

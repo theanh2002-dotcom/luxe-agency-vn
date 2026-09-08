@@ -1,8 +1,16 @@
-const SOFTWARE_FILE_ID = process.env.SOFTWARE_DRIVE_FILE_ID || '12owkzayPImmnx6xRumjcrPZaLjiVm1-8';
+const SOFTWARE_DOWNLOAD_URL = process.env.SOFTWARE_DOWNLOAD_URL || 'https://tanhbooth-api.laihoanganh456.workers.dev/download/latest';
+const LEGACY_SOFTWARE_FILE_ID = '12owkzayPImmnx6xRumjcrPZaLjiVm1-8';
 
 export default async function handler(req, res) {
+  const requestedFileId = req.query?.id;
+  if (!requestedFileId) {
+    res.setHeader('Location', SOFTWARE_DOWNLOAD_URL);
+    res.status(307).end();
+    return;
+  }
+
   try {
-    const fileId = req.query?.id || SOFTWARE_FILE_ID;
+    const fileId = requestedFileId;
     const initUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
     
     const response = await fetch(initUrl, {
@@ -33,7 +41,7 @@ export default async function handler(req, res) {
     res.status(302).end();
   } catch (error) {
     console.error('[download-software] resolver error:', error);
-    res.setHeader('Location', `https://drive.google.com/uc?export=download&id=${SOFTWARE_FILE_ID}`);
+    res.setHeader('Location', `https://drive.google.com/uc?export=download&id=${LEGACY_SOFTWARE_FILE_ID}`);
     res.status(302).end();
   }
 }
