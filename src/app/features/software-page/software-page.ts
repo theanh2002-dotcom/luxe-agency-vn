@@ -54,9 +54,9 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.5');
-  readonly releaseDate = signal('08/09/2026');
-  readonly fileSize = signal('170.6 MB');
+  readonly currentVersion = signal('v1.0.6');
+  readonly releaseDate = signal('09/09/2026');
+  readonly fileSize = signal('550.0 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
@@ -149,17 +149,16 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.5',
-      releaseDate: '08/09/2026',
+      version: 'v1.0.6',
+      releaseDate: '09/09/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
       summary: 'Frontend obfuscation and signed update manifest.',
-      downloadSize: '170.6 MB',
+      downloadSize: '550.0 MB',
       changes: [
-        { category: 'new', label: 'Tính năng mới', text: 'Điều khiển quầy Photobooth từ xa qua điện thoại (Web Remote LAN) & Duyệt chuyển khoản ngân hàng 1 chạm.' },
-        { category: 'new', label: 'Tính năng mới', text: 'Công nghệ làm đẹp AI Face Beauty (làm mịn da giữ vân tự nhiên, xóa mụn thâm, trắng răng) & Bộ lọc màu 3D LUT thời gian thực.' },
-        { category: 'improved', label: 'Thiết bị', text: 'Đóng gói trọn gói SDK máy ảnh Canon, Sony, Nikon, Fuji Plug & Play — cắm cáp nhận ngay không cần driver ngoài.' },
-        { category: 'improved', label: 'Bảo mật', text: 'Làm rối mã nguồn (Frontend Obfuscation) và cập nhật tự động an toàn với chữ ký số RSA-SHA256.' }
+        { category: 'new', label: 'Cập nhật từ xa', text: 'Kênh cập nhật LumiBooth mới dùng manifest ký số RSA-SHA256 để tải và kiểm tra bản phát hành an toàn.' },
+        { category: 'improved', label: 'Bảo mật', text: 'Frontend được làm rối khi đóng gói production, hạn chế việc phân tích ngược mã ứng dụng.' },
+        { category: 'fixed', label: 'Đồng bộ phát hành', text: 'Trang tải phần mềm đồng bộ phiên bản, ngày phát hành và dung lượng trực tiếp với Cloudflare.' }
       ]
     }
   ];
@@ -213,7 +212,7 @@ export class SoftwarePage implements OnInit {
       this.fileSize.set(response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size));
       this.installerAvailable.set(true);
 
-      if (response.release.version === '1.0.5' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.6' && this.releaseUpdates.length > 0) {
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
         this.releaseUpdates[0].downloadSize = response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size);
@@ -229,9 +228,9 @@ export class SoftwarePage implements OnInit {
         }];
       }
     } catch {
-      this.currentVersion.set('v1.0.5');
-      this.releaseDate.set('08/09/2026');
-      this.fileSize.set('170.6 MB');
+      this.currentVersion.set('v1.0.6');
+      this.releaseDate.set('09/09/2026');
+      this.fileSize.set('550.0 MB');
       this.installerAvailable.set(true);
     }
   }
