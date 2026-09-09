@@ -66,39 +66,57 @@ export class SoftwarePage implements OnInit {
   features: SoftwareFeature[] = [
     {
       icon: 'camera',
-      title: 'Live View Canon DSLR Siêu Nét',
-      description: 'Kết nối trực tiếp máy ảnh Canon DSLR / Mirrorless qua cổng USB với tốc độ 60 FPS, độ trễ cực thấp dưới 30ms.',
-      badge: 'Real-time'
+      title: 'Live View Đa Dòng Máy Ảnh Siêu Nét',
+      description: 'Hỗ trợ máy ảnh Canon DSLR/Mirrorless, Sony Alpha (CrSDK), Nikon và Fujifilm qua USB với tốc độ 60 FPS, độ trễ dưới 30ms. Plug & Play nhận ngay không cần driver ngoài.',
+      badge: 'Plug & Play'
+    },
+    {
+      icon: 'sparkles',
+      title: 'AI Face Beauty & Làm Đẹp Tự Nhiên',
+      description: 'Nhận diện 468 điểm khuôn mặt với AI: Làm mịn da giữ nguyên vân da tự nhiên (Pore-preserving), xóa mụn thâm, làm trắng răng và sáng mắt tinh tế.',
+      badge: 'AI Retouch'
+    },
+    {
+      icon: 'remote',
+      title: 'Điều Khiển Từ Xa Bằng Điện Thoại (Web Remote)',
+      description: 'Quản trị viên dễ dàng bấm chụp, chụp lại, chuyển chế độ và duyệt chuyển khoản ngân hàng 1 chạm từ smartphone qua mạng LAN không cần chạm màn hình Kiosk.',
+      badge: 'Web Remote'
     },
     {
       icon: 'palette',
-      title: 'Thiết Kế Khung & Màn Hình Trực Quan',
-      description: 'Hỗ trợ Frame Designer & Screen Designer kéo thả trực quan. Tuỳ biến countdown, sticker, chữ ký số và logo sự kiện dễ dàng.',
-      badge: 'WYSIWYG'
+      title: 'Bộ Lọc Màu 3D LUT & Ảnh Thẻ Studio',
+      description: 'Xem trước thời gian thực hàng chục tone màu điện ảnh (Hàn Quốc, Vintage, Film...) và tích hợp module chụp ảnh thẻ chuẩn quốc tế với AI tách nền.',
+      badge: '3D LUT & ID'
     },
     {
       icon: 'screen',
-      title: 'Đa Tỉ Lệ Màn Hình Linh Hoạt',
-      description: 'Tương thích mọi kích thước màn hình: Màn hình ngang (1920x1080), Màn hình dọc (1080x1920) và Màn hình vuông (800x800).',
-      badge: 'Responsive'
+      title: 'Thiết Kế Khung & Màn Hình Trực Quan',
+      description: 'Hỗ trợ Frame Designer & Screen Designer kéo thả trực quan. Tuỳ biến countdown, sticker, chữ ký số và logo sự kiện dễ dàng theo mọi tỉ lệ (16:9, 9:16, 1:1).',
+      badge: 'WYSIWYG'
     },
     {
       icon: 'printer',
-      title: 'In Ảnh Nhanh & Tự Động Ghép Khổ',
+      title: 'In Ảnh Siêu Tốc & Tự Động Ghép Khổ',
       description: 'Tự động cắt dải photo strip 2x6 inch hoặc in ảnh 4x6 (10x15cm) sắc nét chỉ trong 8-12 giây với máy in nhiệt DNP, Citizen, Hiti.',
       badge: 'Auto Print'
     },
     {
       icon: 'qr',
       title: 'QR Code & Cloud Gallery Tức Thì',
-      description: 'Khách mời quét mã QR hiển thị trên màn hình để tải ngay ảnh gốc, file in và clip Boomerang / GIF về điện thoại.',
+      description: 'Khách mời quét mã QR hiển thị trên màn hình để tải ngay ảnh gốc độ phân giải cao, file in và clip Boomerang / GIF về điện thoại không chạm.',
       badge: 'Instant QR'
     },
     {
       icon: 'shield',
-      title: 'Kiosk Mode & Mã PIN Quản Trị',
-      description: 'Chế độ khoá toàn màn hình (Kiosk Mode) bảo mật chống thoát ứng dụng. Cài đặt được bảo vệ bằng mã PIN an toàn.',
+      title: 'Kiosk Mode & Bảo Mật Mạng LAN',
+      description: 'Chế độ khoá toàn màn hình (Kiosk Mode) bảo mật chống thoát ứng dụng. Cài đặt được bảo vệ bằng mã PIN và khoá phân quyền truy cập nội bộ an toàn.',
       badge: 'Security'
+    },
+    {
+      icon: 'sync',
+      title: 'Vận Hành Offline & Đồng Bộ Tự Động',
+      description: 'Hoạt động 100% độc lập không cần Internet. Khi có mạng trở lại, toàn bộ ảnh, file in và lịch sử sự kiện sẽ tự động đồng bộ lên đám mây.',
+      badge: 'Offline First'
     }
   ];
 
@@ -117,9 +135,9 @@ export class SoftwarePage implements OnInit {
     },
     {
       step: '03',
-      title: 'Cài đặt Driver Máy Ảnh & Máy In',
-      description: 'Đảm bảo máy tính đã cài Canon EOS Utility/EDSDK để nhận diện máy ảnh DSLR, và driver chính hãng cho máy in nhiệt sự kiện (DNP, Citizen...).',
-      note: 'Cài driver chính hãng phù hợp với máy ảnh và máy in trước khi vận hành sự kiện.'
+      title: 'Kết nối Máy Ảnh & Cài Driver Máy In',
+      description: 'Cắm cáp USB máy ảnh (Canon, Sony, Nikon, Fuji) vào máy tính — LumiBooth đã tích hợp sẵn bộ SDK điều khiển chính hãng, tự nhận diện ngay mà không cần cài thêm Canon EOS Utility. Đối với máy in nhiệt sự kiện (DNP, Citizen, Hiti...), hãy cài đặt driver chính hãng của máy in trên Windows.',
+      note: 'Lưu ý: Tuyệt đối không mở Canon EOS Utility khi chạy LumiBooth để tránh xung đột cổng USB.'
     },
     {
       step: '04',
@@ -138,18 +156,29 @@ export class SoftwarePage implements OnInit {
       summary: 'Frontend obfuscation and signed update manifest.',
       downloadSize: '170.6 MB',
       changes: [
-        { category: 'new', label: 'Tính năng mới', text: 'Bổ sung xác nhận chuyển khoản ngân hàng và duyệt thanh toán từ xa 1 chạm.' },
-        { category: 'improved', label: 'Bảo mật', text: 'Tích hợp làm rối mã nguồn (Frontend Obfuscation) và khoá phân quyền bảo mật mạng LAN.' },
-        { category: 'improved', label: 'Hệ thống', text: 'Hỗ trợ cập nhật tự động an toàn với chữ ký số RSA-SHA256.' }
+        { category: 'new', label: 'Tính năng mới', text: 'Điều khiển quầy Photobooth từ xa qua điện thoại (Web Remote LAN) & Duyệt chuyển khoản ngân hàng 1 chạm.' },
+        { category: 'new', label: 'Tính năng mới', text: 'Công nghệ làm đẹp AI Face Beauty (làm mịn da giữ vân tự nhiên, xóa mụn thâm, trắng răng) & Bộ lọc màu 3D LUT thời gian thực.' },
+        { category: 'improved', label: 'Thiết bị', text: 'Đóng gói trọn gói SDK máy ảnh Canon, Sony, Nikon, Fuji Plug & Play — cắm cáp nhận ngay không cần driver ngoài.' },
+        { category: 'improved', label: 'Bảo mật', text: 'Làm rối mã nguồn (Frontend Obfuscation) và cập nhật tự động an toàn với chữ ký số RSA-SHA256.' }
       ]
     }
   ];
 
   faqs: FaqItem[] = [
     {
-      question: 'Phần mềm LumiBooth tương thích với những dòng máy ảnh nào?',
-      answer: 'LumiBooth hỗ trợ hầu hết các dòng máy ảnh Canon EOS DSLR & Mirrorless phổ biến hiện nay (như Canon 60D, 70D, 80D, 90D, 5D Mark III/IV, Canon EOS R, RP, R5, R6, R10, R50, M50...) thông qua kết nối USB với Canon EDSDK chính hãng.',
+      question: 'Phần mềm LumiBooth tương thích với những dòng máy ảnh nào và có cần cài driver không?',
+      answer: 'LumiBooth hỗ trợ hầu hết các dòng máy ảnh Canon EOS DSLR / Mirrorless, Sony Alpha (CrSDK), Nikon và Fujifilm qua kết nối USB. Toàn bộ SDK điều khiển chính hãng đã được đóng gói sẵn trong LumiBooth (Plug & Play), bạn chỉ cần cắm cáp USB vào máy tính là phần mềm tự động nhận diện. Tuyệt đối không cài đặt hoặc mở phần mềm Canon EOS Utility để tránh chiếm dụng và xung đột cổng USB.',
       isOpen: true
+    },
+    {
+      question: 'Tính năng Điều khiển từ xa (Web Remote) qua điện thoại hoạt động như thế nào?',
+      answer: 'Chỉ cần điện thoại hoặc máy tính bảng kết nối chung mạng Wi-Fi/mạng LAN với máy tính Photobooth, nhân viên sự kiện có thể truy cập giao diện Web Remote (được bảo vệ bằng mã PIN) để bấm chụp, chụp lại, đổi chế độ và duyệt xác nhận chuyển khoản ngân hàng 1 chạm từ xa mà không cần thao tác trực tiếp trên màn hình Kiosk.',
+      isOpen: false
+    },
+    {
+      question: 'Chức năng Làm đẹp khuôn mặt (AI Beauty) và Bộ lọc màu có gì đặc biệt?',
+      answer: 'LumiBooth ứng dụng AI nhận diện 468 điểm mốc trên khuôn mặt với thuật toán làm mịn da thông minh giữ nguyên vân da tự nhiên (Pore-preserving - không bị bệt da hay giả tạo), xóa mụn thâm, làm trắng răng và làm sáng mắt. Ngoài ra, phần mềm hỗ trợ hàng chục bộ lọc màu điện ảnh 3D LUT (Tone Hàn Quốc, Vintage, Film...) xem trước trực tiếp trên Live View và tính năng chụp ảnh thẻ (ID Photo) với AI tách nền chuẩn studio.',
+      isOpen: false
     },
     {
       question: 'Cấu hình máy tính tối thiểu để vận hành mượt mà là gì?',
@@ -163,7 +192,7 @@ export class SoftwarePage implements OnInit {
     },
     {
       question: 'Nếu sự kiện mất mạng Internet thì khách có thể chụp và in ảnh được không?',
-      answer: 'Hoàn toàn được. LumiBooth hoạt động độc lập không phụ thuộc vào Internet. Ảnh vẫn được chụp, ghép khung và in tự động bình thường. Tất cả dữ liệu sẽ được lưu trong hàng đợi và tự động đồng bộ lên Cloud Gallery ngay khi có mạng trở lại.',
+      answer: 'Hoàn toàn được. LumiBooth hoạt động độc lập không phụ thuộc vào Internet. Ảnh vẫn được chụp, làm đẹp AI, ghép khung và in tự động bình thường. Tất cả dữ liệu sẽ được lưu trong hàng đợi an toàn và tự động đồng bộ lên Cloud Gallery ngay khi có mạng trở lại.',
       isOpen: false
     }
   ];

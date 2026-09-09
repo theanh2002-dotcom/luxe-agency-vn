@@ -26,7 +26,7 @@
 
     <!-- Subtitle -->
     <p class="text-lg md:text-xl text-[#2D2D2D]/75 font-sans font-light max-w-3xl mx-auto mb-10 leading-relaxed">
-      Giải pháp điều khiển máy chụp ảnh sự kiện cao cấp: Tích hợp Live View Canon DSLR siêu nét, trình tuỳ biến khung hình & màn hình kéo thả tức thì, tự động in ảnh nhiệt và chia sẻ mã QR đám mây thời gian thực.
+      Giải pháp điều khiển máy chụp ảnh sự kiện cao cấp: Live View đa dòng máy ảnh siêu nét, công nghệ làm đẹp AI Face Beauty giữ vân da tự nhiên, điều khiển từ xa qua điện thoại (Web Remote), tự động in ảnh nhiệt và chia sẻ mã QR tức thì.
     </p>
 
     <!-- CTA Buttons & Download Info -->
@@ -99,6 +99,13 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                 <circle cx="12" cy="13" r="4" stroke-width="2"></circle>
               </svg>
+              <svg *ngIf="feat.icon === 'sparkles'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+              </svg>
+              <svg *ngIf="feat.icon === 'remote'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9h4m-4 3h4"></path>
+              </svg>
               <svg *ngIf="feat.icon === 'palette'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
               </svg>
@@ -113,6 +120,9 @@
               </svg>
               <svg *ngIf="feat.icon === 'shield'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              <svg *ngIf="feat.icon === 'sync'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
               </svg>
             </div>
             <span *ngIf="feat.badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#B76E79]/10 text-[#814C53] border border-[#B76E79]/20">
@@ -257,7 +267,7 @@
           Sẵn Sàng Nâng Tầm Quầy Photobooth Sự Kiện?
         </h2>
         <p class="text-white/85 text-sm md:text-base font-light mb-8 max-w-2xl mx-auto leading-relaxed">
-          Tải về ngay hôm nay để trải nghiệm bản dùng thử 14 ngày. Cần hỗ trợ cấu hình máy ảnh Canon, tích hợp máy in nhiệt hoặc thiết kế giao diện độc quyền cho thương hiệu của bạn?
+          Tải về ngay hôm nay để trải nghiệm bản dùng thử 14 ngày. Cần hỗ trợ kết nối máy ảnh, cấu hình điều khiển từ xa, tích hợp máy in nhiệt hoặc thiết kế giao diện độc quyền cho thương hiệu của bạn?
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-3">
