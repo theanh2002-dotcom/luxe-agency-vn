@@ -156,9 +156,9 @@ export class SoftwarePage implements OnInit {
       summary: 'Cải thiện kết nối máy ảnh, Live View và trải nghiệm xử lý ảnh.',
       downloadSize: '550.0 MB',
       changes: [
-        { category: 'new', label: 'Cập nhật từ xa', text: 'Kênh cập nhật LumiBooth mới dùng manifest ký số RSA-SHA256 để tải và kiểm tra bản phát hành an toàn.' },
-        { category: 'improved', label: 'Bảo mật', text: 'Frontend được làm rối khi đóng gói production, hạn chế việc phân tích ngược mã ứng dụng.' },
-        { category: 'fixed', label: 'Đồng bộ phát hành', text: 'Trang tải phần mềm đồng bộ phiên bản, ngày phát hành và dung lượng trực tiếp với Cloudflare.' }
+        { category: 'improved', label: 'Máy ảnh', text: 'Cải thiện khả năng kết nối và chuyển đổi giữa các dòng máy ảnh được hỗ trợ.' },
+        { category: 'improved', label: 'Live View', text: 'Cải thiện tốc độ hiển thị và độ ổn định trong quá trình chụp.' },
+        { category: 'improved', label: 'Ảnh đầu ra', text: 'Tinh chỉnh màu sắc, làm đẹp và lưu ảnh để trải nghiệm sử dụng tự nhiên hơn.' }
       ]
     }
   ];
