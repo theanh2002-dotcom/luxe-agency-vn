@@ -153,7 +153,7 @@ export class SoftwarePage implements OnInit {
       releaseDate: '09/09/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
-      summary: 'Frontend obfuscation and signed update manifest.',
+      summary: 'Cải thiện kết nối máy ảnh, Live View và trải nghiệm xử lý ảnh.',
       downloadSize: '550.0 MB',
       changes: [
         { category: 'new', label: 'Cập nhật từ xa', text: 'Kênh cập nhật LumiBooth mới dùng manifest ký số RSA-SHA256 để tải và kiểm tra bản phát hành an toàn.' },
