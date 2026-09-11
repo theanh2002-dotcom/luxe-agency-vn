@@ -54,9 +54,9 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.6');
-  readonly releaseDate = signal('09/09/2026');
-  readonly fileSize = signal('550.0 MB');
+  readonly currentVersion = signal('v1.0.7');
+  readonly releaseDate = signal('12/09/2026');
+  readonly fileSize = signal('861.0 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
@@ -149,10 +149,24 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.6',
-      releaseDate: '09/09/2026',
+      version: 'v1.0.7',
+      releaseDate: '12/09/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Phiên bản đóng gói Inno Setup chính thức: Tích hợp đầy đủ Canon EDSDK plug & play, nâng cấp làm đẹp Studio Glam AI và tối ưu giải phóng RAM triệt để.',
+      downloadSize: '861.0 MB',
+      changes: [
+        { category: 'new', label: 'Canon Plug & Play', text: 'Đóng gói toàn diện bộ điều khiển Canon EDSDK và CanonEdSdkBridge native mới nhất, khách hàng cắm cáp USB nhận ngay không cần cấu hình phức tạp.' },
+        { category: 'new', label: 'Studio Glam AI', text: 'Nâng cấp tính năng làm đẹp da chuyên sâu với thuật toán nhận diện khuôn mặt và phục hồi cấu trúc vân da tự nhiên chuẩn Studio.' },
+        { category: 'improved', label: 'Dọn dẹp RAM', text: 'Cơ chế giải phóng RAM triệt để ngay sau mỗi session chụp và tự động dọn sạch bộ nhớ đệm khi máy chuyển về màn hình chờ.' },
+        { category: 'improved', label: 'Bộ cài đặt Inno Setup', text: 'Đóng gói trình cài đặt chuyên nghiệp hỗ trợ cài đặt mượt mà, đầy đủ thư viện offline cần thiết cho mọi môi trường Windows 10/11.' }
+      ]
+    },
+    {
+      version: 'v1.0.6',
+      releaseDate: '09/09/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Cải thiện kết nối máy ảnh, Live View và trải nghiệm xử lý ảnh.',
       downloadSize: '550.0 MB',
       changes: [
@@ -209,13 +223,13 @@ export class SoftwarePage implements OnInit {
 
       this.currentVersion.set(`v${response.release.version}`);
       this.releaseDate.set(this.formatDate(response.release.publishedAt));
-      this.fileSize.set(response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size));
+      this.fileSize.set(response.installer.size == null ? '861.0 MB' : this.formatBytes(response.installer.size));
       this.installerAvailable.set(true);
 
-      if (response.release.version === '1.0.6' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.7' && this.releaseUpdates.length > 0) {
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size);
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '861.0 MB' : this.formatBytes(response.installer.size);
       } else {
         this.releaseUpdates = [{
           version: `v${response.release.version}`,
@@ -223,14 +237,14 @@ export class SoftwarePage implements OnInit {
           isLatest: true,
           tagText: 'Bản mới nhất',
           summary: response.release.notes?.trim() || 'Thông tin phát hành đang được cập nhật.',
-          downloadSize: response.installer.size == null ? '170.6 MB' : this.formatBytes(response.installer.size),
+          downloadSize: response.installer.size == null ? '861.0 MB' : this.formatBytes(response.installer.size),
           changes: []
         }];
       }
     } catch {
-      this.currentVersion.set('v1.0.6');
-      this.releaseDate.set('09/09/2026');
-      this.fileSize.set('550.0 MB');
+      this.currentVersion.set('v1.0.7');
+      this.releaseDate.set('12/09/2026');
+      this.fileSize.set('861.0 MB');
       this.installerAvailable.set(true);
     }
   }
