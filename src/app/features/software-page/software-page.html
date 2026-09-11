@@ -43,9 +43,20 @@
         <span>Tải Bản Cài Đặt (Windows 64-bit)</span>
       </a>
 
+      <a
+        [href]="googleDriveUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-white/90 border border-[#B76E79]/40 text-[#814C53] font-medium text-base hover:bg-[#F8C8DC]/20 transition-all duration-300 shadow-sm cursor-pointer">
+        <svg class="w-5 h-5 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+        </svg>
+        <span>Link Dự Phòng (Google Drive)</span>
+      </a>
+
       <button 
         (click)="scrollToSection('release-notes')"
-        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white/80 border border-[#B76E79]/30 text-[#814C53] font-medium text-base hover:bg-[#F8C8DC]/20 transition-all duration-300">
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-white/80 border border-[#B76E79]/30 text-[#814C53] font-medium text-base hover:bg-[#F8C8DC]/20 transition-all duration-300">
         <svg class="w-5 h-5 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
@@ -55,7 +66,7 @@
 
     <!-- User notice about opening in new tab -->
     <p class="text-xs text-[#2D2D2D]/60 max-w-xl mx-auto -mt-2 mb-8 text-center font-light">
-      * Tệp cài đặt được mở trong tab mới qua máy chủ Cloudflare và luôn trỏ tới bản phát hành mới nhất.
+      * Tệp cài đặt được lưu trữ CDN tốc độ cao (hỗ trợ Google Drive &amp; Cloudflare Gateway) và luôn trỏ tới bản phát hành mới nhất.
     </p>
 
     <!-- Quick Meta Info -->
@@ -283,6 +294,17 @@
             <span>Tải Bộ Cài Đặt {{ currentVersion() }} ({{ fileSize() }})</span>
           </a>
 
+          <a
+            [href]="googleDriveUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/20 border border-white/60 text-white font-medium text-base hover:bg-white/30 transition-all duration-300 cursor-pointer">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+            <span>Link Dự Phòng (Google Drive)</span>
+          </a>
+
           <a 
             routerLink="/contact"
             class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-transparent border border-white/60 text-white font-medium text-base hover:bg-white/10 transition-all duration-300">
@@ -290,7 +312,7 @@
           </a>
         </div>
         <p class="text-xs text-white/70 max-w-xl mx-auto text-center font-light">
-          * Tệp tải sẽ được mở trong tab mới từ máy chủ Cloudflare.
+          * Hỗ trợ tải trực tiếp qua CDN tốc độ cao hoặc xem thư mục Google Drive chính thức.
         </p>
       </div>
     </div>
