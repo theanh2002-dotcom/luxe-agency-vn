@@ -61,6 +61,7 @@ export class SoftwarePage implements OnInit {
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
   readonly googleDriveUrl = 'https://drive.google.com/file/d/1dlvYVq3kyK9uFe47siEFF7Rf8eEQ9ep4/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/18rPhU-ncBTGeIF23olcYWWikD3hqF0RI/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
 
   downloadToastMessage = signal<string | null>(null);
