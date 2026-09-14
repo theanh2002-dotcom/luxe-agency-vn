@@ -29,6 +29,7 @@ export class EventGallery implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
   viewMode = signal<'slideshow' | 'grid'>('slideshow');
   loadedImages = signal<Set<string>>(new Set());
+  hasSessionTag = signal<boolean>(false);
 
   // ===== COMPUTED =====
   selectedPhoto = computed(() => this.photos()[this.selectedIndex()]);
@@ -116,7 +117,10 @@ export class EventGallery implements OnInit, OnDestroy {
       this.eventId = params.get('id');
       this.route.queryParamMap.subscribe(queryParams => {
         const legacyQueryValue = queryParams.get('m');
+        const sessionTag = queryParams.get('s') || queryParams.get('session');
         this.driveService.setLegacyQueryValue(legacyQueryValue);
+        this.driveService.setSessionTag(sessionTag);
+        this.hasSessionTag.set(!!sessionTag);
         this.loadInitialPhotos();
       });
     });
@@ -199,8 +203,14 @@ export class EventGallery implements OnInit, OnDestroy {
             this.photos.update(current => current.map(p => ({ ...p, isNew: false })));
           }, 5000);
         } else {
-          // Exponential backoff: ×1.5 mỗi lần không có ảnh mới (5s → 7.5s → 11s → ... → max 30s)
-          this.pollIntervalMs = Math.min(Math.round(this.pollIntervalMs * 1.5), this.POLL_MAX_MS);
+          if (this.hasSessionTag() && this.photos().length === 0) {
+            // Keep polling every 5s while waiting for the kiosk to sync the session photos
+            this.pollIntervalMs = this.POLL_BASE_MS;
+            this.noNewPhotosSince = Date.now();
+          } else {
+            // Exponential backoff: ×1.5 mỗi lần không có ảnh mới (5s → 7.5s → 11s → ... → max 30s)
+            this.pollIntervalMs = Math.min(Math.round(this.pollIntervalMs * 1.5), this.POLL_MAX_MS);
+          }
         }
 
         if (Date.now() - this.noNewPhotosSince > this.AUTO_STOP_MS) {
