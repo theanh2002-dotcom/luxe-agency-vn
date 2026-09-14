@@ -205,18 +205,11 @@
       <path d="M8 44l14-14 10 10 8-8 16 16" />
     </svg>
   </div>
-  <h3 class="empty-title">{{ hasSessionTag() ? 'Ảnh của bạn đang được tải lên' : 'Ảnh đang được chuẩn bị' }}</h3>
-  <p class="empty-desc" *ngIf="hasSessionTag()">
-    Quầy chụp đang đồng bộ ảnh của phiên chụp lên hệ thống.<br />
-    Trang này sẽ tự động hiển thị ảnh ngay khi hoàn tất mà không cần quét lại mã QR.
-  </p>
-  <p class="empty-desc" *ngIf="!hasSessionTag()">
-    Hệ thống đang xử lý và tải ảnh lên.<br />
-    Ảnh sẽ tự động hiện ra khi sẵn sàng.
-  </p>
+  <h3 class="empty-title">Ảnh đang được chuẩn bị</h3>
+  <p class="empty-desc">Hệ thống đang xử lý và tải ảnh lên.<br />Ảnh sẽ tự động hiện ra khi sẵn sàng.</p>
   <div class="empty-pulse">
     <span class="pulse-dot pulse-dot--lg"></span>
-    <span>{{ hasSessionTag() ? 'Đang đồng bộ tự động...' : 'Đang chờ...' }}</span>
+    <span>Đang chờ...</span>
   </div>
 </div>
 

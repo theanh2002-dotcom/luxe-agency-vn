@@ -46,7 +46,6 @@ interface PublicGalleryResponse {
 })
 export class GoogleDriveGalleryService {
   private legacyQueryValue: string | null = null;
-  private sessionTag: string | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -55,15 +54,9 @@ export class GoogleDriveGalleryService {
     this.legacyQueryValue = value;
   }
 
-  /** Reads the session identifier (?s= or ?session=) carried by offline-first QR links. */
-  setSessionTag(value: string | null) {
-    this.sessionTag = value;
-  }
-
   listPhotosInFolder(publicGalleryId: string): Observable<GalleryPhoto[]> {
     let params = new HttpParams().set('id', publicGalleryId);
     if (this.legacyQueryValue) params = params.set('m', this.legacyQueryValue);
-    if (this.sessionTag) params = params.set('s', this.sessionTag);
 
     return this.http.get<PublicGalleryResponse | PublicGalleryMedia[]>('/api/gallery', { params }).pipe(
       map(response => {

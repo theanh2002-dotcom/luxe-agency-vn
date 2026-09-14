@@ -24,14 +24,13 @@ export default async function handler(req, res) {
 
   const requestedId = firstQueryValue(req.query?.id ?? req.query?.publicId ?? req.query?.folderId);
   const legacyQueryValue = firstQueryValue(req.query?.m);
-  const sessionTag = firstQueryValue(req.query?.s ?? req.query?.session);
   if (!isSafeId(requestedId) && !isSafeId(legacyQueryValue)) {
     res.status(400).json({ error: 'Gallery identifier is invalid' });
     return;
   }
 
   try {
-    const source = await resolveGallerySource(requestedId, legacyQueryValue, sessionTag);
+    const source = await resolveGallerySource(requestedId, legacyQueryValue);
     const media = source.files
       ? source.files.map(file => toPublicMedia(file))
       : normalizeManifest(source.manifest).map(item => toPublicMedia(item));
@@ -39,59 +38,19 @@ export default async function handler(req, res) {
     // Giữ polling tối đa 5 giây nhưng cho phép browser cache cùng response,
     // tránh gọi lại API vô ích giữa các lần render trên mobile.
     res.setHeader('Cache-Control', 'public, max-age=5, s-maxage=5, stale-while-revalidate=10');
-    res.status(200).json({ items: media, session: sessionTag || null });
+    res.status(200).json({ items: media });
   } catch (error) {
     console.error('[gallery] server-side resolver failed:', error?.message || error);
     res.status(502).json({ error: 'Gallery is temporarily unavailable' });
   }
 }
 
-async function resolveGallerySource(requestedId, legacyQueryValue, sessionTag) {
+async function resolveGallerySource(requestedId, legacyQueryValue) {
   if (legacyQueryValue) {
     return { manifest: await readDriveJson(legacyQueryValue) };
   }
   if (!isSafeId(requestedId)) throw new Error('Gallery folder is invalid');
-
-  if (sessionTag && isSafeSessionTag(sessionTag)) {
-    const sessionFiles = await findSessionFiles(requestedId, sessionTag);
-    return { files: sessionFiles };
-  }
-
   return { files: await listMediaFiles(requestedId) };
-}
-
-async function findSessionFiles(rootFolderId, sessionTag) {
-  const match = String(sessionTag).match(/ses_[A-Za-z0-9]+/i);
-  const searchPattern = match ? match[0] : sessionTag;
-
-  // Search for session subfolder inside rootFolderId (e.g. SB_Session_ses_...)
-  const folderQuery = [
-    `'${escapeDriveLiteral(rootFolderId)}' in parents`,
-    'trashed = false',
-    `mimeType = 'application/vnd.google-apps.folder'`,
-    `name contains '${escapeDriveLiteral(searchPattern)}'`
-  ].join(' and ');
-
-  const subfolders = await driveList(folderQuery, 'files(id,name,createdTime)');
-  if (subfolders && subfolders.length > 0) {
-    const sessionFolder = subfolders[0];
-    return await listMediaFiles(sessionFolder.id);
-  }
-
-  // Fallback: search for direct media files matching the session pattern
-  const fileQuery = [
-    `'${escapeDriveLiteral(rootFolderId)}' in parents`,
-    'trashed = false',
-    `(mimeType contains 'image/' or mimeType contains 'video/')`,
-    `name contains '${escapeDriveLiteral(searchPattern)}'`
-  ].join(' and ');
-
-  const directFiles = await driveList(fileQuery, 'files(id,name,mimeType,size,createdTime,modifiedTime)');
-  if (directFiles && directFiles.length > 0) {
-    return directFiles.sort(compareMediaItems);
-  }
-
-  return [];
 }
 
 async function listMediaFiles(folderId) {
@@ -231,10 +190,6 @@ function firstQueryValue(value) {
 
 function isSafeId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9_-]{3,256}$/.test(value);
-}
-
-function isSafeSessionTag(value) {
-  return typeof value === 'string' && /^[A-Za-z0-9_.-]{3,128}$/.test(value);
 }
 
 function setCors(req, res) {
