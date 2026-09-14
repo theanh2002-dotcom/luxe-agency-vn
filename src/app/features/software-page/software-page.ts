@@ -54,14 +54,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.7');
-  readonly releaseDate = signal('12/09/2026');
-  readonly fileSize = signal('861.0 MB');
+  readonly currentVersion = signal('v1.0.8');
+  readonly releaseDate = signal('14/09/2026');
+  readonly fileSize = signal('860.6 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1dlvYVq3kyK9uFe47siEFF7Rf8eEQ9ep4/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/18rPhU-ncBTGeIF23olcYWWikD3hqF0RI/view?usp=sharing';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1oY1DWXYt1WaAnwPYuqQ99-XrV9vxi1Fb/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1oY1DWXYt1WaAnwPYuqQ99-XrV9vxi1Fb/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
 
   downloadToastMessage = signal<string | null>(null);
@@ -152,10 +152,24 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.7',
-      releaseDate: '12/09/2026',
+      version: 'v1.0.8',
+      releaseDate: '14/09/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Phiên bản nâng cấp toàn diện hệ thống in ảnh: Tinh giản giao diện cấu hình máy in, tích hợp bộ công cụ chuẩn đoán hàng đợi & phục hồi Print Spooler an toàn, và theo dõi cuộn giấy in.',
+      downloadSize: '860.6 MB',
+      changes: [
+        { category: 'new', label: 'Chuẩn đoán & Tự phục hồi Print Spooler', text: 'Tích hợp bộ công cụ xử lý sự cố in một chạm: Xóa hàng đợi in kẹt (Clear Print Queue đa tầng với PowerShell fallback) và tự động khởi động lại Print Spooler khi máy in bị ngắt kết nối đột ngột.' },
+        { category: 'improved', label: 'Giao diện Cài đặt Máy in trực quan', text: 'Thiết kế lại khu vực cấu hình máy in gọn gàng, gom các công cụ Windows thành 1 hàng duy nhất (Chọn máy in, Cấu hình Driver, Hàng đợi in) và hỗ trợ In trang thử nghiệm trực tiếp.' },
+        { category: 'improved', label: 'Theo dõi Cuộn giấy in', text: 'Chuyển tính năng giám sát cuộn giấy in và số lượng ảnh còn lại vào thẻ Chính sách sự kiện để quản lý tập trung và khoa học.' },
+        { category: 'improved', label: 'Độ ổn định & Chống đơ giao diện', text: 'Ngăn chặn hiện tượng treo ứng dụng khi thao tác các tác vụ chuẩn đoán in hoặc khi hệ điều hành phản hồi chậm.' }
+      ]
+    },
+    {
+      version: 'v1.0.7',
+      releaseDate: '12/09/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Phiên bản đóng gói Inno Setup chính thức: Tích hợp đầy đủ Canon & Sony SDK plug & play, nâng cấp làm đẹp Studio Glam AI và tối ưu giải phóng RAM triệt để.',
       downloadSize: '861.0 MB',
       changes: [
@@ -227,28 +241,20 @@ export class SoftwarePage implements OnInit {
 
       this.currentVersion.set(`v${response.release.version}`);
       this.releaseDate.set(this.formatDate(response.release.publishedAt));
-      this.fileSize.set(response.installer.size == null ? '861.0 MB' : this.formatBytes(response.installer.size));
+      this.fileSize.set(response.installer.size == null ? '860.6 MB' : this.formatBytes(response.installer.size));
       this.installerAvailable.set(true);
 
-      if (response.release.version === '1.0.7' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.8' && this.releaseUpdates.length > 0) {
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '861.0 MB' : this.formatBytes(response.installer.size);
-      } else {
-        this.releaseUpdates = [{
-          version: `v${response.release.version}`,
-          releaseDate: this.formatDate(response.release.publishedAt),
-          isLatest: true,
-          tagText: 'Bản mới nhất',
-          summary: response.release.notes?.trim() || 'Thông tin phát hành đang được cập nhật.',
-          downloadSize: response.installer.size == null ? '861.0 MB' : this.formatBytes(response.installer.size),
-          changes: []
-        }];
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '860.6 MB' : this.formatBytes(response.installer.size);
+      } else if (response.release.version !== '1.0.8') {
+        // If API returns an older or distinct release, keep v1.0.8 at top
       }
     } catch {
-      this.currentVersion.set('v1.0.7');
-      this.releaseDate.set('12/09/2026');
-      this.fileSize.set('861.0 MB');
+      this.currentVersion.set('v1.0.8');
+      this.releaseDate.set('14/09/2026');
+      this.fileSize.set('860.6 MB');
       this.installerAvailable.set(true);
     }
   }
