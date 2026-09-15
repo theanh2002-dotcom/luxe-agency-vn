@@ -27,6 +27,7 @@ export class EventGallery implements OnInit, OnDestroy {
   showLightbox = signal<boolean>(false);
   lightboxIndex = signal<number>(0);
   errorMessage = signal<string | null>(null);
+  galleryStatus = signal<'PENDING' | 'READY'>('PENDING');
   viewMode = signal<'slideshow' | 'grid'>('slideshow');
   loadedImages = signal<Set<string>>(new Set());
 
@@ -66,6 +67,11 @@ export class EventGallery implements OnInit, OnDestroy {
   private readonly POLL_BASE_MS = 5000;
   private readonly POLL_MAX_MS = 30000;
   private readonly AUTO_STOP_MS = 5 * 60 * 1000;
+  private isSessionGallery = false;
+  private readonly visibilityHandler = () => {
+    if (document.hidden) this.stopPolling();
+    else if (this.eventId && !this.errorMessage() && this.galleryStatus() === 'PENDING') this.startPolling();
+  };
 
   // ===== LRU CACHE (giữ tối đa 20 ảnh gần nhất trong RAM) =====
   private lruCache = new Map<string, HTMLImageElement>();
@@ -112,11 +118,14 @@ export class EventGallery implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    document.addEventListener('visibilitychange', this.visibilityHandler);
     this.route.paramMap.subscribe(params => {
       this.eventId = params.get('id');
       this.route.queryParamMap.subscribe(queryParams => {
         const legacyQueryValue = queryParams.get('m');
-        this.driveService.setLegacyQueryValue(legacyQueryValue);
+        const sessionPublicId = queryParams.get('s');
+        this.isSessionGallery = Boolean(sessionPublicId);
+        this.driveService.setRouteQuery(legacyQueryValue, sessionPublicId);
         this.loadInitialPhotos();
       });
     });
@@ -124,6 +133,7 @@ export class EventGallery implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopPolling();
+    document.removeEventListener('visibilitychange', this.visibilityHandler);
     this.lruCache.clear();
     this.sharePrepareAbort?.abort();
     this.sharePrepareAbort = null;
@@ -135,6 +145,8 @@ export class EventGallery implements OnInit, OnDestroy {
 
   private loadInitialPhotos() {
     this.isLoading.set(true);
+    this.errorMessage.set(null);
+    this.knownMediaIds.clear();
 
     if (this.eventId && this.eventId.startsWith('demo')) {
       setTimeout(() => {
@@ -147,16 +159,34 @@ export class EventGallery implements OnInit, OnDestroy {
 
     if (!this.eventId) return;
 
-    this.driveService.listPhotosInFolder(this.eventId).subscribe({
-      next: (photos) => {
+    this.loadGalleryPage(null, []);
+  }
+
+  private loadGalleryPage(cursor: string | null, accumulated: GalleryPhoto[]) {
+    if (!this.eventId) return;
+    this.driveService.listPhotosInFolder(this.eventId, cursor).subscribe({
+      next: (result) => {
+        const byId = new Map(accumulated.map(photo => [photo.mediaId, photo]));
+        result.photos.forEach(photo => byId.set(photo.mediaId, photo));
+        const photos = Array.from(byId.values());
+        if (!this.isSessionGallery && result.status === 'READY' && result.nextCursor) {
+          this.loadGalleryPage(result.nextCursor, photos);
+          return;
+        }
+        this.galleryStatus.set(result.status);
         this.photos.set(this.sortPhotos(photos));
         photos.forEach(p => this.knownMediaIds.add(p.mediaId));
         this.isLoading.set(false);
-        this.startPolling();
+        if (result.status === 'PENDING') {
+          this.pollIntervalMs = result.pollAfterMs || this.POLL_BASE_MS;
+          this.startPolling();
+        } else {
+          this.stopPolling();
+        }
       },
       error: (err) => {
         console.error('Failed to load photos:', err);
-        this.errorMessage.set('Không thể tải ảnh. Vui lòng thử lại sau.');
+        this.errorMessage.set(this.describeGalleryError(err));
         this.isLoading.set(false);
       }
     });
@@ -165,10 +195,10 @@ export class EventGallery implements OnInit, OnDestroy {
   // ========== POLLING (Exponential Backoff) ==========
 
   private startPolling() {
-    if (this.pollTimeoutId || !this.eventId) return;
+    if (this.pollTimeoutId || !this.eventId || this.errorMessage() || this.galleryStatus() !== 'PENDING') return;
     this.isPolling.set(true);
     this.noNewPhotosSince = Date.now();
-    this.pollIntervalMs = this.POLL_BASE_MS;
+    this.pollIntervalMs = Math.max(this.POLL_BASE_MS, Math.min(this.pollIntervalMs, this.POLL_MAX_MS));
     this.schedulePollTick();
   }
 
@@ -180,7 +210,14 @@ export class EventGallery implements OnInit, OnDestroy {
     if (!this.isPolling() || !this.eventId) return;
 
     this.driveService.listPhotosInFolder(this.eventId).subscribe({
-      next: (files) => {
+      next: (result) => {
+        if (!this.isSessionGallery && result.status === 'READY') {
+          this.stopPolling();
+          this.loadInitialPhotos();
+          return;
+        }
+        const files = result.photos;
+        this.galleryStatus.set(result.status);
         const newFiles = files.filter(f => !this.knownMediaIds.has(f.mediaId));
 
         if (newFiles.length > 0) {
@@ -203,15 +240,23 @@ export class EventGallery implements OnInit, OnDestroy {
           this.pollIntervalMs = Math.min(Math.round(this.pollIntervalMs * 1.5), this.POLL_MAX_MS);
         }
 
+        if (result.status === 'READY' && this.isSessionGallery) {
+          this.stopPolling();
+          return;
+        }
+
+        if (result.pollAfterMs) {
+          this.pollIntervalMs = Math.max(this.pollIntervalMs, result.pollAfterMs);
+        }
         if (Date.now() - this.noNewPhotosSince > this.AUTO_STOP_MS) {
           this.stopPolling();
           return;
         }
         this.schedulePollTick();
       },
-      error: () => {
-        this.pollIntervalMs = Math.min(this.pollIntervalMs * 2, this.POLL_MAX_MS);
-        this.schedulePollTick();
+      error: (err) => {
+        this.errorMessage.set(this.describeGalleryError(err));
+        this.stopPolling();
       }
     });
   }
@@ -237,6 +282,19 @@ export class EventGallery implements OnInit, OnDestroy {
       this.pollTimeoutId = null;
     }
     this.isPolling.set(false);
+  }
+
+  retryLoad() {
+    this.errorMessage.set(null);
+    this.stopPolling();
+    this.loadInitialPhotos();
+  }
+
+  private describeGalleryError(error: any): string {
+    const status = Number(error?.status || 0);
+    if (status === 400 || status === 403) return 'Liên kết thư viện không hợp lệ hoặc không còn quyền truy cập.';
+    if (status === 502 || status === 503) return 'Dịch vụ thư viện đang tạm thời gián đoạn. Vui lòng thử lại sau.';
+    return 'Không thể tải ảnh. Vui lòng kiểm tra kết nối và thử lại.';
   }
 
   // ========== UI ACTIONS ==========

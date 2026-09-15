@@ -211,11 +211,13 @@
     <span class="pulse-dot pulse-dot--lg"></span>
     <span>Đang chờ...</span>
   </div>
+  <button type="button" class="download-all-btn" (click)="retryLoad()">Thử lại</button>
 </div>
 
 <!-- ===== ERROR STATE ===== -->
 <div class="empty-state" *ngIf="errorMessage()">
   <p class="error-text">{{ errorMessage() }}</p>
+  <button type="button" class="download-all-btn" (click)="retryLoad()">Thử lại</button>
 </div>
 
 <!-- ===== FULLSCREEN LIGHTBOX (ảnh 2560px hoặc video stream) ===== -->

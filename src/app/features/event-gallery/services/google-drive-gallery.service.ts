@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface GalleryPhoto {
   // This is an opaque public media handle, never a Google Drive file id.
@@ -31,7 +31,19 @@ interface PublicGalleryMedia {
 }
 
 interface PublicGalleryResponse {
+  mode?: 'SESSION' | 'EVENT' | 'LEGACY';
+  status?: 'PENDING' | 'READY';
+  pollAfterMs?: number | null;
+  nextCursor?: string | null;
   items?: PublicGalleryMedia[];
+}
+
+export interface GalleryLoadResult {
+  mode: 'SESSION' | 'EVENT' | 'LEGACY';
+  status: 'PENDING' | 'READY';
+  pollAfterMs: number | null;
+  nextCursor: string | null;
+  photos: GalleryPhoto[];
 }
 
 /**
@@ -46,26 +58,32 @@ interface PublicGalleryResponse {
 })
 export class GoogleDriveGalleryService {
   private legacyQueryValue: string | null = null;
+  private sessionPublicId: string | null = null;
 
   constructor(private http: HttpClient) {}
 
   /** Reads the manifest id carried by the desktop-generated QR link. */
-  setLegacyQueryValue(value: string | null) {
-    this.legacyQueryValue = value;
+  setRouteQuery(manifestId: string | null, sessionPublicId: string | null) {
+    this.legacyQueryValue = manifestId;
+    this.sessionPublicId = sessionPublicId;
   }
 
-  listPhotosInFolder(publicGalleryId: string): Observable<GalleryPhoto[]> {
+  listPhotosInFolder(publicGalleryId: string, cursor: string | null = null): Observable<GalleryLoadResult> {
     let params = new HttpParams().set('id', publicGalleryId);
     if (this.legacyQueryValue) params = params.set('m', this.legacyQueryValue);
+    if (this.sessionPublicId) params = params.set('s', this.sessionPublicId);
+    if (cursor) params = params.set('cursor', cursor);
 
     return this.http.get<PublicGalleryResponse | PublicGalleryMedia[]>('/api/gallery', { params }).pipe(
       map(response => {
         const items = Array.isArray(response) ? response : (response?.items || []);
-        return items.map(item => this.fromPublicMedia(item));
-      }),
-      catchError(error => {
-        console.error('[Gallery] Public gallery API error:', error);
-        return of([]);
+        return {
+          mode: Array.isArray(response) ? 'LEGACY' : (response.mode || 'LEGACY'),
+          status: Array.isArray(response) ? 'READY' : (response.status || 'READY'),
+          pollAfterMs: Array.isArray(response) ? null : (response.pollAfterMs ?? null),
+          nextCursor: Array.isArray(response) ? null : (response.nextCursor ?? null),
+          photos: items.map(item => this.fromPublicMedia(item))
+        } as GalleryLoadResult;
       })
     );
   }

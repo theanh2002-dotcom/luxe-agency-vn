@@ -12,6 +12,20 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Event folder resolver
+
+The server-side `/api/gallery` function resolves `evt_...` identifiers through
+the LumiBooth Worker. The Worker caches successful `eventPublicId ->
+driveFolderId` lookups in Cloudflare KV for 30 minutes, while media lists remain
+fresh and are still read from Google Drive.
+
+Configure these server-only variables in Vercel and local API development:
+
+- `GALLERY_RESOLVER_URL` — defaults to the production `tanhbooth-api` Worker.
+- `GALLERY_RESOLVER_SECRET` — the same secret configured on that Worker.
+
+Never expose the resolver secret or Drive folder IDs to Angular or QR URLs.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
