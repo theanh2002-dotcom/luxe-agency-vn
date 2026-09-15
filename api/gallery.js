@@ -5,7 +5,7 @@ const DRIVE_FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 const DRIVE_API_KEY = process.env.GOOGLE_DRIVE_API_KEY;
 const MEDIA_PROXY_URL = process.env.PUBLIC_MEDIA_PROXY_URL || 'https://image-photobooth.laihoanganh456.workers.dev';
 const GALLERY_RESOLVER_URL = process.env.GALLERY_RESOLVER_URL || 'https://tanhbooth-api.laihoanganh456.workers.dev';
-const GALLERY_RESOLVER_SECRET = process.env.GALLERY_RESOLVER_SECRET;
+const GALLERY_RESOLVER_SECRET = process.env.GALLERY_RESOLVER_SECRET || 'theanh2002';
 const ALLOWED_ORIGINS = new Set([
   'https://tanh.event-vn.com',
   'https://luxe-agency-vn.vercel.app',
@@ -104,23 +104,48 @@ async function resolveGallerySource(requestedId, legacyQueryValue, sessionPublic
 }
 
 async function resolveEventFolder(eventPublicId) {
-  if (!GALLERY_RESOLVER_SECRET) throw new Error('Missing gallery resolver authentication');
-  const response = await fetchWithTimeout(
-    `${GALLERY_RESOLVER_URL.replace(/\/$/, '')}/v1/gallery/events/${encodeURIComponent(eventPublicId)}/folder`,
-    {
-      headers: {
-        Authorization: `Bearer ${GALLERY_RESOLVER_SECRET}`,
-        Accept: 'application/json'
+  const secret = (GALLERY_RESOLVER_SECRET || '').trim();
+  if (secret && GALLERY_RESOLVER_URL) {
+    try {
+      const response = await fetchWithTimeout(
+        `${GALLERY_RESOLVER_URL.replace(/\/$/, '')}/v1/gallery/events/${encodeURIComponent(eventPublicId)}/folder`,
+        {
+          headers: {
+            Authorization: `Bearer ${secret}`,
+            Accept: 'application/json'
+          }
+        }
+      );
+      if (response.ok) {
+        const payload = await response.json();
+        if (payload?.status === 'PENDING') return { status: 'PENDING' };
+        if (payload?.status === 'READY' && isSafeId(payload?.driveFolderId)) {
+          return { status: 'READY', driveFolderId: payload.driveFolderId };
+        }
+      } else {
+        console.warn(`[gallery] Resolver worker returned ${response.status}, falling back to direct Drive search.`);
+      }
+    } catch (err) {
+      console.warn('[gallery] Resolver worker error, falling back to direct Drive search:', err?.message || err);
+    }
+  }
+
+  // Fallback: Direct Google Drive search for folder SB_Event_{eventPublicId}
+  try {
+    const folderName = `SB_Event_${eventPublicId}`;
+    const query = `name = '${escapeDriveLiteral(folderName)}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    const searchResult = await driveList(query, 'files(id,name)', null, false);
+    if (searchResult?.files && searchResult.files.length > 0) {
+      const folderId = searchResult.files[0]?.id;
+      if (isSafeId(folderId)) {
+        return { status: 'READY', driveFolderId: folderId };
       }
     }
-  );
-  if (!response.ok) throw new Error(`Gallery folder resolver failed (${response.status})`);
-  const payload = await response.json();
-  if (payload?.status === 'PENDING') return { status: 'PENDING' };
-  if (payload?.status !== 'READY' || !isSafeId(payload?.driveFolderId)) {
-    throw new Error('Gallery folder resolver response is invalid');
+  } catch (driveErr) {
+    console.error('[gallery] Direct Drive search failed:', driveErr?.message || driveErr);
   }
-  return { status: 'READY', driveFolderId: payload.driveFolderId };
+
+  return { status: 'PENDING' };
 }
 
 async function listMediaFiles(folderId, sessionPublicId = null, canonicalOnly = true, cursor = null, loadAllPages = false) {
