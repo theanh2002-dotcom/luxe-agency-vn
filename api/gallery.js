@@ -96,7 +96,7 @@ async function resolveGallerySource(requestedId, legacyQueryValue, sessionPublic
   if (isEventPublicId(requestedId)) {
     const resolved = await resolveEventFolder(requestedId);
     if (resolved.status !== 'READY') return { status: 'PENDING' };
-    const page = await listMediaFiles(resolved.driveFolderId, sessionPublicId || null, true, cursor || null, Boolean(sessionPublicId));
+    const page = await listMediaFiles(resolved.driveFolderId, sessionPublicId || null, true, cursor || null, Boolean(sessionPublicId), true);
     return { status: 'READY', files: page.files, nextCursor: page.nextCursor };
   }
   const page = await listMediaFiles(requestedId, null, false, null, true);
@@ -148,7 +148,7 @@ async function resolveEventFolder(eventPublicId) {
   return { status: 'PENDING' };
 }
 
-async function listMediaFiles(folderId, sessionPublicId = null, canonicalOnly = true, cursor = null, loadAllPages = false) {
+async function listMediaFiles(folderId, sessionPublicId = null, canonicalOnly = true, cursor = null, loadAllPages = false, showAllEventMedia = true) {
   const prefix = sessionPublicId ? `SB_${sessionPublicId}_` : null;
   const query = [
     `'${escapeDriveLiteral(folderId)}' in parents`,
@@ -157,10 +157,12 @@ async function listMediaFiles(folderId, sessionPublicId = null, canonicalOnly = 
     ...(prefix ? [`name contains '${escapeDriveLiteral(prefix)}'`] : [])
   ].join(' and ');
   const page = await driveList(query, 'files(id,name,mimeType,size,createdTime,modifiedTime)', cursor, loadAllPages);
-  const files = !canonicalOnly ? page.files : page.files.filter(file => sessionPublicId
-    ? isCanonicalSessionMedia(file?.name, sessionPublicId)
-    : isCanonicalEventFinal(file?.name)
-  );
+  const files = !canonicalOnly ? page.files : page.files.filter(file => {
+    if (sessionPublicId) {
+      return isCanonicalSessionMedia(file?.name, sessionPublicId);
+    }
+    return showAllEventMedia ? isCanonicalEventMedia(file?.name) : isCanonicalEventFinal(file?.name);
+  });
   return { files: files.sort(compareMediaItems), nextCursor: page.nextCursor };
 }
 
@@ -324,6 +326,10 @@ function isCanonicalSessionMedia(name, sessionPublicId) {
 
 function isCanonicalEventFinal(name) {
   return /^SB_ses_[0-9a-f]{12}7[0-9a-f]{3}[89ab][0-9a-f]{15}_final\.(?:jpe?g|png|webp)$/i.test(String(name || ''));
+}
+
+function isCanonicalEventMedia(name) {
+  return /^SB_ses_[0-9a-f]{12}7[0-9a-f]{3}[89ab][0-9a-f]{15}_(?:final|shot_[1-9][0-9]*|bts)\.(?:jpe?g|png|webp|mp4|m4v|webm|mov)$/i.test(String(name || ''));
 }
 
 function setCors(req, res) {
