@@ -12,7 +12,7 @@ import { filter } from 'rxjs';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('tanh-event');
+  protected readonly title = signal('Pica&Event');
   protected showHeader = signal(true);
   protected showFooter = signal(true);
 

@@ -157,13 +157,24 @@ async function listMediaFiles(folderId, sessionPublicId = null, canonicalOnly = 
     ...(prefix ? [`name contains '${escapeDriveLiteral(prefix)}'`] : [])
   ].join(' and ');
   const page = await driveList(query, 'files(id,name,mimeType,size,createdTime,modifiedTime)', cursor, loadAllPages);
-  const files = !canonicalOnly ? page.files : page.files.filter(file => {
+  const filtered = !canonicalOnly ? page.files : page.files.filter(file => {
     if (sessionPublicId) {
       return isCanonicalSessionMedia(file?.name, sessionPublicId);
     }
     return showAllEventMedia ? isCanonicalEventMedia(file?.name) : isCanonicalEventFinal(file?.name);
   });
-  return { files: files.sort(compareMediaItems), nextCursor: page.nextCursor };
+
+  // Deduplicate files by name to prevent duplicate displays
+  const seenNames = new Set();
+  const uniqueFiles = [];
+  for (const f of filtered) {
+    const normName = (f.name || '').toLowerCase().trim();
+    if (!seenNames.has(normName)) {
+      seenNames.add(normName);
+      uniqueFiles.push(f);
+    }
+  }
+  return { files: uniqueFiles.sort(compareMediaItems), nextCursor: page.nextCursor };
 }
 
 async function readDriveJson(fileId) {
