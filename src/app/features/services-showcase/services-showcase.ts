@@ -11,9 +11,9 @@ export class ServicesShowcase {
   services = signal([
     {
       id: 1,
-      title: 'Premium Photobooth',
+      title: 'Pica Photobox',
       description: 'Kiosk chụp ảnh với thiết bị DSLR cao cấp và in siêu tốc.',
-      longDescription: 'Khác với những bốt chụp hình thông thường, Premium Photobooth được trang bị máy ảnh DSLR chuyên nghiệp, hệ thống đèn flash studio và máy in nhiệt siêu tốc, mang đến những bức ảnh sắc nét, rực rỡ và lấy liền chỉ sau vài giây.',
+      longDescription: 'Khác với những bốt chụp hình thông thường, Pica Photobox được trang bị máy ảnh DSLR chuyên nghiệp, hệ thống đèn flash studio và máy in nhiệt siêu tốc, mang đến những bức ảnh sắc nét, rực rỡ và lấy liền chỉ sau vài giây.',
       whyUs: 'Hệ thống ánh sáng studio được tinh chỉnh tối ưu cho không gian tiệc cưới, kết hợp phần mềm chụp ảnh tự động và kho template thiết kế riêng mang đậm dấu ấn cá nhân của cô dâu chú rể.',
       includes: [
         'Máy ảnh DSLR độ phân giải cao',

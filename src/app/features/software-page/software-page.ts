@@ -126,8 +126,8 @@ export class SoftwarePage implements OnInit {
   installSteps: InstallStep[] = [
     {
       step: '01',
-      title: 'Tải bộ cài đặt LumiBooth',
-      description: 'Nhấp vào nút "Tải Bản Cài Đặt (64-bit)" ở đầu trang để tải bộ cài LumiBooth về máy tính của bạn.',
+      title: 'Tải bộ cài đặt Pica Photobox',
+      description: 'Nhấp vào nút "Tải Bản Cài Đặt (64-bit)" ở đầu trang để tải bộ cài Pica Photobox về máy tính của bạn.',
       note: 'Dung lượng được hiển thị theo bộ cài đang phát hành. Hãy đảm bảo đường truyền ổn định.'
     },
     {
@@ -139,13 +139,13 @@ export class SoftwarePage implements OnInit {
     {
       step: '03',
       title: 'Kết nối Máy Ảnh & Cài Driver Máy In',
-      description: 'Cắm cáp USB máy ảnh (Canon, Sony, Nikon, Fuji) vào máy tính — LumiBooth đã tích hợp sẵn bộ SDK điều khiển chính hãng, tự nhận diện ngay mà không cần cài thêm Canon EOS Utility. Đối với máy in nhiệt sự kiện (DNP, Citizen, Hiti...), hãy cài đặt driver chính hãng của máy in trên Windows.',
-      note: 'Lưu ý: Tuyệt đối không mở Canon EOS Utility khi chạy LumiBooth để tránh xung đột cổng USB.'
+      description: 'Cắm cáp USB máy ảnh (Canon, Sony, Nikon, Fuji) vào máy tính — Pica Photobox đã tích hợp sẵn bộ SDK điều khiển chính hãng, tự nhận diện ngay mà không cần cài thêm Canon EOS Utility. Đối với máy in nhiệt sự kiện (DNP, Citizen, Hiti...), hãy cài đặt driver chính hãng của máy in trên Windows.',
+      note: 'Lưu ý: Tuyệt đối không mở Canon EOS Utility khi chạy Pica Photobox để tránh xung đột cổng USB.'
     },
     {
       step: '04',
       title: 'Kích hoạt License & Vận hành',
-      description: 'Mở biểu tượng LumiBooth ngoài màn hình Desktop. Đăng nhập hoặc kích hoạt License Key để bắt đầu setup sự kiện ngay lập tức.',
+      description: 'Mở biểu tượng Pica Photobox ngoài màn hình Desktop. Đăng nhập hoặc kích hoạt License Key để bắt đầu setup sự kiện ngay lập tức.',
       note: 'Liên hệ bộ phận vận hành để nhận mã kích hoạt phù hợp với thiết bị của bạn.'
     }
   ];
@@ -197,8 +197,8 @@ export class SoftwarePage implements OnInit {
 
   faqs: FaqItem[] = [
     {
-      question: 'Phần mềm LumiBooth tương thích với những dòng máy ảnh nào và có cần cài driver không?',
-      answer: 'LumiBooth hỗ trợ hầu hết các dòng máy ảnh Canon EOS DSLR / Mirrorless, Sony Alpha (CrSDK), Nikon và Fujifilm qua kết nối USB. Toàn bộ SDK điều khiển chính hãng đã được đóng gói sẵn trong LumiBooth (Plug & Play), bạn chỉ cần cắm cáp USB vào máy tính là phần mềm tự động nhận diện. Tuyệt đối không cài đặt hoặc mở phần mềm Canon EOS Utility để tránh chiếm dụng và xung đột cổng USB.',
+      question: 'Phần mềm Pica Photobox tương thích với những dòng máy ảnh nào và có cần cài driver không?',
+      answer: 'Pica Photobox hỗ trợ hầu hết các dòng máy ảnh Canon EOS DSLR / Mirrorless, Sony Alpha (CrSDK), Nikon và Fujifilm qua kết nối USB. Toàn bộ SDK điều khiển chính hãng đã được đóng gói sẵn trong Pica Photobox (Plug & Play), bạn chỉ cần cắm cáp USB vào máy tính là phần mềm tự động nhận diện. Tuyệt đối không cài đặt hoặc mở phần mềm Canon EOS Utility để tránh chiếm dụng và xung đột cổng USB.',
       isOpen: true
     },
     {
@@ -208,7 +208,7 @@ export class SoftwarePage implements OnInit {
     },
     {
       question: 'Chức năng Làm đẹp khuôn mặt (AI Beauty) và Bộ lọc màu có gì đặc biệt?',
-      answer: 'LumiBooth ứng dụng AI nhận diện 468 điểm mốc trên khuôn mặt với thuật toán làm mịn da thông minh giữ nguyên vân da tự nhiên (Pore-preserving - không bị bệt da hay giả tạo), xóa mụn thâm, làm trắng răng và làm sáng mắt. Ngoài ra, phần mềm hỗ trợ hàng chục bộ lọc màu điện ảnh 3D LUT (Tone Hàn Quốc, Vintage, Film...) xem trước trực tiếp trên Live View và tính năng chụp ảnh thẻ (ID Photo) với AI tách nền chuẩn studio.',
+      answer: 'Pica Photobox ứng dụng AI nhận diện 468 điểm mốc trên khuôn mặt với thuật toán làm mịn da thông minh giữ nguyên vân da tự nhiên (Pore-preserving - không bị bệt da hay giả tạo), xóa mụn thâm, làm trắng răng và làm sáng mắt. Ngoài ra, phần mềm hỗ trợ hàng chục bộ lọc màu điện ảnh 3D LUT (Tone Hàn Quốc, Vintage, Film...) xem trước trực tiếp trên Live View và tính năng chụp ảnh thẻ (ID Photo) với AI tách nền chuẩn studio.',
       isOpen: false
     },
     {
@@ -217,13 +217,13 @@ export class SoftwarePage implements OnInit {
       isOpen: false
     },
     {
-      question: 'LumiBooth có hỗ trợ in ảnh 2 dải strip (2x6 inch) không?',
+      question: 'Pica Photobox có hỗ trợ in ảnh 2 dải strip (2x6 inch) không?',
       answer: 'Có! Phần mềm tự động chia và nhân đôi layout cho dải ảnh 2x6 inch hoặc ghép in khổ 4x6 inch (10x15cm). Hệ thống tương thích hoàn hảo với các dòng máy in nhiệt sự kiện cao cấp như DNP DS-RX1HS, DNP DS620, Citizen CY-02, Hiti P525L...',
       isOpen: false
     },
     {
       question: 'Nếu sự kiện mất mạng Internet thì khách có thể chụp và in ảnh được không?',
-      answer: 'Hoàn toàn được. LumiBooth hoạt động độc lập không phụ thuộc vào Internet. Ảnh vẫn được chụp, làm đẹp AI, ghép khung và in tự động bình thường. Tất cả dữ liệu sẽ được lưu trong hàng đợi an toàn và tự động đồng bộ lên Cloud Gallery ngay khi có mạng trở lại.',
+      answer: 'Hoàn toàn được. Pica Photobox hoạt động độc lập không phụ thuộc vào Internet. Ảnh vẫn được chụp, làm đẹp AI, ghép khung và in tự động bình thường. Tất cả dữ liệu sẽ được lưu trong hàng đợi an toàn và tự động đồng bộ lên Cloud Gallery ngay khi có mạng trở lại.',
       isOpen: false
     }
   ];
