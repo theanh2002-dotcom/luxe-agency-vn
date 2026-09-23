@@ -25,7 +25,7 @@
          class="grid-item" 
          [class.grid-item--new]="photo.isNew"
          (click)="openSessionByPhoto(photo, i)">
-      <img [src]="getThumbSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+      <img [src]="getPreviewSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
       
       <span class="video-badge" *ngIf="isVideo(photo)">▶ VIDEO</span>
       <span class="session-badge-pill" *ngIf="photo.sessionInfo?.shotCount">
@@ -158,7 +158,7 @@
          class="lightbox-session-thumb"
          [class.lightbox-session-thumb--active]="idx === activeSessionMediaIndex()"
          (click)="selectSessionMedia(idx)">
-      <img [src]="getThumbSrc(m)" [alt]="m.name" referrerpolicy="no-referrer" />
+      <img [src]="getPreviewSrc(m)" [alt]="m.name" referrerpolicy="no-referrer" />
       <span class="video-badge video-badge--small" *ngIf="isVideo(m)">▶</span>
     </div>
   </div>

@@ -729,6 +729,13 @@ export class EventGallery implements OnInit, OnDestroy {
     return this.driveService.getLightboxUrl(photo);
   }
 
+  /** Grid preview: 2560px ảnh gốc sắc nét, video dùng thumbnail poster */
+  getPreviewSrc(photo: GalleryPhoto): string {
+    if (!photo) return '';
+    if (this.isVideo(photo)) return this.getThumbSrc(photo);
+    return this.getLightboxSrc(photo);
+  }
+
   /** Thumbnail: s200-rw (nhẹ, WebP) */
   getThumbSrc(photo: GalleryPhoto): string {
     if (!photo) return '';
