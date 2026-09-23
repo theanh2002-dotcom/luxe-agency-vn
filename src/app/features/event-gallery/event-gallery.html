@@ -16,121 +16,15 @@
         <span class="pulse-dot"></span>
         Đang cập nhật
       </span>
-
-      <!-- View Mode Toggle Group -->
-      <div class="toggle-mode-group" *ngIf="photoCount() > 0">
-        <button class="toggle-btn" [class.toggle-btn--active]="viewMode() === 'slideshow'" (click)="viewMode.set('slideshow')" title="Xem trình chiếu">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <polyline points="21 15 16 10 5 21" />
-          </svg>
-        </button>
-        <button class="toggle-btn" [class.toggle-btn--active]="viewMode() === 'grid'" (click)="viewMode.set('grid')" title="Xem dạng lưới">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== MAIN PHOTO VIEWER (Windowed: chỉ render ±2 ảnh) ===== -->
-  <div class="gallery-main-photo" *ngIf="photoCount() > 0 && viewMode() === 'slideshow'"
-       (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEndMain($event)">
-    <div class="main-photo-container">
-      <!-- Counter badge -->
-      <div class="photo-counter">
-        {{ selectedIndex() + 1 }}/{{ photoCount() }}
-      </div>
-
-      <!-- Nav arrows -->
-      <button class="nav-arrow nav-arrow--left" (click)="navigatePrev()" *ngIf="photoCount() > 1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-          stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-      <button class="nav-arrow nav-arrow--right" (click)="navigateNext()" *ngIf="photoCount() > 1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-          stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </button>
-
-      <!-- Main Image - WINDOWED: chỉ ±2 ảnh trong DOM thay vì tất cả -->
-      <div class="main-photo-layer">
-        <ng-container *ngFor="let item of visibleMainPhotos()">
-          <div class="image-wrapper"
-               [style.opacity]="item.originalIndex === selectedIndex() ? '1' : '0'"
-               [style.visibility]="item.originalIndex === selectedIndex() ? 'visible' : 'hidden'"
-               [style.pointer-events]="item.originalIndex === selectedIndex() ? 'auto' : 'none'">
-            
-            <ng-container *ngIf="isVideo(item.photo); else mainPhotoImage">
-              <video [src]="getVideoSrc(item.photo)"
-                     [poster]="getThumbSrc(item.photo)"
-                     class="main-photo-video"
-                     controls
-                     playsinline
-                     preload="metadata"
-                     [attr.aria-label]="item.photo.name || 'Video sự kiện'"
-                     (click)="$event.stopPropagation()"
-                     (error)="onMainError(item.photo)"></video>
-            </ng-container>
-
-            <ng-template #mainPhotoImage>
-              <!-- Blur placeholder (hiện trước) -->
-              <img [src]="getThumbSrc(item.photo)"
-                   class="blur-background"
-                   [alt]="''"
-                   referrerpolicy="no-referrer" />
-
-              <!-- Ảnh nét (tải ngầm và đè lên sau) -->
-              <img [src]="getPhotoSrc(item.photo)"
-                   [attr.srcset]="getRetinaSrcset(item.photo) || null"
-                   [attr.sizes]="getSizesAttr()"
-                   [alt]="item.photo.name || 'Ảnh sự kiện'"
-                   class="main-photo-img"
-                   [class.main-photo-img--loaded]="loadedImages().has(item.photo.mediaId)"
-                   referrerpolicy="no-referrer"
-                   [attr.fetchpriority]="item.originalIndex === selectedIndex() ? 'high' : 'low'"
-                   (load)="onImageLoad(item.photo.mediaId)"
-                   (click)="openLightbox(item.originalIndex)"
-                   (error)="onMainError(item.photo)" />
-            </ng-template>
-          </div>
-        </ng-container>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="main-photo-actions">
-        <button class="action-btn" (click)="downloadPhoto(selectedPhoto())" title="Tải ảnh này">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-        </button>
-        <button class="action-btn" (click)="openLightbox(selectedIndex())" title="Xem chi tiết">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-          </svg>
-        </button>
-      </div>
     </div>
   </div>
 
   <!-- ===== PHOTO GRID VIEW ===== -->
-  <div class="photo-grid" *ngIf="photoCount() > 0 && viewMode() === 'grid'">
+  <div class="photo-grid" *ngIf="photoCount() > 0">
     <div *ngFor="let photo of photos(); let i = index" 
          class="grid-item" 
          [class.grid-item--new]="photo.isNew"
-         (click)="openSessionByPhoto(photo)">
+         (click)="openSessionByPhoto(photo, i)">
       <img [src]="getThumbSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
       
       <span class="video-badge" *ngIf="isVideo(photo)">▶ VIDEO</span>
@@ -147,37 +41,8 @@
     </div>
   </div>
 
-  <!-- ===== STICKY BOTTOM BAR ===== -->
-  <div class="gallery-bottom-bar" *ngIf="viewMode() === 'slideshow'">
-    <!-- ===== THUMBNAIL STRIP ===== -->
-    <div class="thumbnail-section" *ngIf="photoCount() > 1">
-      <div class="thumbnail-strip">
-        <div *ngFor="let photo of photos(); let i = index" class="thumbnail-item"
-          [class.thumbnail-item--active]="i === selectedIndex()" [class.thumbnail-item--new]="photo.isNew"
-          (click)="selectPhoto(i)">
-          <img [src]="getThumbSrc(photo)" [alt]="photo.name" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
-          <span class="video-badge video-badge--small" *ngIf="isVideo(photo)">▶</span>
-          <span class="new-badge" *ngIf="photo.isNew">Mới</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== DOWNLOAD ALL BUTTON ===== -->
-    <div class="download-all-section" *ngIf="photoCount() > 0">
-      <button class="download-all-btn" (click)="downloadAllPhotos()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        Tải tất cả ảnh
-      </button>
-    </div>
-  </div>
-
   <!-- ===== DOWNLOAD ALL FOR GRID MODE ===== -->
-  <div class="download-all-grid-section" *ngIf="photoCount() > 0 && viewMode() === 'grid'">
+  <div class="download-all-grid-section" *ngIf="photoCount() > 0">
     <button class="download-all-btn" (click)="downloadAllPhotos()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
@@ -185,7 +50,7 @@
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      Tải tất cả ảnh
+      Tải tất cả ảnh ({{ photoCount() }})
     </button>
   </div>
 

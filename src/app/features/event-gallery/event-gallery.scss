@@ -97,44 +97,7 @@ $radius-sm: 10px;
   }
 }
 
-// ===== TOGGLE VIEW MODE =====
-.toggle-mode-group {
-  display: flex;
-  background: rgba(43, 40, 37, 0.05);
-  border-radius: 20px;
-  padding: 3px;
-  border: 1px solid $border-soft;
-  margin-left: 8px;
-}
 
-.toggle-btn {
-  background: transparent;
-  border: none;
-  border-radius: 18px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: $text-muted;
-  transition: all 0.25s ease;
-
-  .toggle-icon {
-    width: 16px;
-    height: 16px;
-  }
-
-  &--active {
-    background: $white;
-    color: $gold;
-    box-shadow: 0 2px 8px rgba(43, 40, 37, 0.08);
-  }
-
-  &:active {
-    transform: scale(0.9);
-  }
-}
 
 .meta-badge {
   display: inline-flex;
@@ -190,342 +153,58 @@ $radius-sm: 10px;
   }
 }
 
-// ===== MAIN PHOTO VIEWER =====
-.gallery-main-photo {
-  padding: 0 12px;
-  margin-bottom: 16px;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.main-photo-container {
-  position: relative;
-  aspect-ratio: 3 / 4;
-  width: min(100%, 55vh * 3 / 4);
-  max-height: 55vh;
-  margin: 0 auto;
-  border-radius: $radius;
-  overflow: hidden;
-  background: $bg-warm;
-  box-shadow: $shadow-lg;
-  border: 1px solid $border-soft;
-}
-
-.main-photo-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.main-photo-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-  cursor: zoom-in;
-  transition: opacity 0.5s ease-out; // Transition mượt hơn cho Blur-up
-  will-change: opacity, transform;
-  transform: translateZ(0); // GPU compositing layer → 0 jank khi chuyển ảnh
-  opacity: 0; // Mặc định ẩn để hiển thị ảnh mờ lót dưới
-  z-index: 2; // Đè lên blur background
-}
-
-.main-photo-img--loaded {
-  opacity: 1; // Khi tải xong nét thì hiện ra
-}
-
-.main-photo-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-  background: #111;
-  z-index: 3;
-}
-
-// Wrapper bọc ảnh
-.image-wrapper {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transition: opacity 0.3s ease; // Dành cho swipe windowing
-}
-
-// Lớp ảnh mờ (Tải ngay lập tức)
-.blur-background {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain; // Giữ nguyên tỉ lệ để khớp với ảnh thật
-  filter: blur(15px); // Làm mờ
-  transform: scale(1.05); // Tránh viền trắng do blur
-  opacity: 0.7; // Làm tối nhẹ để khi ảnh nét fade in không bị chói
-  z-index: 1;
-}
-
-.photo-counter {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.55);
-  color: $white;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  z-index: 10;
-  letter-spacing: 0.05em;
-}
-
-// Navigation arrows
-.nav-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.2s;
-  color: rgba($text-dark, 0.7);
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  &:active {
-    transform: translateY(-50%) scale(0.9);
-    background: rgba(255, 255, 255, 0.95);
-    color: $text-dark;
-  }
-
-  &--left {
-    left: 8px;
-  }
-
-  &--right {
-    right: 8px;
-  }
-}
-
-// Action buttons
-.main-photo-actions {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  display: flex;
-  gap: 8px;
-  z-index: 10;
-}
-
-
-
-.action-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: $text-dark;
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  &:active {
-    transform: scale(0.9);
-    background: $gold;
-    color: $white;
-  }
-}
-
-// ===== STICKY BOTTOM BAR =====
-.gallery-bottom-bar {
-  position: sticky;
-  bottom: 0;
-  background: $bg-cream; // Che các nội dung scroll ở dưới
-  padding-top: 8px;
-  z-index: 100;
-  // Border mờ ở trên để phân cách nhẹ
-  border-top: 1px solid rgba(183, 110, 121, 0.1);
-  max-width: 480px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-// ===== THUMBNAIL STRIP =====
-.thumbnail-section {
-  flex-shrink: 0; // Luôn giữ nguyên kích thước, cố định ở dưới
-  padding: 0 12px;
-  margin-bottom: 20px;
-}
-
-.thumbnail-strip {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 6px 0;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  justify-content: safe center;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.thumbnail-item {
-  position: relative;
-  flex-shrink: 0;
-  width: 72px;
-  height: 72px;
-  border-radius: $radius-sm;
-  overflow: hidden;
-  cursor: pointer;
-  scroll-snap-align: start;
-  border: 2px solid transparent;
-  transition: all 0.25s ease;
-  opacity: 0.6;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s;
-  }
-
-  &--active {
-    border-color: $gold;
-    opacity: 1;
-    box-shadow: 0 0 0 2px rgba($gold, 0.3);
-
-    img {
-      transform: scale(1.05);
-    }
-  }
-
-  &--new {
-    animation: thumb-appear 0.5s ease-out;
-  }
-
-  .new-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 8px;
-    font-weight: 700;
-    color: $white;
-    background: $rose;
-    padding: 1px 5px;
-    border-radius: 6px;
-    text-transform: uppercase;
-  }
-
-  .video-badge {
-    bottom: 3px;
-    left: 3px;
-  }
-}
-
-@keyframes thumb-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.8) translateY(8px);
-  }
-
-  to {
-    opacity: 0.6;
-    transform: scale(1) translateY(0);
-  }
-}
-
-// ===== DOWNLOAD ALL =====
-.download-all-section {
-  flex-shrink: 0; // Cố định ở dưới cùng
-  padding: 0 24px calc(16px + env(safe-area-inset-bottom, 0px)); // Tối ưu phần viền đáy của iPhone/Android
-  margin-bottom: 0; // Bỏ margin thừa để khối màu nền phủ kín mép dưới
-}
-
-.download-all-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 14px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  color: $white;
-  background: linear-gradient(135deg, $gold, $gold-dark);
-  border: none;
-  border-radius: $radius-sm;
-  cursor: pointer;
-  transition: all 0.25s;
-  box-shadow: 0 4px 16px rgba($gold, 0.3);
-  letter-spacing: 0.03em;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  &:active {
-    transform: scale(0.97);
-    box-shadow: 0 2px 8px rgba($gold, 0.2);
-  }
-}
-
 // ===== PHOTO GRID =====
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 0 12px;
+  gap: 12px;
+  padding: 0 16px 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
 }
 
 .grid-item {
   position: relative;
-  border-radius: $radius-sm;
+  border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
-  aspect-ratio: 1;
-  background: $bg-warm;
+  background: $white;
+  box-shadow: 0 3px 14px rgba(43, 40, 37, 0.08);
+  border: 1px solid rgba(212, 163, 115, 0.22);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  display: flex;
+  flex-direction: column;
 
   img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
+    height: auto;
+    display: block;
+    object-fit: contain; // Khung ôm khít ảnh, không bao giờ bị cắt xén bất kể tỷ lệ ảnh strip
+    transition: transform 0.35s ease;
   }
 
-  &:hover img,
-  &:active img {
-    transform: scale(1.05);
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(43, 40, 37, 0.15);
+    border-color: rgba($gold, 0.5);
+
+    img {
+      transform: scale(1.02);
+    }
+
+    .grid-overlay {
+      background: rgba(0, 0, 0, 0.2);
+
+      svg {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 
   &--new {
@@ -541,7 +220,7 @@ $radius-sm: 10px;
   padding: 3px 6px;
   border-radius: 6px;
   color: $white;
-  background: rgba(0, 0, 0, 0.68);
+  background: rgba(0, 0, 0, 0.72);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -563,16 +242,17 @@ $radius-sm: 10px;
   padding: 4px 8px;
   border-radius: 12px;
   color: $white;
-  background: rgba(43, 40, 37, 0.75);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 10px;
-  font-weight: 600;
+  background: rgba(43, 40, 37, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 0.02em;
   pointer-events: none;
   display: inline-flex;
   align-items: center;
   gap: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .grid-overlay {
@@ -582,15 +262,17 @@ $radius-sm: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s;
+  transition: background 0.25s;
+  pointer-events: none;
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     color: $white;
     opacity: 0;
     transform: scale(0.8);
-    transition: all 0.3s;
+    transition: all 0.25s;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
   }
 }
 
@@ -620,7 +302,7 @@ $radius-sm: 10px;
 @keyframes grid-fade-in {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
 
   to {
@@ -640,6 +322,47 @@ $radius-sm: 10px;
 
   100% {
     transform: scale(1);
+  }
+}
+
+// ===== DOWNLOAD ALL SECTION =====
+.download-all-grid-section {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 10px 24px 60px;
+}
+
+.download-all-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $white;
+  background: linear-gradient(135deg, $gold, $gold-dark);
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 16px rgba($gold, 0.3);
+  letter-spacing: 0.03em;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba($gold, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba($gold, 0.2);
   }
 }
 
@@ -983,61 +706,24 @@ $radius-sm: 10px;
   }
 }
 
-// ===== DOWNLOAD ALL GRID SECTION =====
-.download-all-grid-section {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 24px 24px 40px;
-}
-
 // ===== RESPONSIVE =====
-@media (min-width: 768px) {
-  .gallery-main-photo {
-    max-width: 640px;
-  }
-
-  .gallery-bottom-bar {
-    max-width: 640px;
-  }
-
-  .main-photo-container {
-    width: min(100%, 60vh * 3 / 4);
-    max-height: 60vh;
-  }
-
-  .nav-arrow {
-    width: 40px;
-    height: 40px;
-    color: $text-dark;
-    background: rgba(255, 255, 255, 0.85);
-
-    svg {
-      width: 20px;
-      height: 20px;
-    }
-  }
-
+@media (min-width: 640px) {
   .photo-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding: 0 24px;
-  }
-
-  .header-title {
-    font-size: 42px;
-  }
-
-  .thumbnail-item {
-    width: 88px;
-    height: 88px;
+    gap: 16px;
+    padding: 0 24px 36px;
   }
 }
 
 @media (min-width: 1024px) {
+  .header-title {
+    font-size: 42px;
+  }
+
   .photo-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    padding: 0 40px;
+    gap: 20px;
+    padding: 0 32px 48px;
   }
 }
 

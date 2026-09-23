@@ -386,9 +386,8 @@ export class EventGallery implements OnInit, OnDestroy {
     this.syncScrollAnimations(index);
   }
 
-  openLightbox(index: number) {
+  openSessionByPhoto(photo: GalleryPhoto, index = 0) {
     this.lightboxIndex.set(index);
-    const photo = this.photos()[index];
     let session = photo ? this.sessions().find(s => s.sessionId === photo.sessionId || s.finalPhoto?.mediaId === photo.mediaId) : null;
     if (session) {
       this.activeSession.set(session);
@@ -401,6 +400,19 @@ export class EventGallery implements OnInit, OnDestroy {
     }
     this.showLightbox.set(true);
     document.body.style.overflow = 'hidden';
+  }
+
+  openLightbox(index: number) {
+    const photo = this.photos()[index];
+    if (photo) {
+      this.openSessionByPhoto(photo, index);
+    }
+  }
+
+  selectSessionMedia(index: number) {
+    this.activeSessionMediaIndex.set(index);
+    const media = this.activeSessionMedia()[index];
+    if (media) this.preloadSingle(media, 2160);
   }
 
   closeLightbox() {
@@ -443,6 +455,14 @@ export class EventGallery implements OnInit, OnDestroy {
   downloadCurrentLightboxMedia() {
     const media = this.currentLightboxMedia();
     if (media) this.downloadPhoto(media);
+  }
+
+  async downloadActiveSession() {
+    const mediaList = this.activeSessionMedia();
+    for (let i = 0; i < mediaList.length; i++) {
+      this.directDownloadPhoto(mediaList[i]);
+      await new Promise(resolve => setTimeout(resolve, 800));
+    }
   }
 
   navigatePrev() {
@@ -768,108 +788,6 @@ export class EventGallery implements OnInit, OnDestroy {
       const oldestKey = this.lruCache.keys().next().value;
       if (oldestKey) this.lruCache.delete(oldestKey);
       else break;
-    }
-  }
-
-  // ========== SESSION ACTIONS ==========
-
-  openSession(session: GallerySession, initialIndex: number = 0) {
-    if (!session) return;
-    this.activeSession.set(session);
-    this.activeSessionMediaIndex.set(initialIndex);
-    document.body.style.overflow = 'hidden';
-
-    const all = session.allMedia || [];
-    if (all[initialIndex]) this.preloadSingle(all[initialIndex]);
-    if (all[initialIndex + 1]) this.preloadSingle(all[initialIndex + 1]);
-  }
-
-  openSessionByPhoto(photo: GalleryPhoto) {
-    if (!photo) return;
-    let target = this.sessions().find(s => s.sessionId === photo.sessionId || s.finalPhoto?.mediaId === photo.mediaId);
-    if (!target && photo.sessionId) {
-      target = this.sessions().find(s => s.sessionId === photo.sessionId);
-    }
-    if (target) {
-      this.openSession(target, 0);
-    } else {
-      const idx = this.photos().findIndex(p => p.mediaId === photo.mediaId);
-      this.openLightbox(idx >= 0 ? idx : 0);
-    }
-  }
-
-  closeSession() {
-    this.activeSession.set(null);
-    this.activeSessionMediaIndex.set(0);
-    document.body.style.overflow = '';
-  }
-
-  selectSessionMedia(index: number) {
-    this.activeSessionMediaIndex.set(index);
-    const media = this.activeSessionMedia()[index];
-    if (media) this.preloadSingle(media);
-  }
-
-  nextSessionMedia() {
-    const list = this.activeSessionMedia();
-    if (list.length <= 1) return;
-    this.activeSessionMediaIndex.update(i => (i + 1) % list.length);
-    const nextItem = list[(this.activeSessionMediaIndex() + 1) % list.length];
-    if (nextItem) this.preloadSingle(nextItem);
-  }
-
-  prevSessionMedia() {
-    const list = this.activeSessionMedia();
-    if (list.length <= 1) return;
-    this.activeSessionMediaIndex.update(i => (i - 1 + list.length) % list.length);
-  }
-
-  nextSession() {
-    const all = this.sessions();
-    const curr = this.activeSession();
-    if (!curr || all.length <= 1) return;
-    const idx = all.findIndex(s => s.sessionId === curr.sessionId);
-    if (idx >= 0) {
-      const nextIdx = (idx + 1) % all.length;
-      this.openSession(all[nextIdx], 0);
-    }
-  }
-
-  prevSession() {
-    const all = this.sessions();
-    const curr = this.activeSession();
-    if (!curr || all.length <= 1) return;
-    const idx = all.findIndex(s => s.sessionId === curr.sessionId);
-    if (idx >= 0) {
-      const prevIdx = (idx - 1 + all.length) % all.length;
-      this.openSession(all[prevIdx], 0);
-    }
-  }
-
-  async downloadActiveSession() {
-    const s = this.activeSession();
-    if (!s) return;
-    for (const item of s.allMedia) {
-      this.downloadPhoto(item);
-      await new Promise(resolve => setTimeout(resolve, 800));
-    }
-  }
-
-  getSessionShareUrl(session: GallerySession | null): string {
-    if (!session || !this.eventId) return typeof window !== 'undefined' ? window.location.href : '';
-    return `${window.location.origin}/event/${this.eventId}?s=${session.sessionId}`;
-  }
-
-  onTouchEndSession(event: TouchEvent) {
-    if (this.touchGestureCancelled || this.touchStartTouchCount !== 1 || event.changedTouches.length !== 1) {
-      this.resetTouchGesture();
-      return;
-    }
-    const diff = this.touchStartX - event.changedTouches[0].clientX;
-    this.resetTouchGesture();
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) this.nextSessionMedia();
-      else this.prevSessionMedia();
     }
   }
 }
