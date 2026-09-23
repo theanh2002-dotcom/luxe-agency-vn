@@ -159,32 +159,17 @@
         </div>
       </div>
 
-      <div class="download-all-section" *ngIf="photoCount() > 0">
-        <button class="download-all-btn" [disabled]="isZippingAll()" (click)="downloadAllPhotos()">
-          <span *ngIf="isZippingAll()" class="spinner-inline"></span>
-          <svg *ngIf="!isZippingAll()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      <div class="download-all-section" *ngIf="selectedPhoto()">
+        <button class="download-all-btn" (click)="downloadPhoto(selectedPhoto())">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
             stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          {{ isZippingAll() ? (zipAllProgress() || 'Đang nén ZIP...') : 'Tải trọn bộ (' + photoCount() + ' file)' }}
+          {{ isVideo(selectedPhoto()) ? 'Tải video này' : 'Tải ảnh này' }}
         </button>
       </div>
-    </div>
-
-    <!-- DOWNLOAD ALL FOR GRID MODE IN SESSION -->
-    <div class="download-all-grid-section" *ngIf="photoCount() > 0 && viewMode() === 'grid'">
-      <button class="download-all-btn" [disabled]="isZippingAll()" (click)="downloadAllPhotos()">
-        <span *ngIf="isZippingAll()" class="spinner-inline"></span>
-        <svg *ngIf="!isZippingAll()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        {{ isZippingAll() ? (zipAllProgress() || 'Đang nén ZIP...') : 'Tải trọn bộ (' + photoCount() + ' file)' }}
-      </button>
     </div>
   </ng-container>
 
@@ -358,16 +343,16 @@
 
   <!-- Lightbox Action Bar -->
   <div class="lightbox-actions" (click)="$event.stopPropagation()">
-    <button class="lightbox-download" (click)="downloadCurrentLightboxMedia()" title="Tải file này">
+    <button class="lightbox-download" (click)="downloadCurrentLightboxMedia()" title="Tải ảnh này">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      Tải file này
+      {{ isVideo(currentLightboxMedia()) ? 'Tải video này' : 'Tải ảnh này' }}
     </button>
-    <button class="lightbox-download lightbox-download--session" (click)="downloadActiveSession()" *ngIf="activeSession() && activeSessionMedia().length > 1" title="Tải trọn bộ">
+    <button class="lightbox-download lightbox-download--session" (click)="downloadActiveSession()" *ngIf="!isSingleSession() && activeSession() && activeSessionMedia().length > 1" title="Tải trọn bộ">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
         <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

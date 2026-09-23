@@ -145,6 +145,9 @@ export class GoogleDriveGalleryService {
   }
 
   getDownloadUrl(photo: GalleryPhoto): string {
+    if (photo?.kind === 'image') {
+      return photo.mediaUrl || photo.lightboxUrl || photo.downloadUrl || '';
+    }
     return photo?.downloadUrl || photo?.mediaUrl || '';
   }
 
