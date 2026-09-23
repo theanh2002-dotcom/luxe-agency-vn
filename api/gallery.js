@@ -64,20 +64,30 @@ export default async function handler(req, res) {
       });
       return;
     }
-    const media = source.files
-      ? source.files.map(file => toPublicMedia(file))
-      : normalizeManifest(source.manifest).map(item => toPublicMedia(item));
+    const mode = legacyQueryValue || !isEventPublicId(requestedId) ? 'LEGACY' : (sessionPublicId ? 'SESSION' : 'EVENT');
+    let sessions = [];
+    let media = [];
+
+    if (mode === 'EVENT' && source.files) {
+      sessions = buildSessionGroups(source.files);
+      // Trang sự kiện ở ngoài: chỉ lấy các ảnh final làm ảnh bìa cho từng phiên
+      media = sessions.map(s => s.finalPhoto).filter(Boolean);
+    } else {
+      media = source.files
+        ? source.files.map(file => toPublicMedia(file, parseSessionMediaName(file?.name)))
+        : normalizeManifest(source.manifest).map(item => toPublicMedia(item));
+    }
 
     // Giữ polling tối đa 5 giây nhưng cho phép browser cache cùng response,
     // tránh gọi lại API vô ích giữa các lần render trên mobile.
     res.setHeader('Cache-Control', 'public, max-age=5, s-maxage=5, stale-while-revalidate=10');
-    const mode = legacyQueryValue || !isEventPublicId(requestedId) ? 'LEGACY' : (sessionPublicId ? 'SESSION' : 'EVENT');
     const status = mode === 'SESSION' && media.length === 0 ? 'PENDING' : 'READY';
     res.status(200).json({
       mode,
       status,
       event: isEventPublicId(requestedId) ? requestedId : null,
       session: sessionPublicId || null,
+      sessions,
       items: media,
       pollAfterMs: status === 'PENDING' ? 5000 : null,
       nextCursor: source.nextCursor || null
@@ -96,7 +106,7 @@ async function resolveGallerySource(requestedId, legacyQueryValue, sessionPublic
   if (isEventPublicId(requestedId)) {
     const resolved = await resolveEventFolder(requestedId);
     if (resolved.status !== 'READY') return { status: 'PENDING' };
-    const page = await listMediaFiles(resolved.driveFolderId, sessionPublicId || null, true, cursor || null, Boolean(sessionPublicId), true);
+    const page = await listMediaFiles(resolved.driveFolderId, sessionPublicId || null, true, cursor || null, true, true);
     return { status: 'READY', files: page.files, nextCursor: page.nextCursor };
   }
   const page = await listMediaFiles(requestedId, null, false, null, true);
@@ -242,25 +252,136 @@ function normalizeManifest(manifest) {
     .sort(compareMediaItems);
 }
 
-function toPublicMedia(item) {
+function parseSessionMediaName(name) {
+  const match = /^SB_(ses_[0-9a-f]{12}7[0-9a-f]{3}[89ab][0-9a-f]{15})_(final|shot_([1-9][0-9]*)|bts)\.(jpe?g|png|webp|mp4|m4v|webm|mov)$/i.exec(String(name || ''));
+  if (!match) return null;
+  const sessionId = match[1];
+  const roleType = match[2].toLowerCase();
+  const role = roleType.startsWith('shot_') ? 'shot' : roleType;
+  const slotIndex = match[3] ? parseInt(match[3], 10) : null;
+
+  let timestamp = 0;
+  try {
+    const hex = sessionId.slice(4, 16);
+    timestamp = parseInt(hex, 16);
+  } catch {
+    timestamp = 0;
+  }
+  return { sessionId, role, slotIndex, timestamp };
+}
+
+function buildSessionGroups(files) {
+  const sessionMap = new Map();
+
+  for (const file of files) {
+    const meta = parseSessionMediaName(file?.name);
+    if (!meta) continue;
+
+    if (!sessionMap.has(meta.sessionId)) {
+      sessionMap.set(meta.sessionId, {
+        sessionId: meta.sessionId,
+        timestamp: meta.timestamp || parseMediaTime(file),
+        finalPhoto: null,
+        shots: [],
+        btsVideo: null,
+        otherMedia: []
+      });
+    }
+
+    const group = sessionMap.get(meta.sessionId);
+    const publicMedia = toPublicMedia(file, meta);
+
+    if (meta.role === 'final') {
+      group.finalPhoto = publicMedia;
+    } else if (meta.role === 'shot') {
+      group.shots.push(publicMedia);
+    } else if (meta.role === 'bts') {
+      group.btsVideo = publicMedia;
+    } else {
+      group.otherMedia.push(publicMedia);
+    }
+  }
+
+  // Sắp xếp các phiên mới nhất lên đầu
+  const sortedSessions = Array.from(sessionMap.values()).sort((a, b) => b.timestamp - a.timestamp);
+
+  return sortedSessions.map((s, index) => {
+    s.shots.sort((a, b) => (a.slotIndex || 0) - (b.slotIndex || 0));
+
+    const coverPhoto = s.finalPhoto || s.shots[0] || s.btsVideo;
+    const allMedia = [];
+    if (s.finalPhoto) allMedia.push(s.finalPhoto);
+    allMedia.push(...s.shots);
+    if (s.btsVideo) allMedia.push(s.btsVideo);
+    allMedia.push(...s.otherMedia);
+
+    let timeFormatted = '';
+    if (s.timestamp) {
+      const d = new Date(s.timestamp);
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      timeFormatted = `${hours}:${mins}`;
+    }
+
+    const sessionNumber = sortedSessions.length - index;
+
+    // Đảm bảo coverPhoto có thông tin tóm tắt của phiên
+    const finalPhoto = s.finalPhoto || coverPhoto;
+    if (finalPhoto) {
+      finalPhoto.sessionInfo = {
+        sessionId: s.sessionId,
+        sessionNumber,
+        timeFormatted,
+        shotCount: s.shots.length,
+        hasBts: Boolean(s.btsVideo),
+        totalMediaCount: allMedia.length
+      };
+    }
+
+    return {
+      sessionId: s.sessionId,
+      sessionNumber,
+      timestamp: s.timestamp,
+      timeFormatted,
+      finalPhoto,
+      shots: s.shots,
+      btsVideo: s.btsVideo,
+      allMedia,
+      mediaCount: allMedia.length
+    };
+  });
+}
+
+function toPublicMedia(item, roleMeta = null) {
   const fileId = item.fileId || item.id;
   const mimeType = item.mimeType || inferMimeType(item.type, item.name);
   const kind = mimeType.startsWith('video/') || String(item.type || '').toLowerCase() === 'video'
     ? 'video'
     : 'image';
+
+  let defaultName = kind === 'video' ? 'Video sự kiện' : 'Ảnh sự kiện';
+  if (roleMeta) {
+    if (roleMeta.role === 'final') defaultName = 'Ảnh in sự kiện';
+    else if (roleMeta.role === 'shot') defaultName = `Ảnh chụp ${roleMeta.slotIndex || ''}`.trim();
+    else if (roleMeta.role === 'bts') defaultName = 'Video hậu trường';
+  }
+
   const mediaToken = createMediaToken({
     fileId,
     kind,
     mimeType,
-    name: sanitizeName(item.name || (kind === 'video' ? 'Video sự kiện' : 'Ảnh sự kiện'))
+    name: sanitizeName(item.name || defaultName)
   });
   const mediaBase = `${MEDIA_PROXY_URL.replace(/\/$/, '')}/media/${mediaToken}`;
 
   return {
     id: createStableMediaId({ fileId, kind }),
-    name: sanitizeName(item.name || (kind === 'video' ? 'Video sự kiện' : 'Ảnh sự kiện')),
+    name: sanitizeName(item.name || defaultName),
     kind,
     mimeType,
+    role: roleMeta?.role || (kind === 'video' ? 'bts' : 'image'),
+    slotIndex: roleMeta?.slotIndex || null,
+    sessionId: roleMeta?.sessionId || null,
     createdAt: item.createdTime || item.modifiedTime || new Date().toISOString(),
     thumbnailUrl: `${mediaBase}?variant=thumbnail&size=200`,
     mediaUrl: kind === 'video' ? mediaBase : `${mediaBase}?variant=image&size=1080`,

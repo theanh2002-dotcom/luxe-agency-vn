@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { GoogleDriveGalleryService, GalleryPhoto } from './services/google-drive-gallery.service';
+import { GoogleDriveGalleryService, GalleryPhoto, GallerySession } from './services/google-drive-gallery.service';
 
 /** Wrapper cho windowing - giữ index gốc để opacity toggle đúng */
 export interface VisiblePhoto {
@@ -21,6 +21,10 @@ export class EventGallery implements OnInit, OnDestroy {
 
   // ===== STATE SIGNALS =====
   photos = signal<GalleryPhoto[]>([]);
+  sessions = signal<GallerySession[]>([]);
+  activeSession = signal<GallerySession | null>(null);
+  activeSessionMediaIndex = signal<number>(0);
+  isSingleSession = signal<boolean>(false);
   selectedIndex = signal<number>(0);
   isLoading = signal<boolean>(true);
   isPolling = signal<boolean>(false);
@@ -34,6 +38,17 @@ export class EventGallery implements OnInit, OnDestroy {
   // ===== COMPUTED =====
   selectedPhoto = computed(() => this.photos()[this.selectedIndex()]);
   photoCount = computed(() => this.photos().length);
+  sessionCount = computed(() => this.sessions().length);
+  activeSessionMedia = computed(() => {
+    const s = this.activeSession();
+    if (!s) return [];
+    return s.allMedia || [];
+  });
+  selectedSessionMedia = computed(() => {
+    const list = this.activeSessionMedia();
+    const idx = this.activeSessionMediaIndex();
+    return list[idx] || list[0] || null;
+  });
 
   /**
    * WINDOWING: Chỉ render ±2 ảnh xung quanh ảnh đang xem trong DOM.
@@ -90,6 +105,41 @@ export class EventGallery implements OnInit, OnDestroy {
     { mediaId: 'demo4', name: 'Chân dung cặp đôi', kind: 'image', thumbnailUrl: 'photos/photo4.png', mediaUrl: 'photos/photo4.png', lightboxUrl: 'photos/photo4.png', downloadUrl: 'photos/photo4.png', createdTime: new Date().toISOString() },
   ];
 
+  private demoSessions: GallerySession[] = [
+    {
+      sessionId: 'ses_demo2',
+      sessionNumber: 2,
+      timestamp: Date.now(),
+      timeFormatted: '20:45',
+      finalPhoto: { mediaId: 'demo1', name: 'Dải ảnh in #2', kind: 'image', thumbnailUrl: 'photos/photo1.png', mediaUrl: 'photos/photo1.png', lightboxUrl: 'photos/photo1.png', downloadUrl: 'photos/photo1.png', createdTime: new Date().toISOString(), sessionInfo: { sessionId: 'ses_demo2', sessionNumber: 2, timeFormatted: '20:45', shotCount: 2, hasBts: false, totalMediaCount: 3 } },
+      shots: [
+        { mediaId: 'demo2', name: 'Ảnh chụp 1', kind: 'image', thumbnailUrl: 'photos/photo2.png', mediaUrl: 'photos/photo2.png', lightboxUrl: 'photos/photo2.png', downloadUrl: 'photos/photo2.png', createdTime: new Date().toISOString() },
+        { mediaId: 'demo3', name: 'Ảnh chụp 2', kind: 'image', thumbnailUrl: 'photos/photo3.png', mediaUrl: 'photos/photo3.png', lightboxUrl: 'photos/photo3.png', downloadUrl: 'photos/photo3.png', createdTime: new Date().toISOString() }
+      ],
+      allMedia: [
+        { mediaId: 'demo1', name: 'Dải ảnh in #2', kind: 'image', thumbnailUrl: 'photos/photo1.png', mediaUrl: 'photos/photo1.png', lightboxUrl: 'photos/photo1.png', downloadUrl: 'photos/photo1.png', createdTime: new Date().toISOString() },
+        { mediaId: 'demo2', name: 'Ảnh chụp 1', kind: 'image', thumbnailUrl: 'photos/photo2.png', mediaUrl: 'photos/photo2.png', lightboxUrl: 'photos/photo2.png', downloadUrl: 'photos/photo2.png', createdTime: new Date().toISOString() },
+        { mediaId: 'demo3', name: 'Ảnh chụp 2', kind: 'image', thumbnailUrl: 'photos/photo3.png', mediaUrl: 'photos/photo3.png', lightboxUrl: 'photos/photo3.png', downloadUrl: 'photos/photo3.png', createdTime: new Date().toISOString() }
+      ],
+      mediaCount: 3
+    },
+    {
+      sessionId: 'ses_demo1',
+      sessionNumber: 1,
+      timestamp: Date.now() - 600000,
+      timeFormatted: '20:35',
+      finalPhoto: { mediaId: 'demo4', name: 'Dải ảnh in #1', kind: 'image', thumbnailUrl: 'photos/photo4.png', mediaUrl: 'photos/photo4.png', lightboxUrl: 'photos/photo4.png', downloadUrl: 'photos/photo4.png', createdTime: new Date().toISOString(), sessionInfo: { sessionId: 'ses_demo1', sessionNumber: 1, timeFormatted: '20:35', shotCount: 1, hasBts: false, totalMediaCount: 2 } },
+      shots: [
+        { mediaId: 'demo3', name: 'Ảnh chụp 1', kind: 'image', thumbnailUrl: 'photos/photo3.png', mediaUrl: 'photos/photo3.png', lightboxUrl: 'photos/photo3.png', downloadUrl: 'photos/photo3.png', createdTime: new Date().toISOString() }
+      ],
+      allMedia: [
+        { mediaId: 'demo4', name: 'Dải ảnh in #1', kind: 'image', thumbnailUrl: 'photos/photo4.png', mediaUrl: 'photos/photo4.png', lightboxUrl: 'photos/photo4.png', downloadUrl: 'photos/photo4.png', createdTime: new Date().toISOString() },
+        { mediaId: 'demo3', name: 'Ảnh chụp 1', kind: 'image', thumbnailUrl: 'photos/photo3.png', mediaUrl: 'photos/photo3.png', lightboxUrl: 'photos/photo3.png', downloadUrl: 'photos/photo3.png', createdTime: new Date().toISOString() }
+      ],
+      mediaCount: 2
+    }
+  ];
+
   constructor(
     private route: ActivatedRoute,
     private driveService: GoogleDriveGalleryService
@@ -125,6 +175,7 @@ export class EventGallery implements OnInit, OnDestroy {
         const legacyQueryValue = queryParams.get('m');
         const sessionPublicId = queryParams.get('s');
         this.isSessionGallery = Boolean(sessionPublicId);
+        this.isSingleSession.set(Boolean(sessionPublicId));
         this.driveService.setRouteQuery(legacyQueryValue, sessionPublicId);
         this.loadInitialPhotos();
       });
@@ -151,6 +202,7 @@ export class EventGallery implements OnInit, OnDestroy {
     if (this.eventId && this.eventId.startsWith('demo')) {
       setTimeout(() => {
         this.photos.set(this.demoPhotos);
+        this.sessions.set(this.demoSessions);
         this.demoPhotos.forEach(p => this.knownMediaIds.add(p.mediaId));
         this.isLoading.set(false);
       }, 800);
@@ -172,6 +224,9 @@ export class EventGallery implements OnInit, OnDestroy {
         if (!this.isSessionGallery && result.status === 'READY' && result.nextCursor) {
           this.loadGalleryPage(result.nextCursor, photos);
           return;
+        }
+        if (result.sessions && result.sessions.length > 0) {
+          this.sessions.set(result.sessions);
         }
         this.galleryStatus.set(result.status);
         this.photos.set(this.sortPhotos(photos));
@@ -218,6 +273,14 @@ export class EventGallery implements OnInit, OnDestroy {
         }
         const files = result.photos;
         this.galleryStatus.set(result.status);
+        if (result.sessions && result.sessions.length > 0) {
+          this.sessions.set(result.sessions);
+          const curr = this.activeSession();
+          if (curr) {
+            const found = result.sessions.find(s => s.sessionId === curr.sessionId);
+            if (found) this.activeSession.set(found);
+          }
+        }
         const newFiles = files.filter(f => !this.knownMediaIds.has(f.mediaId));
 
         if (newFiles.length > 0) {
@@ -666,6 +729,108 @@ export class EventGallery implements OnInit, OnDestroy {
       const oldestKey = this.lruCache.keys().next().value;
       if (oldestKey) this.lruCache.delete(oldestKey);
       else break;
+    }
+  }
+
+  // ========== SESSION ACTIONS ==========
+
+  openSession(session: GallerySession, initialIndex: number = 0) {
+    if (!session) return;
+    this.activeSession.set(session);
+    this.activeSessionMediaIndex.set(initialIndex);
+    document.body.style.overflow = 'hidden';
+
+    const all = session.allMedia || [];
+    if (all[initialIndex]) this.preloadSingle(all[initialIndex]);
+    if (all[initialIndex + 1]) this.preloadSingle(all[initialIndex + 1]);
+  }
+
+  openSessionByPhoto(photo: GalleryPhoto) {
+    if (!photo) return;
+    let target = this.sessions().find(s => s.sessionId === photo.sessionId || s.finalPhoto?.mediaId === photo.mediaId);
+    if (!target && photo.sessionId) {
+      target = this.sessions().find(s => s.sessionId === photo.sessionId);
+    }
+    if (target) {
+      this.openSession(target, 0);
+    } else {
+      const idx = this.photos().findIndex(p => p.mediaId === photo.mediaId);
+      this.openLightbox(idx >= 0 ? idx : 0);
+    }
+  }
+
+  closeSession() {
+    this.activeSession.set(null);
+    this.activeSessionMediaIndex.set(0);
+    document.body.style.overflow = '';
+  }
+
+  selectSessionMedia(index: number) {
+    this.activeSessionMediaIndex.set(index);
+    const media = this.activeSessionMedia()[index];
+    if (media) this.preloadSingle(media);
+  }
+
+  nextSessionMedia() {
+    const list = this.activeSessionMedia();
+    if (list.length <= 1) return;
+    this.activeSessionMediaIndex.update(i => (i + 1) % list.length);
+    const nextItem = list[(this.activeSessionMediaIndex() + 1) % list.length];
+    if (nextItem) this.preloadSingle(nextItem);
+  }
+
+  prevSessionMedia() {
+    const list = this.activeSessionMedia();
+    if (list.length <= 1) return;
+    this.activeSessionMediaIndex.update(i => (i - 1 + list.length) % list.length);
+  }
+
+  nextSession() {
+    const all = this.sessions();
+    const curr = this.activeSession();
+    if (!curr || all.length <= 1) return;
+    const idx = all.findIndex(s => s.sessionId === curr.sessionId);
+    if (idx >= 0) {
+      const nextIdx = (idx + 1) % all.length;
+      this.openSession(all[nextIdx], 0);
+    }
+  }
+
+  prevSession() {
+    const all = this.sessions();
+    const curr = this.activeSession();
+    if (!curr || all.length <= 1) return;
+    const idx = all.findIndex(s => s.sessionId === curr.sessionId);
+    if (idx >= 0) {
+      const prevIdx = (idx - 1 + all.length) % all.length;
+      this.openSession(all[prevIdx], 0);
+    }
+  }
+
+  async downloadActiveSession() {
+    const s = this.activeSession();
+    if (!s) return;
+    for (const item of s.allMedia) {
+      this.downloadPhoto(item);
+      await new Promise(resolve => setTimeout(resolve, 800));
+    }
+  }
+
+  getSessionShareUrl(session: GallerySession | null): string {
+    if (!session || !this.eventId) return typeof window !== 'undefined' ? window.location.href : '';
+    return `${window.location.origin}/event/${this.eventId}?s=${session.sessionId}`;
+  }
+
+  onTouchEndSession(event: TouchEvent) {
+    if (this.touchGestureCancelled || this.touchStartTouchCount !== 1 || event.changedTouches.length !== 1) {
+      this.resetTouchGesture();
+      return;
+    }
+    const diff = this.touchStartX - event.changedTouches[0].clientX;
+    this.resetTouchGesture();
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) this.nextSessionMedia();
+      else this.prevSessionMedia();
     }
   }
 }
