@@ -49,6 +49,13 @@ export class EventGallery implements OnInit, OnDestroy {
     const idx = this.activeSessionMediaIndex();
     return list[idx] || list[0] || null;
   });
+  currentLightboxMedia = computed<GalleryPhoto | null>(() => {
+    const s = this.activeSession();
+    if (s && s.allMedia && s.allMedia.length > 0) {
+      return s.allMedia[this.activeSessionMediaIndex()] || s.allMedia[0];
+    }
+    return this.photos()[this.lightboxIndex()] || null;
+  });
 
   /**
    * WINDOWING: Chỉ render ±2 ảnh xung quanh ảnh đang xem trong DOM.
@@ -381,29 +388,61 @@ export class EventGallery implements OnInit, OnDestroy {
 
   openLightbox(index: number) {
     this.lightboxIndex.set(index);
+    const photo = this.photos()[index];
+    let session = photo ? this.sessions().find(s => s.sessionId === photo.sessionId || s.finalPhoto?.mediaId === photo.mediaId) : null;
+    if (session) {
+      this.activeSession.set(session);
+      this.activeSessionMediaIndex.set(0);
+      if (session.allMedia[0]) this.preloadSingle(session.allMedia[0], 2160);
+    } else {
+      this.activeSession.set(null);
+      this.activeSessionMediaIndex.set(0);
+      if (photo) this.preloadSingle(photo, 2160);
+    }
     this.showLightbox.set(true);
     document.body.style.overflow = 'hidden';
-
-    // Preload lightbox ảnh kế tiếp ở độ phân giải cao
-    const total = this.photoCount();
-    [index, (index - 1 + total) % total, (index + 1) % total].forEach(i => {
-      this.preloadSingle(this.photos()[i], 2160);
-    });
   }
 
   closeLightbox() {
     this.showLightbox.set(false);
+    this.activeSession.set(null);
+    this.activeSessionMediaIndex.set(0);
     document.body.style.overflow = '';
   }
 
   lightboxPrev() {
+    const session = this.activeSession();
+    if (session && session.allMedia && session.allMedia.length > 1) {
+      const total = session.allMedia.length;
+      this.activeSessionMediaIndex.update(i => (i - 1 + total) % total);
+      const cur = session.allMedia[this.activeSessionMediaIndex()];
+      if (cur) this.preloadSingle(cur, 2160);
+      return;
+    }
     const total = this.photoCount();
     this.lightboxIndex.update(i => (i - 1 + total) % total);
+    const cur = this.photos()[this.lightboxIndex()];
+    if (cur) this.preloadSingle(cur, 2160);
   }
 
   lightboxNext() {
+    const session = this.activeSession();
+    if (session && session.allMedia && session.allMedia.length > 1) {
+      const total = session.allMedia.length;
+      this.activeSessionMediaIndex.update(i => (i + 1) % total);
+      const cur = session.allMedia[this.activeSessionMediaIndex()];
+      if (cur) this.preloadSingle(cur, 2160);
+      return;
+    }
     const total = this.photoCount();
     this.lightboxIndex.update(i => (i + 1) % total);
+    const cur = this.photos()[this.lightboxIndex()];
+    if (cur) this.preloadSingle(cur, 2160);
+  }
+
+  downloadCurrentLightboxMedia() {
+    const media = this.currentLightboxMedia();
+    if (media) this.downloadPhoto(media);
   }
 
   navigatePrev() {
