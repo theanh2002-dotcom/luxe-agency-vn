@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, ChangeDetectionStrategy, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { GoogleDriveGalleryService, GalleryPhoto, GallerySession } from './services/google-drive-gallery.service';
@@ -34,6 +34,12 @@ export class EventGallery implements OnInit, OnDestroy {
   galleryStatus = signal<'PENDING' | 'READY'>('PENDING');
   viewMode = signal<'slideshow' | 'grid'>('slideshow');
   loadedImages = signal<Set<string>>(new Set());
+
+  // ===== ZIP DOWNLOAD SIGNALS =====
+  isZippingAll = signal<boolean>(false);
+  zipAllProgress = signal<string>('');
+  isZippingSession = signal<boolean>(false);
+  zipSessionProgress = signal<string>('');
 
   // ===== COMPUTED =====
   selectedPhoto = computed(() => this.photos()[this.selectedIndex()]);
@@ -399,11 +405,17 @@ export class EventGallery implements OnInit, OnDestroy {
     if (session) {
       this.activeSession.set(session);
       this.activeSessionMediaIndex.set(0);
-      if (session.allMedia[0]) this.preloadSingle(session.allMedia[0], 2160);
+      if (session.allMedia[0]) {
+        this.preloadSingle(session.allMedia[0], 2160);
+        this.prepareShareFile(session.allMedia[0]);
+      }
     } else {
       this.activeSession.set(null);
       this.activeSessionMediaIndex.set(0);
-      if (photo) this.preloadSingle(photo, 2160);
+      if (photo) {
+        this.preloadSingle(photo, 2160);
+        this.prepareShareFile(photo);
+      }
     }
     this.showLightbox.set(true);
     document.body.style.overflow = 'hidden';
@@ -419,7 +431,10 @@ export class EventGallery implements OnInit, OnDestroy {
   selectSessionMedia(index: number) {
     this.activeSessionMediaIndex.set(index);
     const media = this.activeSessionMedia()[index];
-    if (media) this.preloadSingle(media, 2160);
+    if (media) {
+      this.preloadSingle(media, 2160);
+      this.prepareShareFile(media);
+    }
   }
 
   closeLightbox() {
@@ -435,13 +450,19 @@ export class EventGallery implements OnInit, OnDestroy {
       const total = session.allMedia.length;
       this.activeSessionMediaIndex.update(i => (i - 1 + total) % total);
       const cur = session.allMedia[this.activeSessionMediaIndex()];
-      if (cur) this.preloadSingle(cur, 2160);
+      if (cur) {
+        this.preloadSingle(cur, 2160);
+        this.prepareShareFile(cur);
+      }
       return;
     }
     const total = this.photoCount();
     this.lightboxIndex.update(i => (i - 1 + total) % total);
     const cur = this.photos()[this.lightboxIndex()];
-    if (cur) this.preloadSingle(cur, 2160);
+    if (cur) {
+      this.preloadSingle(cur, 2160);
+      this.prepareShareFile(cur);
+    }
   }
 
   lightboxNext() {
@@ -450,13 +471,19 @@ export class EventGallery implements OnInit, OnDestroy {
       const total = session.allMedia.length;
       this.activeSessionMediaIndex.update(i => (i + 1) % total);
       const cur = session.allMedia[this.activeSessionMediaIndex()];
-      if (cur) this.preloadSingle(cur, 2160);
+      if (cur) {
+        this.preloadSingle(cur, 2160);
+        this.prepareShareFile(cur);
+      }
       return;
     }
     const total = this.photoCount();
     this.lightboxIndex.update(i => (i + 1) % total);
     const cur = this.photos()[this.lightboxIndex()];
-    if (cur) this.preloadSingle(cur, 2160);
+    if (cur) {
+      this.preloadSingle(cur, 2160);
+      this.prepareShareFile(cur);
+    }
   }
 
   downloadCurrentLightboxMedia() {
@@ -466,9 +493,23 @@ export class EventGallery implements OnInit, OnDestroy {
 
   async downloadActiveSession() {
     const mediaList = this.activeSessionMedia();
-    for (let i = 0; i < mediaList.length; i++) {
-      this.directDownloadPhoto(mediaList[i]);
-      await new Promise(resolve => setTimeout(resolve, 800));
+    if (mediaList.length === 0) return;
+    if (mediaList.length === 1) {
+      this.downloadPhoto(mediaList[0]);
+      return;
+    }
+
+    if (this.isZippingSession()) return;
+    this.isZippingSession.set(true);
+    this.zipSessionProgress.set('0%');
+
+    try {
+      const session = this.activeSession();
+      const num = session?.sessionNumber || 'chup';
+      await this.downloadZip(mediaList, `Phien_${num}.zip`, this.zipSessionProgress);
+    } finally {
+      this.isZippingSession.set(false);
+      this.zipSessionProgress.set('');
     }
   }
 
@@ -490,56 +531,62 @@ export class EventGallery implements OnInit, OnDestroy {
     });
   }
 
-  downloadPhoto(photo: GalleryPhoto) {
+  async downloadPhoto(photo: GalleryPhoto) {
     if (!photo) return;
-    if (!this.isIOSDevice()) {
-      this.directDownloadPhoto(photo);
-      return;
-    }
 
-    if (typeof navigator.share !== 'function') {
-      this.directDownloadPhoto(photo);
-      return;
-    }
+    // 1. Trên iPhone/iOS: Dùng Web Share API để mở bảng chia sẻ của iOS có nút "Lưu hình ảnh" (Save Image)
+    // giúp ảnh nhảy thẳng vào Cuộn camera (Apple Photos) mà KHÔNG nhảy sang tab khác!
+    if (this.isIOSDevice() && typeof navigator.share === 'function') {
+      try {
+        let file = this.preparedShareFile;
+        if (!file || this.preparedShareMediaId !== photo.mediaId) {
+          const url = this.driveService.getDownloadUrl(photo);
+          if (url) {
+            const res = await fetch(url);
+            if (res.ok) {
+              const blob = await res.blob();
+              const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg');
+              const mimeType = this.getShareMimeType(photo);
+              file = new File([blob], fileName, { type: mimeType });
+              this.preparedShareFile = file;
+              this.preparedShareMediaId = photo.mediaId;
+            }
+          }
+        }
 
-    const file = this.preparedShareFile;
-    if (!file || this.preparedShareMediaId !== photo.mediaId) {
-      this.directDownloadPhoto(photo);
-      this.prepareShareFile(photo);
-      return;
-    }
-
-    try {
-      if (typeof navigator.canShare !== 'function' || !navigator.canShare({ files: [file] })) {
-        const mediaType = this.isVideo(photo) ? 'video' : 'image';
-        console.warn(`[Gallery] Prepared ${mediaType} cannot be shared on this iOS browser`);
-        this.directDownloadPhoto(photo);
-        return;
-      }
-
-      navigator.share({ files: [file] }).catch(error => {
+        if (file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] });
+          return;
+        }
+      } catch (error) {
         if (this.isShareNoFallbackError(error)) return;
-
-        console.warn('[Gallery] Image share failed; falling back to direct download:', error);
-        this.directDownloadPhoto(photo);
-      });
-    } catch (error) {
-      if (this.isShareNoFallbackError(error)) return;
-
-      console.warn('[Gallery] Image share could not start; falling back to direct download:', error);
-      this.directDownloadPhoto(photo);
+        console.warn('[Gallery] iOS Web Share failed, falling back to blob download:', error);
+      }
     }
+
+    // 2. Android, PC và fallback: Tải trực tiếp dưới dạng Blob Object URL.
+    // Cách này giúp trình duyệt tải file thẳng về máy mà TUYỆT ĐỐI KHÔNG BỊ NHẢY SANG TRANG TRẮNG KHÁC!
+    await this.downloadPhotoAsBlob(photo);
   }
 
   async downloadAllPhotos() {
+    if (this.isZippingAll()) return;
     const photos = this.photos();
-    for (let i = 0; i < photos.length; i++) {
-      this.directDownloadPhoto(photos[i]);
-      await new Promise(resolve => setTimeout(resolve, 1200));
+    if (photos.length === 0) return;
+
+    this.isZippingAll.set(true);
+    this.zipAllProgress.set('0%');
+
+    try {
+      const eventName = this.eventId || 'su_kien';
+      await this.downloadZip(photos, `Su_kien_${eventName}.zip`, this.zipAllProgress);
+    } finally {
+      this.isZippingAll.set(false);
+      this.zipAllProgress.set('');
     }
   }
 
-  private directDownloadPhoto(photo: GalleryPhoto): void {
+  private async downloadPhotoAsBlob(photo: GalleryPhoto): Promise<void> {
     const url = this.driveService.getDownloadUrl(photo);
     if (!url) return;
 
@@ -550,24 +597,110 @@ export class EventGallery implements OnInit, OnDestroy {
       fileName += this.isVideo(photo) ? '.mp4' : '.jpg';
     }
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.rel = 'noopener noreferrer';
-    link.style.display = 'none';
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
 
-    if (this.isIOSDevice()) {
-      // Safari iOS: target="_blank" allows native download prompt without breaking SPA navigation
-      link.target = '_blank';
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+      }, 3000);
+    } catch (err) {
+      console.warn('[Gallery] Blob download failed, falling back to direct link:', err);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        if (document.body.contains(link)) document.body.removeChild(link);
+      }, 1000);
     }
+  }
 
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => {
-      if (document.body.contains(link)) {
-        document.body.removeChild(link);
+  private async downloadZip(mediaList: GalleryPhoto[], zipFileName: string, progressSignal: WritableSignal<string>): Promise<void> {
+    if (!mediaList || mediaList.length === 0) return;
+
+    try {
+      progressSignal.set('Nạp module ZIP...');
+      const { default: JSZip } = await import('jszip');
+      const zip = new JSZip();
+      const seenNames = new Map<string, number>();
+      const total = mediaList.length;
+
+      for (let i = 0; i < total; i++) {
+        const photo = mediaList[i];
+        progressSignal.set(`${i + 1}/${total}`);
+
+        const url = this.driveService.getDownloadUrl(photo);
+        if (!url) continue;
+
+        let baseName = photo.name?.trim() || '';
+        if (!baseName) {
+          baseName = this.isVideo(photo) ? 'video.mp4' : 'photo.jpg';
+        } else if (!baseName.includes('.')) {
+          baseName += this.isVideo(photo) ? '.mp4' : '.jpg';
+        }
+
+        let finalName = baseName;
+        const count = seenNames.get(baseName) || 0;
+        if (count > 0) {
+          const dotIdx = baseName.lastIndexOf('.');
+          if (dotIdx > 0) {
+            finalName = `${baseName.slice(0, dotIdx)}_${count}${baseName.slice(dotIdx)}`;
+          } else {
+            finalName = `${baseName}_${count}`;
+          }
+        }
+        seenNames.set(baseName, count + 1);
+
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const blob = await res.blob();
+            zip.file(finalName, blob);
+          }
+        } catch (fetchErr) {
+          console.warn(`[Gallery] Failed to fetch file ${finalName} for zip:`, fetchErr);
+        }
       }
-    }, 1000);
+
+      progressSignal.set('Nén ZIP...');
+      const zipBlob = await zip.generateAsync(
+        { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
+        (meta) => {
+          progressSignal.set(`${Math.round(meta.percent)}%`);
+        }
+      );
+
+      const blobUrl = URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = zipFileName;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+        if (document.body.contains(link)) document.body.removeChild(link);
+      }, 3000);
+    } catch (err) {
+      console.error('[Gallery] Zip generation failed:', err);
+      alert('Không thể tạo file ZIP, vui lòng thử lại.');
+    }
   }
 
   private prepareShareFile(photo: GalleryPhoto | undefined): void {
