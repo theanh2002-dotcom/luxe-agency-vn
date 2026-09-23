@@ -391,19 +391,26 @@ function toPublicMedia(item, roleMeta = null) {
 }
 
 function compareMediaItems(left, right) {
-  const leftKind = mediaKindRank(left);
-  const rightKind = mediaKindRank(right);
-  if (leftKind !== rightKind) return leftKind - rightKind;
+  const leftMeta = parseSessionMediaName(left?.name);
+  const rightMeta = parseSessionMediaName(right?.name);
 
-  const leftTime = parseMediaTime(left);
-  const rightTime = parseMediaTime(right);
+  // 1. Nếu cả 2 file cùng thuộc một phiên chụp
+  if (leftMeta && rightMeta && leftMeta.sessionId === rightMeta.sessionId) {
+    const roleRank = role => (role === 'final' ? 1 : (role === 'shot' ? 2 : (role === 'bts' ? 3 : 4)));
+    const rankDiff = roleRank(leftMeta.role) - roleRank(rightMeta.role);
+    if (rankDiff !== 0) return rankDiff;
+    if (leftMeta.role === 'shot' && rightMeta.role === 'shot') {
+      return (leftMeta.slotIndex || 0) - (rightMeta.slotIndex || 0);
+    }
+  }
+
+  // 2. Sắp xếp giữa các phiên khác nhau theo timestamp giảm dần (mới nhất lên đầu)
+  const leftTime = leftMeta?.timestamp || parseMediaTime(left);
+  const rightTime = rightMeta?.timestamp || parseMediaTime(right);
   if (leftTime !== rightTime) return rightTime - leftTime;
-  return 0;
-}
 
-function mediaKindRank(item) {
-  const mimeType = item?.mimeType || inferMimeType(item?.type, item?.name);
-  return mimeType.startsWith('video/') || String(item?.type || '').toLowerCase() === 'video' ? 1 : 0;
+  // 3. Fallback theo tên file
+  return String(left?.name || '').localeCompare(String(right?.name || ''));
 }
 
 function parseMediaTime(item) {

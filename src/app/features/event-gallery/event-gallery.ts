@@ -333,10 +333,17 @@ export class EventGallery implements OnInit, OnDestroy {
 
   private sortPhotos(photos: GalleryPhoto[]): GalleryPhoto[] {
     return [...photos].sort((left, right) => {
-      const leftVideo = this.isVideo(left) ? 1 : 0;
-      const rightVideo = this.isVideo(right) ? 1 : 0;
-      if (leftVideo !== rightVideo) return leftVideo - rightVideo;
+      // 1. Cùng một phiên chụp: final -> shot 1..N -> bts
+      if (left.sessionId && right.sessionId && left.sessionId === right.sessionId) {
+        const roleRank = (role?: string) => (role === 'final' ? 1 : (role === 'shot' ? 2 : (role === 'bts' ? 3 : 4)));
+        const rankDiff = roleRank(left.role) - roleRank(right.role);
+        if (rankDiff !== 0) return rankDiff;
+        if (left.role === 'shot' && right.role === 'shot') {
+          return (left.slotIndex || 0) - (right.slotIndex || 0);
+        }
+      }
 
+      // 2. Sắp xếp giữa các phiên theo createdTime / timestamp giảm dần
       const leftTime = Date.parse(left.createdTime || '');
       const rightTime = Date.parse(right.createdTime || '');
       if (!Number.isNaN(leftTime) && !Number.isNaN(rightTime) && leftTime !== rightTime) {
@@ -497,6 +504,7 @@ export class EventGallery implements OnInit, OnDestroy {
 
     const file = this.preparedShareFile;
     if (!file || this.preparedShareMediaId !== photo.mediaId) {
+      this.directDownloadPhoto(photo);
       this.prepareShareFile(photo);
       return;
     }
@@ -505,6 +513,7 @@ export class EventGallery implements OnInit, OnDestroy {
       if (typeof navigator.canShare !== 'function' || !navigator.canShare({ files: [file] })) {
         const mediaType = this.isVideo(photo) ? 'video' : 'image';
         console.warn(`[Gallery] Prepared ${mediaType} cannot be shared on this iOS browser`);
+        this.directDownloadPhoto(photo);
         return;
       }
 
@@ -526,34 +535,39 @@ export class EventGallery implements OnInit, OnDestroy {
     const photos = this.photos();
     for (let i = 0; i < photos.length; i++) {
       this.directDownloadPhoto(photos[i]);
-      // Tăng delay trên iOS để Safari kịp xử lý popup tải về, hoặc giữ nguyên 800ms
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1200));
     }
   }
 
   private directDownloadPhoto(photo: GalleryPhoto): void {
     const url = this.driveService.getDownloadUrl(photo);
+    if (!url) return;
+
+    let fileName = photo.name?.trim() || '';
+    if (!fileName) {
+      fileName = this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg';
+    } else if (!fileName.includes('.')) {
+      fileName += this.isVideo(photo) ? '.mp4' : '.jpg';
+    }
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
 
     if (this.isIOSDevice()) {
-      // Safari iOS xử lý download cross-origin ổn định hơn khi navigation được
-      // tạo bởi chính click gesture. Worker sẽ trả Content-Disposition: attachment.
-      const link = document.createElement('a');
-      link.href = url;
+      // Safari iOS: target="_blank" allows native download prompt without breaking SPA navigation
       link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.download = photo.name || 'event-media';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } else {
-      // Các trình duyệt khác có thể dùng iframe ẩn để tải mượt mà không bị giật nháy tab
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = url;
-      document.body.appendChild(iframe);
-      setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 5000);
     }
+
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+    }, 1000);
   }
 
   private prepareShareFile(photo: GalleryPhoto | undefined): void {
