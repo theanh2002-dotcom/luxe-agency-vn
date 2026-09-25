@@ -54,14 +54,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.8');
-  readonly releaseDate = signal('14/09/2026');
-  readonly fileSize = signal('860.6 MB');
+  readonly currentVersion = signal('v1.0.9');
+  readonly releaseDate = signal('25/09/2026');
+  readonly fileSize = signal('829.8 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1oY1DWXYt1WaAnwPYuqQ99-XrV9vxi1Fb/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1oY1DWXYt1WaAnwPYuqQ99-XrV9vxi1Fb/view?usp=sharing';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/14XAWhT-Q2-smD3O87I82d-35FqfU-7Rf/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1REz1cKaNN5DYE5ZVCDzJZZtZ4HHIsol5/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
 
   downloadToastMessage = signal<string | null>(null);
@@ -76,7 +76,7 @@ export class SoftwarePage implements OnInit {
     {
       icon: 'sparkles',
       title: 'AI Face Beauty & Làm Đẹp Tự Nhiên',
-      description: 'Nhận diện 468 điểm khuôn mặt với AI: Làm mịn da giữ nguyên vân da tự nhiên (Pore-preserving), xóa mụn thâm, làm trắng răng và sáng mắt tinh tế.',
+      description: 'Nhận diện 468 điểm khuôn mặt với AI: Làm mịn da giữ nguyên vân da tự nhiên (Pore-preserving), xóa mụn thâm, làm trắng sáng răng khi cười, khử quầng thâm mắt và bóp cằm thon gọn tự nhiên.',
       badge: 'AI Retouch'
     },
     {
@@ -127,7 +127,7 @@ export class SoftwarePage implements OnInit {
     {
       step: '01',
       title: 'Tải bộ cài đặt Pica Photobox',
-      description: 'Nhấp vào nút "Tải Bản Cài Đặt (64-bit)" ở đầu trang để tải bộ cài Pica Photobox về máy tính của bạn.',
+      description: 'Nhấp vào nút "Tải Bản Cài Đặt (Windows 64-bit)" ở đầu trang để tải bộ cài Pica Photobox về máy tính của bạn.',
       note: 'Dung lượng được hiển thị theo bộ cài đang phát hành. Hãy đảm bảo đường truyền ổn định.'
     },
     {
@@ -152,10 +152,25 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.8',
-      releaseDate: '14/09/2026',
+      version: 'v1.0.9',
+      releaseDate: '25/09/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Đột phá AI Retouch & Làm đẹp thông minh: Làm trắng răng tự nhiên khi cười, triệt tiêu vết thâm mụn giữ trọn vân da thật, khử quầng thâm mắt & rãnh lệ, và chuẩn hoá bóp cằm V-line tự nhiên chống biến dạng khuôn mặt.',
+      downloadSize: '829.8 MB',
+      changes: [
+        { category: 'new', label: 'Làm trắng sáng răng tự nhiên (Teeth Whitening)', text: 'Nhận diện chuẩn xác dải răng trong khoang miệng khi cười, khử sắc tố vàng ố và tăng độ sáng trong suốt; tích hợp bộ lọc bảo vệ viền môi chống lem son tuyệt đối.' },
+        { category: 'new', label: 'Triệt tiêu thâm mụn & đốm nâu (Blemish Suppression)', text: 'Tự động bóc tách và bù sáng vi mô cho các hố thâm mụn, vết thâm đỏ hoặc tàn nhang; bảo tồn 100% kết cấu lỗ chân lông và vi vân da thật (Pore-preserving).' },
+        { category: 'new', label: 'Khử quầng thâm mắt & Rãnh lệ (Dark Circles Concealing)', text: 'Trích xuất dải mặt nạ mí dưới hình trăng khuyết, bù sáng rãnh lệ và triệt tiêu sắc tố thâm tím xanh; tích hợp mượt mà vào thanh điều khiển Sáng mắt.' },
+        { category: 'improved', label: 'Bóp cằm V-line tự nhiên & Chống méo mặt', text: 'Tái thiết kế toàn diện trường lực biến dạng quai hàm: neo gốc biến dạng dưới môi dưới, bảo vệ tuyệt đối khóe miệng, cánh mũi, gò má và mắt; mang lại đường nét thon gọn tự nhiên.' },
+        { category: 'improved', label: 'Cân bằng các Mẫu làm đẹp nhanh (Beauty Presets)', text: 'Tối ưu hoá các preset Tự Nhiên, Mịn Da, Sáng Hồng, Studio Glam đồng bộ hoàn hảo giữa màn hình chụp Live View, màn hình chỉnh sửa và luồng xuất ảnh in chất lượng cao.' }
+      ]
+    },
+    {
+      version: 'v1.0.8',
+      releaseDate: '14/09/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Phiên bản nâng cấp toàn diện hệ thống in ảnh: Tinh giản giao diện cấu hình máy in, tích hợp bộ công cụ chuẩn đoán hàng đợi & phục hồi Print Spooler an toàn, và theo dõi cuộn giấy in.',
       downloadSize: '860.6 MB',
       changes: [
@@ -239,22 +254,25 @@ export class SoftwarePage implements OnInit {
       ));
       if (!response.ok || !response.release) throw new Error('No published release');
 
-      this.currentVersion.set(`v${response.release.version}`);
-      this.releaseDate.set(this.formatDate(response.release.publishedAt));
-      this.fileSize.set(response.installer.size == null ? '860.6 MB' : this.formatBytes(response.installer.size));
-      this.installerAvailable.set(true);
-
-      if (response.release.version === '1.0.8' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.9' && this.releaseUpdates.length > 0) {
+        this.currentVersion.set(`v${response.release.version}`);
+        this.releaseDate.set(this.formatDate(response.release.publishedAt));
+        this.fileSize.set(response.installer.size == null ? '829.8 MB' : this.formatBytes(response.installer.size));
+        this.installerAvailable.set(true);
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '860.6 MB' : this.formatBytes(response.installer.size);
-      } else if (response.release.version !== '1.0.8') {
-        // If API returns an older or distinct release, keep v1.0.8 at top
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '829.8 MB' : this.formatBytes(response.installer.size);
+      } else {
+        // Keep latest static release v1.0.9 at top if API provides older version
+        this.currentVersion.set('v1.0.9');
+        this.releaseDate.set('25/09/2026');
+        this.fileSize.set('829.8 MB');
+        this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.8');
-      this.releaseDate.set('14/09/2026');
-      this.fileSize.set('860.6 MB');
+      this.currentVersion.set('v1.0.9');
+      this.releaseDate.set('25/09/2026');
+      this.fileSize.set('829.8 MB');
       this.installerAvailable.set(true);
     }
   }

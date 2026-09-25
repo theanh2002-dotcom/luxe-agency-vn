@@ -234,7 +234,9 @@
                   Sửa lỗi
                 </span>
 
-                <span class="text-[#2D2D2D]/80 font-light leading-relaxed">{{ item.text }}</span>
+                <span class="text-[#2D2D2D]/80 font-light leading-relaxed">
+                  <strong *ngIf="item.label" class="font-medium text-[#2D2D2D]">{{ item.label }}: </strong>{{ item.text }}
+                </span>
               </div>
             </div>
           </div>
