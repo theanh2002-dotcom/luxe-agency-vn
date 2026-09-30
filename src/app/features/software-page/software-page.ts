@@ -54,14 +54,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.9');
-  readonly releaseDate = signal('25/09/2026');
+  readonly currentVersion = signal('v1.0.10');
+  readonly releaseDate = signal('30/09/2026');
   readonly fileSize = signal('829.8 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/14XAWhT-Q2-smD3O87I82d-35FqfU-7Rf/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1REz1cKaNN5DYE5ZVCDzJZZtZ4HHIsol5/view?usp=sharing';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1rxLmAZACajPiHrUb9gQc1hPl2YlaLUWY/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1rxLmAZACajPiHrUb9gQc1hPl2YlaLUWY/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
 
   downloadToastMessage = signal<string | null>(null);
@@ -152,10 +152,24 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.9',
-      releaseDate: '25/09/2026',
+      version: 'v1.0.10',
+      releaseDate: '30/09/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Nâng cấp toàn diện bộ lọc màu chân dung & da mặt, tối ưu hoá luồng chụp Self Photo Booth chuyên nghiệp với mã phiên chụp, gói chụp linh hoạt, quét QR nhận ảnh và bảo vệ tối ưu trải nghiệm khách hàng.',
+      downloadSize: '829.8 MB',
+      changes: [
+        { category: 'improved', label: 'Tối ưu hóa Pipeline Màu Chân Dung (Skin Tone & Lips)', text: 'Cải tiến thuật toán Hermite roll-off bảo toàn chi tiết vùng sáng, giữ trọn sắc tố da hồng hào tự nhiên và màu môi sắc nét, không bị bết màu hay cháy sáng.' },
+        { category: 'new', label: 'Quy trình Self Photo Booth Chuyên Nghiệp', text: 'Tích hợp chọn gói chụp theo thời gian/số lượng ảnh, hiển thị mã phiên chụp (Session Code), đếm ngược linh hoạt, tạm dừng và hộp thoại xác nhận khi kết thúc sớm.' },
+        { category: 'new', label: 'Thanh toán & Vé QR Nhận Ảnh Tức Thì', text: 'Hỗ trợ cơ chế khóa phiên chụp trước thanh toán (Pay Before Capture), tự động xuất mã QR vé số để khách quét xem trước và chọn ảnh tiện lợi ngay trên điện thoại.' },
+        { category: 'improved', label: 'Live View Gương & Xem Lại Ảnh Nhanh (Quick Review)', text: 'Hỗ trợ lật gương Live View thời gian thực, xem lại nhanh ảnh vừa chụp trực quan và giao diện toàn màn hình mượt mà không độ trễ.' }
+      ]
+    },
+    {
+      version: 'v1.0.9',
+      releaseDate: '25/09/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Đột phá AI Retouch & Làm đẹp thông minh: Làm trắng răng tự nhiên khi cười, triệt tiêu vết thâm mụn giữ trọn vân da thật, khử quầng thâm mắt & rãnh lệ, và chuẩn hoá bóp cằm V-line tự nhiên chống biến dạng khuôn mặt.',
       downloadSize: '829.8 MB',
       changes: [
@@ -254,7 +268,7 @@ export class SoftwarePage implements OnInit {
       ));
       if (!response.ok || !response.release) throw new Error('No published release');
 
-      if (response.release.version === '1.0.9' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.10' && this.releaseUpdates.length > 0) {
         this.currentVersion.set(`v${response.release.version}`);
         this.releaseDate.set(this.formatDate(response.release.publishedAt));
         this.fileSize.set(response.installer.size == null ? '829.8 MB' : this.formatBytes(response.installer.size));
@@ -263,15 +277,15 @@ export class SoftwarePage implements OnInit {
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
         this.releaseUpdates[0].downloadSize = response.installer.size == null ? '829.8 MB' : this.formatBytes(response.installer.size);
       } else {
-        // Keep latest static release v1.0.9 at top if API provides older version
-        this.currentVersion.set('v1.0.9');
-        this.releaseDate.set('25/09/2026');
+        // Keep latest static release v1.0.10 at top if API provides older version
+        this.currentVersion.set('v1.0.10');
+        this.releaseDate.set('30/09/2026');
         this.fileSize.set('829.8 MB');
         this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.9');
-      this.releaseDate.set('25/09/2026');
+      this.currentVersion.set('v1.0.10');
+      this.releaseDate.set('30/09/2026');
       this.fileSize.set('829.8 MB');
       this.installerAvailable.set(true);
     }
