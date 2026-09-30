@@ -1,5 +1,5 @@
 const SOFTWARE_DOWNLOAD_URL = process.env.SOFTWARE_DOWNLOAD_URL || 'https://tanhbooth-api.laihoanganh456.workers.dev/download/latest';
-const LEGACY_SOFTWARE_FILE_ID = '1rxLmAZACajPiHrUb9gQc1hPl2YlaLUWY';
+const LEGACY_SOFTWARE_FILE_ID = '1GEa-jZOd16kJFLV7YwsgiUjxvQUkWvVd';
 
 export default async function handler(req, res) {
   const requestedFileId = req.query?.id;

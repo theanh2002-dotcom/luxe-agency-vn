@@ -56,12 +56,12 @@ export class SoftwarePage implements OnInit {
 
   readonly currentVersion = signal('v1.0.10');
   readonly releaseDate = signal('30/09/2026');
-  readonly fileSize = signal('829.8 MB');
+  readonly fileSize = signal('830.0 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1rxLmAZACajPiHrUb9gQc1hPl2YlaLUWY/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1rxLmAZACajPiHrUb9gQc1hPl2YlaLUWY/view?usp=sharing';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1GEa-jZOd16kJFLV7YwsgiUjxvQUkWvVd/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1GEa-jZOd16kJFLV7YwsgiUjxvQUkWvVd/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
 
   downloadToastMessage = signal<string | null>(null);
@@ -157,7 +157,7 @@ export class SoftwarePage implements OnInit {
       isLatest: true,
       tagText: 'Bản mới nhất',
       summary: 'Nâng cấp toàn diện bộ lọc màu chân dung & da mặt, tối ưu hoá luồng chụp Self Photo Booth chuyên nghiệp với mã phiên chụp, gói chụp linh hoạt, quét QR nhận ảnh và bảo vệ tối ưu trải nghiệm khách hàng.',
-      downloadSize: '829.8 MB',
+      downloadSize: '830.0 MB',
       changes: [
         { category: 'improved', label: 'Tối ưu hóa Pipeline Màu Chân Dung (Skin Tone & Lips)', text: 'Cải tiến thuật toán Hermite roll-off bảo toàn chi tiết vùng sáng, giữ trọn sắc tố da hồng hào tự nhiên và màu môi sắc nét, không bị bết màu hay cháy sáng.' },
         { category: 'new', label: 'Quy trình Self Photo Booth Chuyên Nghiệp', text: 'Tích hợp chọn gói chụp theo thời gian/số lượng ảnh, hiển thị mã phiên chụp (Session Code), đếm ngược linh hoạt, tạm dừng và hộp thoại xác nhận khi kết thúc sớm.' },
@@ -271,22 +271,22 @@ export class SoftwarePage implements OnInit {
       if (response.release.version === '1.0.10' && this.releaseUpdates.length > 0) {
         this.currentVersion.set(`v${response.release.version}`);
         this.releaseDate.set(this.formatDate(response.release.publishedAt));
-        this.fileSize.set(response.installer.size == null ? '829.8 MB' : this.formatBytes(response.installer.size));
+        this.fileSize.set(response.installer.size == null ? '830.0 MB' : this.formatBytes(response.installer.size));
         this.installerAvailable.set(true);
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '829.8 MB' : this.formatBytes(response.installer.size);
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '830.0 MB' : this.formatBytes(response.installer.size);
       } else {
         // Keep latest static release v1.0.10 at top if API provides older version
         this.currentVersion.set('v1.0.10');
         this.releaseDate.set('30/09/2026');
-        this.fileSize.set('829.8 MB');
+        this.fileSize.set('830.0 MB');
         this.installerAvailable.set(true);
       }
     } catch {
       this.currentVersion.set('v1.0.10');
       this.releaseDate.set('30/09/2026');
-      this.fileSize.set('829.8 MB');
+      this.fileSize.set('830.0 MB');
       this.installerAvailable.set(true);
     }
   }
