@@ -35,11 +35,12 @@ export class EventGallery implements OnInit, OnDestroy {
   viewMode = signal<'slideshow' | 'grid'>('slideshow');
   loadedImages = signal<Set<string>>(new Set());
 
-  // ===== ZIP DOWNLOAD SIGNALS =====
+  // ===== ZIP & DOWNLOAD SIGNALS =====
   isZippingAll = signal<boolean>(false);
   zipAllProgress = signal<string>('');
   isZippingSession = signal<boolean>(false);
   zipSessionProgress = signal<string>('');
+  isDownloading = signal<boolean>(false);
 
   // ===== COMPUTED =====
   selectedPhoto = computed(() => this.photos()[this.selectedIndex()]);
@@ -532,41 +533,55 @@ export class EventGallery implements OnInit, OnDestroy {
   }
 
   async downloadPhoto(photo: GalleryPhoto) {
-    if (!photo) return;
+    if (!photo || this.isDownloading()) return;
 
-    // 1. Trên iPhone/iOS: Dùng Web Share API để mở bảng chia sẻ của iOS có nút "Lưu hình ảnh" (Save Image)
-    // giúp ảnh nhảy thẳng vào Cuộn camera (Apple Photos) mà KHÔNG nhảy sang tab khác!
-    if (this.isIOSDevice() && typeof navigator.share === 'function') {
-      try {
-        let file = this.preparedShareFile;
-        if (!file || this.preparedShareMediaId !== photo.mediaId) {
-          const url = this.driveService.getDownloadUrl(photo);
-          if (url) {
-            const res = await fetch(url);
-            if (res.ok) {
-              const blob = await res.blob();
-              const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg');
-              const mimeType = this.getShareMimeType(photo);
-              file = new File([blob], fileName, { type: mimeType });
-              this.preparedShareFile = file;
-              this.preparedShareMediaId = photo.mediaId;
+    this.isDownloading.set(true);
+    try {
+      // 1. Trên iPhone/iOS: Dùng Web Share API để mở bảng chia sẻ của iOS có nút "Lưu hình ảnh" (Save Image)
+      // giúp ảnh nhảy thẳng vào Cuộn camera (Apple Photos) mà KHÔNG nhảy sang tab khác!
+      if (this.isIOSDevice() && typeof navigator.share === 'function') {
+        try {
+          let file = this.preparedShareFile;
+          if (!file || this.preparedShareMediaId !== photo.mediaId) {
+            const url = this.driveService.getDownloadUrl(photo);
+            if (url) {
+              const res = await fetch(url);
+              if (res.ok) {
+                const blob = await res.blob();
+                const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg');
+                const mimeType = this.getShareMimeType(photo);
+                file = new File([blob], fileName, { type: mimeType });
+                this.preparedShareFile = file;
+                this.preparedShareMediaId = photo.mediaId;
+              }
             }
           }
-        }
 
-        if (file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file] });
+          if (file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file] });
+            return;
+          }
+        } catch (error) {
+          if (this.isShareAbortError(error)) return;
+          console.warn('[Gallery] iOS Web Share failed, falling back to direct/blob download:', error);
+        }
+      }
+
+      // 2. In-App browser (Zalo, FB Messenger...): thường chặn Blob download -> Tải trực tiếp qua URL attachment
+      if (this.isInAppBrowser()) {
+        const url = this.driveService.getDownloadUrl(photo);
+        if (url) {
+          const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg');
+          this.triggerDirectDownload(url, fileName);
           return;
         }
-      } catch (error) {
-        if (this.isShareNoFallbackError(error)) return;
-        console.warn('[Gallery] iOS Web Share failed, falling back to blob download:', error);
       }
-    }
 
-    // 2. Android, PC và fallback: Tải trực tiếp dưới dạng Blob Object URL.
-    // Cách này giúp trình duyệt tải file thẳng về máy mà TUYỆT ĐỐI KHÔNG BỊ NHẢY SANG TRANG TRẮNG KHÁC!
-    await this.downloadPhotoAsBlob(photo);
+      // 3. Android, PC và fallback: Tải trực tiếp dưới dạng Blob Object URL
+      await this.downloadPhotoAsBlob(photo);
+    } finally {
+      this.isDownloading.set(false);
+    }
   }
 
   async downloadAllPhotos() {
@@ -618,18 +633,21 @@ export class EventGallery implements OnInit, OnDestroy {
       }, 3000);
     } catch (err) {
       console.warn('[Gallery] Blob download failed, falling back to direct link:', err);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        if (document.body.contains(link)) document.body.removeChild(link);
-      }, 1000);
+      this.triggerDirectDownload(url, fileName);
     }
+  }
+
+  private triggerDirectDownload(url: string, fileName: string): void {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (document.body.contains(link)) document.body.removeChild(link);
+    }, 2000);
   }
 
   private async downloadZip(mediaList: GalleryPhoto[], zipFileName: string, progressSignal: WritableSignal<string>): Promise<void> {
@@ -763,16 +781,15 @@ export class EventGallery implements OnInit, OnDestroy {
       (navigator.userAgent.includes('Mac') && typeof document !== 'undefined' && 'ontouchend' in document);
   }
 
+  private isInAppBrowser(): boolean {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    return /FBAN|FBAV|Instagram|Zalo|Line|TikTok|MicroMessenger|musical_ly/i.test(ua);
+  }
+
   private isShareAbortError(error: unknown): boolean {
     return typeof error === 'object' && error !== null &&
       'name' in error && (error as { name?: unknown }).name === 'AbortError';
-  }
-
-  private isShareNoFallbackError(error: unknown): boolean {
-    if (typeof error !== 'object' || error === null || !('name' in error)) return false;
-
-    const name = (error as { name?: unknown }).name;
-    return name === 'AbortError' || name === 'NotAllowedError' || name === 'InvalidStateError';
   }
 
   // ========== SWIPE GESTURES ==========
