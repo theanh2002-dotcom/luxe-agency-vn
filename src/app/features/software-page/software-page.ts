@@ -54,14 +54,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.10');
-  readonly releaseDate = signal('30/09/2026');
-  readonly fileSize = signal('830.0 MB');
+  readonly currentVersion = signal('v1.0.11');
+  readonly releaseDate = signal('05/10/2026');
+  readonly fileSize = signal('835.0 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1GEa-jZOd16kJFLV7YwsgiUjxvQUkWvVd/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1GEa-jZOd16kJFLV7YwsgiUjxvQUkWvVd/view?usp=sharing';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1tOzzyiM21Py5B4Yl_9NWdwPzpE7tpTp7/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1tOzzyiM21Py5B4Yl_9NWdwPzpE7tpTp7/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
 
   downloadToastMessage = signal<string | null>(null);
@@ -152,10 +152,24 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.10',
-      releaseDate: '30/09/2026',
+      version: 'v1.0.11',
+      releaseDate: '05/10/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Tối ưu hoá vượt bậc Live View và Frame Pipeline cho trải nghiệm ngắm chụp mượt mà không độ trễ, bổ sung bộ màu chân dung & da chuẩn Studio Hàn Quốc (Korean Clean Pink, Baby Pink Glow, Nàng Thơ, Porcelain Ivory, Retro Bronze Y2K) dưới định dạng 3D LUT Cube và XML Presets.',
+      downloadSize: '835.0 MB',
+      changes: [
+        { category: 'improved', label: 'Tối ưu Live View Pipeline & Zero-Allocation Buffer', text: 'Cải tiến bộ giải mã khung hình Live View với cơ chế tái sử dụng buffer bộ nhớ đệm, loại bỏ cấp phát GC thừa, tối ưu hóa đa luồng giúp Live View 60 FPS cực kỳ mượt mà, phản hồi tức thì.' },
+        { category: 'new', label: 'Bổ sung Preset Màu & 3D LUT Chân Dung Đỉnh Cao', text: 'Tích hợp sẵn các tone màu chân dung thời thượng: Korean Clean Pink (hồng trong veo Hàn Quốc), Skin Baby Pink Glow (trắng hồng mọng nước), Nàng Thơ Trắng Hồng Baby, Porcelain Ivory (trắng sứ sang trọng) và Retro Bronze Y2K.' },
+        { category: 'new', label: 'GradeController & Preview Màu Thời Gian Thực', text: 'Hệ thống GradeStore & GradeBaker kết hợp bộ tạo mẫu thumbnail trực quan, cho phép khách hàng xem trước hiệu ứng màu sắc ngay trên màn hình Live View và trước khi in.' },
+        { category: 'improved', label: 'Đồng bộ Giao diện Chụp & Điều khiển từ xa', text: 'Tối ưu giao diện SelfBooth Shoot & Select Page, nâng cấp Remote Bridge Hooks và hệ thống điều khiển camera chuyên nghiệp ổn định cao.' }
+      ]
+    },
+    {
+      version: 'v1.0.10',
+      releaseDate: '30/09/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Nâng cấp toàn diện bộ lọc màu chân dung & da mặt, tối ưu hoá luồng chụp Self Photo Booth chuyên nghiệp với mã phiên chụp, gói chụp linh hoạt, quét QR nhận ảnh và bảo vệ tối ưu trải nghiệm khách hàng.',
       downloadSize: '830.0 MB',
       changes: [
@@ -268,25 +282,25 @@ export class SoftwarePage implements OnInit {
       ));
       if (!response.ok || !response.release) throw new Error('No published release');
 
-      if (response.release.version === '1.0.10' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.11' && this.releaseUpdates.length > 0) {
         this.currentVersion.set(`v${response.release.version}`);
         this.releaseDate.set(this.formatDate(response.release.publishedAt));
-        this.fileSize.set(response.installer.size == null ? '830.0 MB' : this.formatBytes(response.installer.size));
+        this.fileSize.set(response.installer.size == null ? '835.0 MB' : this.formatBytes(response.installer.size));
         this.installerAvailable.set(true);
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '830.0 MB' : this.formatBytes(response.installer.size);
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '835.0 MB' : this.formatBytes(response.installer.size);
       } else {
-        // Keep latest static release v1.0.10 at top if API provides older version
-        this.currentVersion.set('v1.0.10');
-        this.releaseDate.set('30/09/2026');
-        this.fileSize.set('830.0 MB');
+        // Keep latest static release v1.0.11 at top if API provides older version
+        this.currentVersion.set('v1.0.11');
+        this.releaseDate.set('05/10/2026');
+        this.fileSize.set('835.0 MB');
         this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.10');
-      this.releaseDate.set('30/09/2026');
-      this.fileSize.set('830.0 MB');
+      this.currentVersion.set('v1.0.11');
+      this.releaseDate.set('05/10/2026');
+      this.fileSize.set('835.0 MB');
       this.installerAvailable.set(true);
     }
   }
