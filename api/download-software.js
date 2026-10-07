@@ -2,12 +2,7 @@ const SOFTWARE_DOWNLOAD_URL = process.env.SOFTWARE_DOWNLOAD_URL || 'https://tanh
 const LEGACY_SOFTWARE_FILE_ID = '1UO-_rRM1QMkEeZO_lhOwQam2yy9OrMLn';
 
 export default async function handler(req, res) {
-  const requestedFileId = req.query?.id;
-  if (!requestedFileId) {
-    res.setHeader('Location', SOFTWARE_DOWNLOAD_URL);
-    res.status(307).end();
-    return;
-  }
+  const requestedFileId = req.query?.id || LEGACY_SOFTWARE_FILE_ID;
 
   try {
     const fileId = requestedFileId;

@@ -59,10 +59,10 @@ export class SoftwarePage implements OnInit {
   readonly fileSize = signal('835.4 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
-  readonly downloadUrl = environment.softwareDownloadUrl;
+  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1UO-_rRM1QMkEeZO_lhOwQam2yy9OrMLn&export=download&confirm=t';
   readonly googleDriveUrl = 'https://drive.google.com/file/d/1UO-_rRM1QMkEeZO_lhOwQam2yy9OrMLn/view?usp=sharing';
   readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1UO-_rRM1QMkEeZO_lhOwQam2yy9OrMLn/view?usp=sharing';
-  readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
+  readonly googleDriveFolderUrl = 'https://drive.google.com/file/d/1UO-_rRM1QMkEeZO_lhOwQam2yy9OrMLn/view?usp=sharing';
 
   downloadToastMessage = signal<string | null>(null);
 
