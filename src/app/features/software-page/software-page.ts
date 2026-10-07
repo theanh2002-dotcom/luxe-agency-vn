@@ -54,14 +54,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.11');
-  readonly releaseDate = signal('05/10/2026');
-  readonly fileSize = signal('835.0 MB');
+  readonly currentVersion = signal('v1.0.12');
+  readonly releaseDate = signal('07/10/2026');
+  readonly fileSize = signal('835.4 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = environment.softwareDownloadUrl;
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1tOzzyiM21Py5B4Yl_9NWdwPzpE7tpTp7/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1tOzzyiM21Py5B4Yl_9NWdwPzpE7tpTp7/view?usp=sharing';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1UO-_rRM1QMkEeZO_lhOwQam2yy9OrMLn/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1UO-_rRM1QMkEeZO_lhOwQam2yy9OrMLn/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=drive_link';
 
   downloadToastMessage = signal<string | null>(null);
@@ -152,10 +152,25 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.11',
-      releaseDate: '05/10/2026',
+      version: 'v1.0.12',
+      releaseDate: '07/10/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Đột phá thuật toán AI Face Retouch tự nhiên thế hệ mới: Màu môi đỏ thuần quyến rũ (True Red Lip tint), má hồng ửng tròn tự nhiên hai bên gò má, bảo vệ khối sống mũi 3D và loại bỏ hoàn toàn biến dạng nhọn cằm, tinh chỉnh độ mịn thanh thoát không bị ảo.',
+      downloadSize: '835.4 MB',
+      changes: [
+        { category: 'improved', label: 'Màu môi đỏ thuần tự nhiên (True Red Lip Tint)', text: 'Cân bằng lại sắc tố màu môi đỏ tươi quyến rũ, loại bỏ ánh hồng sen bệt và lem viền, độ mọng nước tự nhiên chuẩn tông son cao cấp.' },
+        { category: 'new', label: 'Má hồng ửng tròn tự nhiên (Natural Cheek Blush)', text: 'Thuật toán khuếch tán má hồng tập trung chuẩn xác tại tâm hai gò má, loại bỏ hiện tượng hồng lan cả mặt, tạo vẻ đẹp rạng rỡ tươi tắn.' },
+        { category: 'improved', label: 'Bảo vệ khối sống mũi 3D & Chống bẹp khuôn mặt', text: 'Giảm mức độ làm mịn và bù sáng vùng sống mũi để giữ trọn vẹn khối bóng 3D, sống mũi thanh cao sắc nét tự nhiên không bị mờ nhạt.' },
+        { category: 'improved', label: 'Loại bỏ biến dạng chóp cằm & Tinh chỉnh độ mịn da', text: 'Triệt tiêu hoàn toàn hiệu ứng kéo nhọn cằm V-line tam giác; điều chỉnh độ mịn da vừa vặn, giữ trọn vẹn lỗ chân lông và vân da thật không bị giả ảo.' },
+        { category: 'improved', label: 'Tối ưu hoá các Mẫu AI Beauty Presets', text: 'Cân bằng hoàn hảo các preset Tự Nhiên, Mịn Da, Sáng Hồng, Studio Glam giữa màn hình chụp Live View, chỉnh sửa nhanh và luồng in ấn.' }
+      ]
+    },
+    {
+      version: 'v1.0.11',
+      releaseDate: '05/10/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Tối ưu hoá vượt bậc Live View và Frame Pipeline cho trải nghiệm ngắm chụp mượt mà không độ trễ, bổ sung bộ màu chân dung & da chuẩn Studio Hàn Quốc (Korean Clean Pink, Baby Pink Glow, Nàng Thơ, Porcelain Ivory, Retro Bronze Y2K) dưới định dạng 3D LUT Cube và XML Presets.',
       downloadSize: '835.0 MB',
       changes: [
@@ -282,25 +297,25 @@ export class SoftwarePage implements OnInit {
       ));
       if (!response.ok || !response.release) throw new Error('No published release');
 
-      if (response.release.version === '1.0.11' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.12' && this.releaseUpdates.length > 0) {
         this.currentVersion.set(`v${response.release.version}`);
         this.releaseDate.set(this.formatDate(response.release.publishedAt));
-        this.fileSize.set(response.installer.size == null ? '835.0 MB' : this.formatBytes(response.installer.size));
+        this.fileSize.set(response.installer.size == null ? '835.4 MB' : this.formatBytes(response.installer.size));
         this.installerAvailable.set(true);
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '835.0 MB' : this.formatBytes(response.installer.size);
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '835.4 MB' : this.formatBytes(response.installer.size);
       } else {
-        // Keep latest static release v1.0.11 at top if API provides older version
-        this.currentVersion.set('v1.0.11');
-        this.releaseDate.set('05/10/2026');
-        this.fileSize.set('835.0 MB');
+        // Keep latest static release v1.0.12 at top if API provides older version
+        this.currentVersion.set('v1.0.12');
+        this.releaseDate.set('07/10/2026');
+        this.fileSize.set('835.4 MB');
         this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.11');
-      this.releaseDate.set('05/10/2026');
-      this.fileSize.set('835.0 MB');
+      this.currentVersion.set('v1.0.12');
+      this.releaseDate.set('07/10/2026');
+      this.fileSize.set('835.4 MB');
       this.installerAvailable.set(true);
     }
   }
