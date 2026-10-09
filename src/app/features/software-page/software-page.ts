@@ -55,14 +55,14 @@ export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
   readonly currentVersion = signal('v1.0.13');
-  readonly releaseDate = signal('09/10/2026');
-  readonly fileSize = signal('844.2 MB');
+  readonly releaseDate = signal('10/10/2026');
+  readonly fileSize = signal('844.1 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
-  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1Q1S-QT0_4aJjFGSNetRV39TMj65D9JA6&export=download&confirm=t';
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1Q1S-QT0_4aJjFGSNetRV39TMj65D9JA6/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1Q1S-QT0_4aJjFGSNetRV39TMj65D9JA6/view?usp=sharing';
-  readonly googleDriveFolderUrl = 'https://drive.google.com/file/d/1Q1S-QT0_4aJjFGSNetRV39TMj65D9JA6/view?usp=sharing';
+  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1qN5C38vqjF537qNWAMybC9K4JRwqk8aE&export=download&confirm=t';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1qN5C38vqjF537qNWAMybC9K4JRwqk8aE/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1qN5C38vqjF537qNWAMybC9K4JRwqk8aE/view?usp=sharing';
+  readonly googleDriveFolderUrl = 'https://drive.google.com/file/d/1qN5C38vqjF537qNWAMybC9K4JRwqk8aE/view?usp=sharing';
 
   downloadToastMessage = signal<string | null>(null);
 
@@ -153,17 +153,17 @@ export class SoftwarePage implements OnInit {
   releaseUpdates: ReleaseUpdate[] = [
     {
       version: 'v1.0.13',
-      releaseDate: '09/10/2026',
+      releaseDate: '10/10/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
-      summary: 'Nâng cấp bộ đếm ngược chụp ảnh Native dslrBooth siêu nhạy (0ms latency), thiết kế huy hiệu tròn tối giản sang trọng, tinh chỉnh khung căn ảnh Live View siêu nét không bóng mờ, tối ưu nút bấm Lật ảnh trước khi chụp và tăng cường độ ổn định luồng chụp ảnh.',
-      downloadSize: '844.2 MB',
+      summary: 'Nâng cấp bộ đếm ngược chụp ảnh Native dslrBooth siêu nhạy (0ms latency), thiết kế huy hiệu tròn tối giản, tinh chỉnh khung căn ảnh Live View siêu nét, tối ưu nút Lật ảnh và hoàn thiện công cụ thiết kế khung ảnh thông minh (giới hạn 50MB, tự động đặt ô chụp sau khung viền, click xuyên vùng trong suốt, lưu chuẩn DPI).',
+      downloadSize: '844.1 MB',
       changes: [
+        { category: 'improved', label: 'Nâng cấp thiết kế khung ảnh (Frame Creator & Designer)', text: 'Nâng giới hạn dung lượng tải ảnh khung lên 50MB, tự động nhận diện và xếp các ô chụp nằm sau lớp ảnh khung, hỗ trợ click chọn xuyên qua vùng trong suốt, sửa lỗi lưu chuẩn DPI chế độ thủ công và thêm nút [+ Tạo mới] thuận tiện.' },
         { category: 'new', label: 'Bộ đếm ngược Native dslrBooth (0ms Latency)', text: 'Chuyển đổi hoàn toàn cơ chế đếm ngược chụp ảnh sang Native WPF render trực tiếp trên GPU, thiết kế huy hiệu tròn đen mờ tối giản chuẩn dslrBooth, số trắng tinh khôi nảy số nhẹ không giật lag.' },
         { category: 'improved', label: 'Khung căn ảnh Live View siêu nét & trong trẻo', text: 'Loại bỏ hoàn toàn hiệu ứng bóng mờ đen (blur shadow) ở 4 góc và viền thừa, viền trắng thanh lịch sắc sảo giúp khách hàng dễ dàng căn chỉnh góc chụp chuẩn xác.' },
         { category: 'improved', label: 'Tối ưu nút bấm Thao tác Camera (LẬT ẢNH)', text: 'Rút gọn nhãn nút bấm thành [LẬT ẢNH] trực quan, hiển thị trạng thái kích hoạt nổi bật giúp khách hàng và nhân viên vận hành dễ dàng thao tác.' },
-        { category: 'improved', label: 'Autofocus chủ động & Đồng bộ màn trập', text: 'Kích hoạt lấy nét trước 1 giây cuối của đếm ngược, đảm bảo bắt trọn khoảnh khắc sắc nét tuyệt đối ngay khi màn trập chớp.' },
-        { category: 'improved', label: 'Nâng cấp luồng xem lại ảnh & Quay lại chỉnh sửa', text: 'Tối ưu tỷ lệ khung hình xem lại ảnh từng slot, bổ sung nút chụp lại trực tiếp và hỗ trợ quay lại chỉnh sửa từ màn hình chia sẻ.' }
+        { category: 'improved', label: 'Autofocus chủ động & Đồng bộ màn trập', text: 'Kích hoạt lấy nét trước 1 giây cuối của đếm ngược, đảm bảo bắt trọn khoảnh khắc sắc nét tuyệt đối ngay khi màn trập chớp.' }
       ]
     },
     {
@@ -315,22 +315,22 @@ export class SoftwarePage implements OnInit {
       if (response.release.version === '1.0.13' && this.releaseUpdates.length > 0) {
         this.currentVersion.set(`v${response.release.version}`);
         this.releaseDate.set(this.formatDate(response.release.publishedAt));
-        this.fileSize.set(response.installer.size == null ? '844.2 MB' : this.formatBytes(response.installer.size));
+        this.fileSize.set(response.installer.size == null ? '844.1 MB' : this.formatBytes(response.installer.size));
         this.installerAvailable.set(true);
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '844.2 MB' : this.formatBytes(response.installer.size);
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '844.1 MB' : this.formatBytes(response.installer.size);
       } else {
         // Keep latest static release v1.0.13 at top if API provides older version
         this.currentVersion.set('v1.0.13');
-        this.releaseDate.set('09/10/2026');
-        this.fileSize.set('844.2 MB');
+        this.releaseDate.set('10/10/2026');
+        this.fileSize.set('844.1 MB');
         this.installerAvailable.set(true);
       }
     } catch {
       this.currentVersion.set('v1.0.13');
-      this.releaseDate.set('09/10/2026');
-      this.fileSize.set('844.2 MB');
+      this.releaseDate.set('10/10/2026');
+      this.fileSize.set('844.1 MB');
       this.installerAvailable.set(true);
     }
   }
