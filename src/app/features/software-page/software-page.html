@@ -55,6 +55,15 @@
       </a>
 
       <button 
+        (click)="scrollToSection('tech-limitations')"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-white/80 border border-[#B76E79]/30 text-[#814C53] font-medium text-base hover:bg-[#F8C8DC]/20 transition-all duration-300">
+        <svg class="w-5 h-5 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <span>Lưu Ý Kỹ Thuật</span>
+      </button>
+
+      <button 
         (click)="scrollToSection('release-notes')"
         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-white/80 border border-[#B76E79]/30 text-[#814C53] font-medium text-base hover:bg-[#F8C8DC]/20 transition-all duration-300">
         <svg class="w-5 h-5 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,6 +179,113 @@
             <span>{{ step.note }}</span>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.5 TECH LIMITATIONS & OPERATIONAL GUIDELINES -->
+  <section id="tech-limitations" class="max-w-7xl mx-auto px-6 lg:px-8 mb-24">
+    <div class="bg-white/85 rounded-3xl border border-[#B76E79]/25 p-8 md:p-12 soft-shadow">
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#814C53] px-3.5 py-1 rounded-full bg-[#F8C8DC]/40 border border-[#B76E79]/20 mb-3">
+          <svg class="w-3.5 h-3.5 text-[#B76E79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+          Chuẩn Vận Hành Thực Chiến
+        </span>
+        <h2 class="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-[#2D2D2D] mb-3">
+          Hạn Chế Kỹ Thuật &amp; Lưu Ý Phần Cứng
+        </h2>
+        <p class="text-sm md:text-base text-[#2D2D2D]/75 font-light leading-relaxed">
+          Pica Photobox giao tiếp trực tiếp với vi xử lý máy ảnh và máy in nhiệt ở tầng Native SDK. Để hệ thống đạt tốc độ chụp 60 FPS mượt mà không khựng giật và vận hành ổn định suốt 8-12 tiếng sự kiện, quý khách vui lòng tuân thủ các quy chuẩn kỹ thuật dưới đây:
+        </p>
+      </div>
+
+      <!-- Limitation Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let item of techLimitations" class="bg-[#fdfbf7] rounded-2xl p-6 md:p-7 border border-[#B76E79]/15 flex flex-col justify-between hover:shadow-md transition-all duration-300">
+          <div>
+            <!-- Card Header: Category & Level Badge -->
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-serif font-semibold text-[#814C53] tracking-wide uppercase">
+                {{ item.category }}
+              </span>
+              <span 
+                *ngIf="item.level === 'critical'"
+                class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200 uppercase tracking-wide">
+                {{ item.levelLabel }}
+              </span>
+              <span 
+                *ngIf="item.level === 'warning'"
+                class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wide">
+                {{ item.levelLabel }}
+              </span>
+              <span 
+                *ngIf="item.level === 'info'"
+                class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200 uppercase tracking-wide">
+                {{ item.levelLabel }}
+              </span>
+            </div>
+
+            <!-- Card Title -->
+            <h3 class="text-lg font-serif font-bold text-[#2D2D2D] mb-2 leading-snug">
+              {{ item.title }}
+            </h3>
+
+            <!-- Card Short Description -->
+            <p class="text-xs md:text-sm text-[#2D2D2D]/70 font-light leading-relaxed mb-4">
+              {{ item.description }}
+            </p>
+
+            <!-- Detailed Checkpoints List -->
+            <div class="space-y-2.5 mb-5">
+              <div *ngFor="let point of item.items" class="flex items-start gap-2.5 text-xs text-[#2D2D2D]/80 font-light leading-relaxed bg-white/70 p-2.5 rounded-xl border border-gray-100">
+                <svg class="w-4 h-4 text-[#B76E79] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <strong class="font-medium text-[#2D2D2D]">{{ point.name }}: </strong>
+                  <span>{{ point.detail }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendation Note at Bottom -->
+          <div class="text-[11px] text-[#814C53] bg-[#F8C8DC]/30 p-3 rounded-xl border border-[#B76E79]/20 flex items-start gap-2">
+            <svg class="w-4 h-4 text-[#B76E79] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="leading-relaxed">{{ item.recommendation }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Operational Checklist Summary -->
+      <div class="mt-10 p-6 md:p-8 rounded-2xl bg-gradient-to-r from-[#F8C8DC]/40 via-white to-[#F8C8DC]/40 border border-[#B76E79]/30 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-[#814C53] text-white flex items-center justify-center shrink-0 shadow-md">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-base font-serif font-bold text-[#2D2D2D]">Checklist Nhanh Trước Giờ Sự Kiện</h4>
+            <p class="text-xs md:text-sm text-[#2D2D2D]/75 font-light">1. Tắt EOS Utility • 2. Cắm USB 3.0 trực tiếp bo mạch • 3. Chuyển máy ảnh chế độ M + Dummy Battery • 4. Test in 1 bản 4x6.</p>
+          </div>
+        </div>
+        <a 
+          [href]="downloadUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          (click)="triggerDownload()"
+          class="shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#814C53] text-white text-xs md:text-sm font-medium hover:bg-[#B76E79] transition-all shadow-md cursor-pointer">
+          <span>Tải Bản {{ currentVersion() }} Đã Tối Ưu</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
       </div>
     </div>
   </section>

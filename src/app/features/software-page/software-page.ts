@@ -39,6 +39,22 @@ interface FaqItem {
   isOpen: boolean;
 }
 
+interface TechLimitationItem {
+  name: string;
+  detail: string;
+}
+
+interface TechLimitation {
+  icon: string;
+  category: string;
+  title: string;
+  level: 'critical' | 'warning' | 'info';
+  levelLabel: string;
+  description: string;
+  items: TechLimitationItem[];
+  recommendation: string;
+}
+
 interface PublicReleaseResponse {
   ok: boolean;
   release: { version: string; notes: string | null; publishedAt: string } | null;
@@ -54,15 +70,15 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.13');
-  readonly releaseDate = signal('11/10/2026');
-  readonly fileSize = signal('844.3 MB');
+  readonly currentVersion = signal('v1.0.14');
+  readonly releaseDate = signal('12/10/2026');
+  readonly fileSize = signal('844.7 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
-  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1FjJLqPApZXBXRaTItj_E4XALHR7JLI8J&export=download&confirm=t';
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1FjJLqPApZXBXRaTItj_E4XALHR7JLI8J/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1FjJLqPApZXBXRaTItj_E4XALHR7JLI8J/view?usp=sharing';
-  readonly googleDriveFolderUrl = 'https://drive.google.com/file/d/1FjJLqPApZXBXRaTItj_E4XALHR7JLI8J/view?usp=sharing';
+  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1C0h70c2jZtF1ZzNzpefx9BLS1z3hIj-U&export=download&confirm=t';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1C0h70c2jZtF1ZzNzpefx9BLS1z3hIj-U/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1C0h70c2jZtF1ZzNzpefx9BLS1z3hIj-U/view?usp=sharing';
+  readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=sharing';
 
   downloadToastMessage = signal<string | null>(null);
 
@@ -150,12 +166,176 @@ export class SoftwarePage implements OnInit {
     }
   ];
 
+  techLimitations: TechLimitation[] = [
+    {
+      icon: 'lock',
+      category: 'Xung Đột Ứng Dụng Hãng',
+      title: 'Ứng Dụng Độc Quyền Của Hãng Máy Ảnh',
+      level: 'critical',
+      levelLabel: 'Bắt buộc tuân thủ',
+      description: 'Pica Photobox đã tích hợp sẵn trọn bộ SDK điều khiển chính hãng (Canon EDSDK, Sony CrSDK...). Các ứng dụng quản lý máy ảnh của hãng sẽ chiếm độc quyền cổng kết nối USB (Exclusive Device Lock), gây lỗi rớt Live View hoặc từ chối bấm chụp.',
+      items: [
+        {
+          name: 'Canon EOS Utility / EOS Webcam Utility',
+          detail: 'Tuyệt đối tắt hoàn toàn (kể cả icon ở khay hệ thống Taskbar) trước khi khởi động Pica Photobox.'
+        },
+        {
+          name: 'Sony Imaging Edge / Remote / Webcam',
+          detail: 'Đóng mọi ứng dụng nền của Sony để nhường quyền điều khiển trực tiếp cho Sony CrSDK native.'
+        },
+        {
+          name: 'Nikon Camera Control Pro / Nikon Webcam',
+          detail: 'Tắt toàn bộ tiến trình điều khiển hoặc truyền file ngầm của Nikon đang mở trên Windows.'
+        }
+      ],
+      recommendation: 'Khuyến nghị: Kiểm tra khay hệ thống (System Tray góc dưới phải Windows) để đảm bảo không có tiện ích máy ảnh nào chạy ngầm trước khi mở quầy Photobooth.'
+    },
+    {
+      icon: 'cable',
+      category: 'Băng Thông Cổng USB',
+      title: 'Cổng Cắm USB & Cáp Kết Nối Máy Ảnh',
+      level: 'critical',
+      levelLabel: 'Phần cứng & Cáp nối',
+      description: 'Luồng Live View 60 FPS độ trễ dưới 30ms kết hợp truyền tải tức thì ảnh gốc 24MP - 33MP đòi hỏi băng thông USB phải ổn định tuyệt đối và không bị chia sẻ chập chờn.',
+      items: [
+        {
+          name: 'Cắm trực tiếp bo mạch chủ (Motherboard)',
+          detail: 'Cắm cáp máy ảnh vào cổng USB 3.0 (màu xanh dương) ở mặt sau case PC hoặc cổng độc lập trên Mini PC/Laptop.'
+        },
+        {
+          name: 'Tránh dùng USB Hub không nguồn phụ',
+          detail: 'Không cắm máy ảnh chung USB Hub thụ động với máy in nhiệt hoặc màn hình cảm ứng để tránh sụt điện áp và nghẽn gói tin khi máy in hoạt động.'
+        },
+        {
+          name: 'Tiêu chuẩn cáp USB Tethering',
+          detail: 'Dùng cáp chuẩn USB 3.0 chống nhiễu có cục lọc từ ferrite core, chiều dài tối ưu dưới 3 mét. Nếu cần kéo dài trên 5 mét, bắt buộc dùng cáp Active USB hoặc cáp quang có cấp nguồn phụ.'
+        }
+      ],
+      recommendation: 'Khuyến nghị: Dành riêng 1 cổng USB 3.0 độc lập cho máy ảnh và 1 cổng riêng cho máy in nhiệt để đạt hiệu suất 0ms giật lag.'
+    },
+    {
+      icon: 'camera-setting',
+      category: 'Cài Đặt Máy Ảnh',
+      title: 'Chế Độ Phơi Sáng & Nguồn Điện Máy Ảnh',
+      level: 'warning',
+      levelLabel: 'Cài đặt vận hành',
+      description: 'Đảm bảo độ sáng và tone màu của toàn bộ ảnh chụp trong sự kiện đồng đều 100%, đồng thời triệt tiêu rủi ro máy ảnh tự tắt nguồn giữa chừng.',
+      items: [
+        {
+          name: 'Khóa chế độ Manual (M) & Tắt Auto ISO',
+          detail: 'Chuyển vòng xoay chế độ máy sang M. Cố định khẩu độ (f/4 - f/8), tốc độ chụp (1/125s - 1/200s) và ISO cố định (100 - 400). Tuyệt đối không bật Auto ISO để tránh ảnh bị chớp sáng sai lệch khi đánh flash.'
+        },
+        {
+          name: 'Chế độ lấy nét AF-Servo / AI Focus',
+          detail: 'Thiết lập chế độ lấy nét tự động nhận diện khuôn mặt/mắt (Face/Eye Detection) để hệ thống bắt nét chuẩn xác vào khách chụp.'
+        },
+        {
+          name: 'Tắt chế độ tự động tắt nguồn (Auto Sleep)',
+          detail: 'Vào Menu máy ảnh -> Cài đặt nguồn (Power Management) -> Đặt Auto Power Off thành Disable / Never.'
+        },
+        {
+          name: 'Sử dụng bộ nguồn cắm điện (Dummy Battery)',
+          detail: 'Sử dụng adapter nguồn cắm điện trực tiếp (DC Coupler / Dummy Battery hoặc Type-C PD) thay vì pin máy ảnh để đảm bảo máy hoạt động liên tục 8-12 tiếng không lo chai pin hay sụt áp.'
+        }
+      ],
+      recommendation: 'Khuyến nghị: Luôn chuẩn bị sẵn 1 bộ Dummy Battery dự phòng và kiểm tra vòng xoay chế độ máy ảnh ở vị trí M trước giờ đón khách.'
+    },
+    {
+      icon: 'printer-gear',
+      category: 'Máy In Nhiệt Sự Kiện',
+      title: 'Cấu Hình Driver Máy In & Khổ Giấy Windows',
+      level: 'warning',
+      levelLabel: 'In ấn tự động',
+      description: 'Phần mềm tương thích hoàn hảo với các dòng máy in nhiệt DNP DS-RX1HS, DS620, Citizen CY-02, Hiti P525L... Hệ thống in tự động gửi lệnh thông qua Windows Print Spooler.',
+      items: [
+        {
+          name: 'Cài đặt Driver Windows chính hãng',
+          detail: 'Cài đặt bản driver mới nhất từ trang chủ DNP, Citizen hoặc Hiti dành cho Windows 10/11 64-bit trước khi kết nối.'
+        },
+        {
+          name: 'Thiết lập khổ giấy mặc định sẵn (Printing Preferences)',
+          detail: 'Vào Control Panel -> Devices and Printers -> Click chuột phải máy in -> Printing Preferences: Chọn khổ giấy mặc định là 4x6 inch (10x15cm) hoặc kích hoạt chế độ cắt 2 dải (2-inch cut) nếu in photo strip.'
+        },
+        {
+          name: 'Tránh ngắt nguồn đột ngột khi đang in',
+          detail: 'Không rút cáp USB hoặc tắt công tắc nguồn khi máy in đang cuốn giấy. Pica Photobox tích hợp sẵn công cụ Clear Print Queue 1-chạm nếu phát hiện kẹt hàng đợi từ Windows.'
+        }
+      ],
+      recommendation: 'Khuyến nghị: Chạy tính năng "In Trang Thử Nghiệm" trong phần Cài đặt của Pica Photobox để xác nhận máy in đã sẵn sàng và khổ giấy đúng chuẩn.'
+    },
+    {
+      icon: 'wifi-router',
+      category: 'Mạng Không Dây',
+      title: 'Mạng LAN Nội Bộ & Web Remote Trên Smartphone',
+      level: 'info',
+      levelLabel: 'Mạng LAN không dây',
+      description: 'Tính năng Web Remote cho phép quản trị viên bấm chụp, chọn chụp lại và duyệt chuyển khoản ngân hàng 1 chạm ngay trên điện thoại thông qua mạng Wi-Fi/LAN.',
+      items: [
+        {
+          name: 'Kết nối chung mạng nội bộ (LAN / Wi-Fi)',
+          detail: 'Điện thoại quản trị và máy tính Photobooth bắt buộc phải kết nối vào cùng 1 mạng Wi-Fi hoặc cùng switch mạng LAN.'
+        },
+        {
+          name: 'Không bật AP Isolation (Client Isolation)',
+          detail: 'Router Wi-Fi tại địa điểm sự kiện không được bật tính năng AP Isolation hoặc mạng khách (Guest Wi-Fi), vì chế độ này chặn các thiết bị nội bộ giao tiếp với nhau.'
+        },
+        {
+          name: 'Giải pháp Mobile Hotspot khi không có Wi-Fi',
+          detail: 'Nếu sự kiện ngoài trời hoặc Wi-Fi hội trường bị chặn cổng, bạn chỉ cần bật Mobile Hotspot trên máy tính Windows (hoặc phát từ điện thoại), kết nối các máy lại là có thể điều khiển mượt mà không cần Internet.'
+        }
+      ],
+      recommendation: 'Khuyến nghị: Trang bị một bộ phát Wi-Fi bỏ túi (Pocket Router) phát riêng cho quầy Photobooth để đường truyền độc lập, tốc độ phản hồi dưới 10ms.'
+    },
+    {
+      icon: 'cpu-chip',
+      category: 'Cấu Hình Hệ Thống',
+      title: 'Yêu Cầu Hệ Điều Hành & Cấu Hình Phần Cứng',
+      level: 'info',
+      levelLabel: 'Cấu hình đề xuất',
+      description: 'Để bộ xử lý AI Face Beauty 468 điểm và thuật toán làm đẹp vân da tự nhiên chạy mượt mà theo thời gian thực kết hợp render khung ảnh 4K sắc nét.',
+      items: [
+        {
+          name: 'Hệ điều hành Windows 10/11 (64-bit)',
+          detail: 'Chỉ hỗ trợ hệ điều hành Windows 10 hoặc Windows 11 bản 64-bit. Không hỗ trợ Windows 7/8, Windows 32-bit hay macOS.'
+        },
+        {
+          name: 'Bộ vi xử lý (CPU)',
+          detail: 'Tối thiểu Intel Core i5 thế hệ 8 trở lên hoặc AMD Ryzen 5 thế hệ 3 trở lên (khuyến nghị 6 nhân 12 luồng) để xử lý đa luồng AI và Live View song song.'
+        },
+        {
+          name: 'Bộ nhớ RAM & Ổ cứng',
+          detail: 'Tối thiểu 8GB RAM (khuyến nghị 16GB RAM để xử lý hàng loạt ảnh độ phân giải cao). Ổ cứng SSD còn trống ít nhất 20GB cho dữ liệu sự kiện.'
+        },
+        {
+          name: 'Card đồ họa (GPU)',
+          detail: 'Hỗ trợ card onboard Intel UHD Graphics 630 trở lên hoặc card đồ họa rời NVIDIA GeForce GTX để tăng tốc phần cứng DirectX/GPU.'
+        }
+      ],
+      recommendation: 'Khuyến nghị: Bộ máy Mini PC nhỏ gọn (Intel NUC hoặc Minisforum Ryzen) kết hợp màn hình cảm ứng Full HD là giải pháp tối ưu cho booth chụp di động.'
+    }
+  ];
+
   releaseUpdates: ReleaseUpdate[] = [
+    {
+      version: 'v1.0.14',
+      releaseDate: '12/10/2026',
+      isLatest: true,
+      tagText: 'Bản mới nhất',
+      summary: 'Đột phá tối ưu hóa luồng lấy nét và chớp màn trập (Studio AF Capture Pipeline): Lấy nét 4 bước Native EDSDK êm ái, xóa bỏ hoàn toàn hiện tượng khựng giật Live View, cơ chế cứu hộ AF thông minh (Auto AF Fallback) chống lỗi khóa màn trập 65539, và công nghệ xem lại ảnh GPU tức thì không độ trễ.',
+      downloadSize: '844.7 MB',
+      changes: [
+        { category: 'improved', label: 'Chuẩn hóa luồng lấy nét 4 bước chuyên nghiệp (Studio AF Pipeline)', text: 'Thực hiện lấy nét chủ động trước khi chớp màn trập 1 giây với 4 bước chuẩn xác (Press Halfway -> Lắng nghe tín hiệu khóa nét -> Release Halfway -> Chớp màn trập Full Press), giúp ảnh nét căng từng sợi tóc mà không làm giật khựng Live View.' },
+        { category: 'fixed', label: 'Cơ chế cứu hộ lấy nét thông minh (AF Fallback EDS_ERR_DEVICE_BUSY 65539)', text: 'Tự động bắt lỗi và fallback an toàn khi máy ảnh gặp môi trường ánh sáng phức tạp hoặc đối tượng di chuyển bất ngờ, ngăn chặn triệt để lỗi treo cứng màn trập 65539 của Canon EDSDK.' },
+        { category: 'improved', label: 'Tách biệt luồng Live View 60 FPS và màn trập', text: 'Tách biệt hoàn toàn luồng truyền hình ảnh ngắm Live View và luồng điều khiển lấy nét màn trập, đảm bảo khung hình khách hàng ngắm trên màn hình luôn mượt mà trong suốt quá trình đếm ngược.' },
+        { category: 'new', label: 'Công nghệ xem lại ảnh GPU tức thì (Zero-latency Quick Review)', text: 'Tự động nạp trước và hiển thị tức thì ảnh vừa chụp thông qua bộ giải mã phần cứng GPU trong khi background worker âm thầm đồng bộ và lưu trữ file RAW/JPEG gốc.' },
+        { category: 'improved', label: 'Thanh thời gian chờ chuyển màn hình chia sẻ (Auto-Transition Timer)', text: 'Cải tiến thanh trượt đếm ngược thông minh tại màn hình xem lại và chia sẻ, khóa chuyển màn hình trong 3 giây đầu để khách hàng ngắm trọn vẹn ảnh thành phẩm trước khi cho phép chuyển về màn hình chính.' }
+      ]
+    },
     {
       version: 'v1.0.13',
       releaseDate: '11/10/2026',
-      isLatest: true,
-      tagText: 'Bản mới nhất',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Tối ưu luồng hiển thị Live View mượt mà tự nhiên khử nhiễu khối JPEG, nâng cấp đồng bộ điều khiển từ xa Web Remote 2 chiều cho màn xem lại & chia sẻ, hoàn thiện bộ đếm ngược Native dslrBooth (0ms latency) và công cụ thiết kế khung ảnh thông minh 50MB.',
       downloadSize: '844.3 MB',
       changes: [
@@ -314,25 +494,25 @@ export class SoftwarePage implements OnInit {
       ));
       if (!response.ok || !response.release) throw new Error('No published release');
 
-      if (response.release.version === '1.0.13' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.14' && this.releaseUpdates.length > 0) {
         this.currentVersion.set(`v${response.release.version}`);
         this.releaseDate.set(this.formatDate(response.release.publishedAt));
-        this.fileSize.set(response.installer.size == null ? '844.3 MB' : this.formatBytes(response.installer.size));
+        this.fileSize.set(response.installer.size == null ? '844.7 MB' : this.formatBytes(response.installer.size));
         this.installerAvailable.set(true);
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '844.3 MB' : this.formatBytes(response.installer.size);
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '844.7 MB' : this.formatBytes(response.installer.size);
       } else {
-        // Keep latest static release v1.0.13 at top if API provides older version
-        this.currentVersion.set('v1.0.13');
-        this.releaseDate.set('11/10/2026');
-        this.fileSize.set('844.3 MB');
+        // Keep latest static release v1.0.14 at top if API provides older version
+        this.currentVersion.set('v1.0.14');
+        this.releaseDate.set('12/10/2026');
+        this.fileSize.set('844.7 MB');
         this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.13');
-      this.releaseDate.set('11/10/2026');
-      this.fileSize.set('844.3 MB');
+      this.currentVersion.set('v1.0.14');
+      this.releaseDate.set('12/10/2026');
+      this.fileSize.set('844.7 MB');
       this.installerAvailable.set(true);
     }
   }
