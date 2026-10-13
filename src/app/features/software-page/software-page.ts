@@ -71,13 +71,13 @@ export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
   readonly currentVersion = signal('v1.0.15');
-  readonly releaseDate = signal('13/10/2026');
-  readonly fileSize = signal('845.2 MB');
+  readonly releaseDate = signal('14/10/2026');
+  readonly fileSize = signal('845.6 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
-  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1MXGbjvd9JCvazFkj2jp4gd2lpWxm2oCX&export=download&confirm=t';
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1MXGbjvd9JCvazFkj2jp4gd2lpWxm2oCX/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1MXGbjvd9JCvazFkj2jp4gd2lpWxm2oCX/view?usp=sharing';
+  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1JF9hX5l3z_S-V3-5cLrOczoqrfmJc_Yi&export=download&confirm=t';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1JF9hX5l3z_S-V3-5cLrOczoqrfmJc_Yi/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1JF9hX5l3z_S-V3-5cLrOczoqrfmJc_Yi/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=sharing';
 
   downloadToastMessage = signal<string | null>(null);
@@ -318,15 +318,17 @@ export class SoftwarePage implements OnInit {
   releaseUpdates: ReleaseUpdate[] = [
     {
       version: 'v1.0.15',
-      releaseDate: '13/10/2026',
+      releaseDate: '14/10/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
-      summary: 'Ra mắt hệ thống Chính sách Làm đẹp Chân dung AI mặc định theo sự kiện (Event Beauty Policy), mở khóa toàn bộ 10 thanh trượt tinh chỉnh chuyên sâu trên màn hình Xem lại & Chỉnh sửa Native, tối ưu hóa xử lý ảnh bằng tập lệnh CPU SIMD Vectorization cho Mini PC và chuẩn hóa khung căn ảnh Live View.',
-      downloadSize: '845.2 MB',
+      summary: 'Đột phá tối ưu hóa tốc độ Live View với bộ giải mã libjpeg-turbo SIMD AVX2 thuần túy (<1ms, 0 heap allocation), nâng cấp bộ nướng màu Direct 24-bit Flat Pointer LUT (<0.8ms, triệt tiêu banding), GPU Bicubic Scaling sắc nét, cùng hệ thống Chính sách Làm đẹp Chân dung AI mặc định theo sự kiện (Event Beauty Policy) và 10 thanh trượt tinh chỉnh chuyên sâu.',
+      downloadSize: '845.6 MB',
       changes: [
+        { category: 'improved', label: 'Giải mã Live View siêu tốc với libjpeg-turbo SIMD AVX2/SSE2', text: 'Chuyển đổi toàn diện sang thư viện libjpeg-turbo chuẩn công nghiệp x86/AVX2/SSE2, giải mã trực tiếp JPEG sang con trỏ BGRA32 chỉ tốn ~1.0ms (nhanh gấp 5 lần WIC của Windows), tiết kiệm 80% tải CPU và 0 byte cấp phát rác trên GC Heap.' },
+        { category: 'improved', label: 'Bộ nướng màu thời gian thực Direct 24-bit Pointer LUT', text: 'Prebake bảng tra phẳng 16.7 triệu màu bằng thuật toán nội suy trilinear 3D và duyệt con trỏ không rẽ nhánh (branchless 8-way unroll), nướng màu Live View đạt tốc độ kỷ lục <0.8ms (>1000 FPS), loại bỏ 100% hiện tượng Color Banding và Posterization.' },
+        { category: 'improved', label: 'GPU Bicubic Filtering khử răng cưa & nén JPEG', text: 'Nâng cấp chế độ hiển thị Live View trên DirectX sang GPU Bicubic (HighQuality), làm mịn các khối nén JPEG và khử răng cưa viền, cho chất lượng ngắm Live View nét căng mịn màng trên màn hình 2K/4K.' },
         { category: 'new', label: 'Chính sách Làm đẹp Chân dung AI theo sự kiện (Event Beauty Policy)', text: 'Cho phép quản trị viên cấu hình chế độ làm đẹp mặc định cho từng sự kiện (Khách tự do chọn, Khóa cố định Studio hoặc Tắt làm đẹp), tinh chỉnh sẵn 10 thông số cho từng mẫu (Tự Nhiên, Mịn Da, Sáng Hồng, AI Glam) và tự động áp dụng ngay khi chụp xong mà không gây nặng luồng Live View.' },
         { category: 'improved', label: '10 Thanh chỉnh sửa chi tiết Làm đẹp tại Kiosk (Fine Adjustment Sliders)', text: 'Hiển thị đầy đủ 10 công cụ làm đẹp chuyên sâu (Mịn da, Sáng da, Thon mặt, Son môi, Má hồng, Sáng mắt, Chân mày, Tông da, Chi tiết, Nét AI) kèm thanh trượt phần trăm độc lập trên màn hình Xem lại & Chỉnh sửa khi bật quyền cho phép khách tự tinh chỉnh.' },
-        { category: 'improved', label: 'Tối ưu hóa CPU Registers & SIMD Vectorization cho Mini PC', text: 'Tăng tốc thuật toán xử lý ảnh và tiền xử lý AI bằng thanh ghi SIMD Vector<T> kết hợp ArrayPool Zero-Allocation và phân luồng đa nhân thông minh (tự động fallback an toàn trên các dòng CPU đời cũ).' },
         { category: 'fixed', label: 'Chuẩn hóa Khung căn ảnh Live View (Crop Guide Reset)', text: 'Tự động làm mới trạng thái khung căn ảnh khi bắt đầu phiên chụp mới chưa chọn khung, khắc phục triệt để hiện tượng lưu giữ khung căn của phiên chụp trước.' }
       ]
     },
