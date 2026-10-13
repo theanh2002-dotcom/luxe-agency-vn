@@ -70,14 +70,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.14');
-  readonly releaseDate = signal('12/10/2026');
-  readonly fileSize = signal('844.7 MB');
+  readonly currentVersion = signal('v1.0.15');
+  readonly releaseDate = signal('13/10/2026');
+  readonly fileSize = signal('845.2 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
-  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1C0h70c2jZtF1ZzNzpefx9BLS1z3hIj-U&export=download&confirm=t';
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1C0h70c2jZtF1ZzNzpefx9BLS1z3hIj-U/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1C0h70c2jZtF1ZzNzpefx9BLS1z3hIj-U/view?usp=sharing';
+  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1MXGbjvd9JCvazFkj2jp4gd2lpWxm2oCX&export=download&confirm=t';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/1MXGbjvd9JCvazFkj2jp4gd2lpWxm2oCX/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1MXGbjvd9JCvazFkj2jp4gd2lpWxm2oCX/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=sharing';
 
   downloadToastMessage = signal<string | null>(null);
@@ -317,10 +317,24 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.14',
-      releaseDate: '12/10/2026',
+      version: 'v1.0.15',
+      releaseDate: '13/10/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Ra mắt hệ thống Chính sách Làm đẹp Chân dung AI mặc định theo sự kiện (Event Beauty Policy), mở khóa toàn bộ 10 thanh trượt tinh chỉnh chuyên sâu trên màn hình Xem lại & Chỉnh sửa Native, tối ưu hóa xử lý ảnh bằng tập lệnh CPU SIMD Vectorization cho Mini PC và chuẩn hóa khung căn ảnh Live View.',
+      downloadSize: '845.2 MB',
+      changes: [
+        { category: 'new', label: 'Chính sách Làm đẹp Chân dung AI theo sự kiện (Event Beauty Policy)', text: 'Cho phép quản trị viên cấu hình chế độ làm đẹp mặc định cho từng sự kiện (Khách tự do chọn, Khóa cố định Studio hoặc Tắt làm đẹp), tinh chỉnh sẵn 10 thông số cho từng mẫu (Tự Nhiên, Mịn Da, Sáng Hồng, AI Glam) và tự động áp dụng ngay khi chụp xong mà không gây nặng luồng Live View.' },
+        { category: 'improved', label: '10 Thanh chỉnh sửa chi tiết Làm đẹp tại Kiosk (Fine Adjustment Sliders)', text: 'Hiển thị đầy đủ 10 công cụ làm đẹp chuyên sâu (Mịn da, Sáng da, Thon mặt, Son môi, Má hồng, Sáng mắt, Chân mày, Tông da, Chi tiết, Nét AI) kèm thanh trượt phần trăm độc lập trên màn hình Xem lại & Chỉnh sửa khi bật quyền cho phép khách tự tinh chỉnh.' },
+        { category: 'improved', label: 'Tối ưu hóa CPU Registers & SIMD Vectorization cho Mini PC', text: 'Tăng tốc thuật toán xử lý ảnh và tiền xử lý AI bằng thanh ghi SIMD Vector<T> kết hợp ArrayPool Zero-Allocation và phân luồng đa nhân thông minh (tự động fallback an toàn trên các dòng CPU đời cũ).' },
+        { category: 'fixed', label: 'Chuẩn hóa Khung căn ảnh Live View (Crop Guide Reset)', text: 'Tự động làm mới trạng thái khung căn ảnh khi bắt đầu phiên chụp mới chưa chọn khung, khắc phục triệt để hiện tượng lưu giữ khung căn của phiên chụp trước.' }
+      ]
+    },
+    {
+      version: 'v1.0.14',
+      releaseDate: '12/10/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Đột phá tối ưu hóa luồng lấy nét và chớp màn trập (Studio AF Capture Pipeline): Lấy nét 4 bước Native EDSDK êm ái, xóa bỏ hoàn toàn hiện tượng khựng giật Live View, cơ chế cứu hộ AF thông minh (Auto AF Fallback) chống lỗi khóa màn trập 65539, và công nghệ xem lại ảnh GPU tức thì không độ trễ.',
       downloadSize: '844.7 MB',
       changes: [
@@ -494,25 +508,25 @@ export class SoftwarePage implements OnInit {
       ));
       if (!response.ok || !response.release) throw new Error('No published release');
 
-      if (response.release.version === '1.0.14' && this.releaseUpdates.length > 0) {
+      if (response.release.version === '1.0.15' && this.releaseUpdates.length > 0) {
         this.currentVersion.set(`v${response.release.version}`);
         this.releaseDate.set(this.formatDate(response.release.publishedAt));
-        this.fileSize.set(response.installer.size == null ? '844.7 MB' : this.formatBytes(response.installer.size));
+        this.fileSize.set(response.installer.size == null ? '845.2 MB' : this.formatBytes(response.installer.size));
         this.installerAvailable.set(true);
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '844.7 MB' : this.formatBytes(response.installer.size);
+        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '845.2 MB' : this.formatBytes(response.installer.size);
       } else {
-        // Keep latest static release v1.0.14 at top if API provides older version
-        this.currentVersion.set('v1.0.14');
-        this.releaseDate.set('12/10/2026');
-        this.fileSize.set('844.7 MB');
+        // Keep latest static release v1.0.15 at top if API provides older version
+        this.currentVersion.set('v1.0.15');
+        this.releaseDate.set('13/10/2026');
+        this.fileSize.set('845.2 MB');
         this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.14');
-      this.releaseDate.set('12/10/2026');
-      this.fileSize.set('844.7 MB');
+      this.currentVersion.set('v1.0.15');
+      this.releaseDate.set('13/10/2026');
+      this.fileSize.set('845.2 MB');
       this.installerAvailable.set(true);
     }
   }
