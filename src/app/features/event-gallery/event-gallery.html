@@ -347,7 +347,7 @@
          class="lightbox-session-thumb"
          [class.lightbox-session-thumb--active]="idx === activeSessionMediaIndex()"
          (click)="selectSessionMedia(idx)">
-      <img [src]="getPreviewSrc(m)" [alt]="m.name" referrerpolicy="no-referrer" />
+      <img [src]="getPreviewSrc(m)" [alt]="m.name" referrerpolicy="no-referrer" (error)="onThumbError(m)" />
       <span class="video-badge video-badge--small" *ngIf="isVideo(m)">▶</span>
     </div>
   </div>

@@ -29,6 +29,7 @@ export interface GalleryPhoto {
   isNew?: boolean;
   _thumbError?: boolean;
   _mainError?: boolean;
+  _videoThumbRetries?: number;
 }
 
 export interface GallerySession {
