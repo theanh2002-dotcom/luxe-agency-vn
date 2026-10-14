@@ -109,7 +109,7 @@
 
         <!-- Action Buttons -->
         <div class="main-photo-actions">
-          <button class="action-btn" [disabled]="isDownloading()" (click)="downloadPhoto(selectedPhoto())" title="Tải ảnh này">
+          <button class="action-btn" [disabled]="isDownloading() || isZippingSession()" (click)="downloadPhoto(selectedPhoto())" title="Tải ảnh này">
             <span *ngIf="isDownloading()" class="spinner-inline"></span>
             <svg *ngIf="!isDownloading()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
@@ -161,7 +161,7 @@
       </div>
 
       <div class="download-all-section" *ngIf="selectedPhoto()">
-        <button class="download-all-btn" [disabled]="isDownloading()" (click)="downloadPhoto(selectedPhoto())">
+        <button class="download-all-btn download-all-btn--secondary" [disabled]="isDownloading() || isZippingSession()" (click)="downloadPhoto(selectedPhoto())" title="Tải ảnh này về máy">
           <span *ngIf="isDownloading()" class="spinner-inline"></span>
           <svg *ngIf="!isDownloading()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
             stroke-linejoin="round">
@@ -170,6 +170,15 @@
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
           {{ isDownloading() ? 'Đang tải...' : (isVideo(selectedPhoto()) ? 'Tải video này' : 'Tải ảnh này') }}
+        </button>
+
+        <button class="download-all-btn" [disabled]="isZippingSession() || isDownloading()" (click)="downloadActiveSession()" *ngIf="photoCount() > 1" title="Lưu trọn bộ ảnh vào máy">
+          <span *ngIf="isZippingSession()" class="spinner-inline"></span>
+          <svg *ngIf="!isZippingSession()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          {{ isZippingSession() ? (zipSessionProgress() || 'Đang xử lý...') : (isMobileDevice() ? ('Lưu trọn bộ (' + photoCount() + ')') : ('Tải trọn bộ (' + photoCount() + ')')) }}
         </button>
       </div>
     </div>
@@ -345,7 +354,7 @@
 
   <!-- Lightbox Action Bar -->
   <div class="lightbox-actions" (click)="$event.stopPropagation()">
-    <button class="lightbox-download" [disabled]="isDownloading()" (click)="downloadCurrentLightboxMedia()" title="Tải ảnh này">
+    <button class="lightbox-download" [disabled]="isDownloading() || isZippingSession()" (click)="downloadCurrentLightboxMedia()" title="Tải ảnh này">
       <span *ngIf="isDownloading()" class="spinner-inline"></span>
       <svg *ngIf="!isDownloading()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
@@ -355,12 +364,13 @@
       </svg>
       {{ isDownloading() ? 'Đang tải...' : (isVideo(currentLightboxMedia()) ? 'Tải video này' : 'Tải ảnh này') }}
     </button>
-    <button class="lightbox-download lightbox-download--session" (click)="downloadActiveSession()" *ngIf="!isSingleSession() && activeSession() && activeSessionMedia().length > 1" title="Tải trọn bộ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    <button class="lightbox-download lightbox-download--session" [disabled]="isZippingSession() || isDownloading()" (click)="downloadActiveSession()" *ngIf="currentBatchCount() > 1" title="Lưu trọn bộ">
+      <span *ngIf="isZippingSession()" class="spinner-inline"></span>
+      <svg *ngIf="!isZippingSession()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
         <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
       </svg>
-      Tải trọn bộ ({{ activeSessionMedia().length }})
+      {{ isZippingSession() ? (zipSessionProgress() || 'Đang xử lý...') : (isMobileDevice() ? ('Lưu trọn bộ (' + currentBatchCount() + ')') : ('Tải trọn bộ (' + currentBatchCount() + ')')) }}
     </button>
   </div>
 </div>

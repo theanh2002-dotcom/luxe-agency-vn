@@ -63,6 +63,17 @@ export class EventGallery implements OnInit, OnDestroy {
     }
     return this.photos()[this.lightboxIndex()] || null;
   });
+  currentBatchMedia = computed<GalleryPhoto[]>(() => {
+    const s = this.activeSession();
+    if (s && s.allMedia && s.allMedia.length > 0) {
+      return s.allMedia;
+    }
+    if (this.isSingleSession()) {
+      return this.photos();
+    }
+    return [];
+  });
+  currentBatchCount = computed(() => this.currentBatchMedia().length);
 
   /**
    * WINDOWING: Chỉ render ±2 ảnh xung quanh ảnh đang xem trong DOM.
@@ -493,7 +504,7 @@ export class EventGallery implements OnInit, OnDestroy {
   }
 
   async downloadActiveSession() {
-    const mediaList = this.activeSessionMedia();
+    const mediaList = this.currentBatchMedia();
     if (mediaList.length === 0) return;
     if (mediaList.length === 1) {
       this.downloadPhoto(mediaList[0]);
@@ -505,12 +516,85 @@ export class EventGallery implements OnInit, OnDestroy {
     this.zipSessionProgress.set('0%');
 
     try {
+      // TRƯỜNG HỢP 1: TRÊN THIẾT BỊ DI ĐỘNG (Android & iOS)
+      // Khách muốn lưu ảnh trực tiếp vào Thư viện ảnh / Bộ sưu tập (Apple Photos / Google Photos).
+      // TUYỆT ĐỐI KHÔNG nén ZIP trên điện thoại vì:
+      // 1. Khách phổ thông không biết giải nén file zip trên điện thoại.
+      // 2. File zip tải về không tự hiển thị trong ứng dụng Thư viện ảnh.
+      // 3. Nén zip ngốn RAM gây crash tab và Chrome Android chặn tải file zip tự động.
+      if (this.isMobileDevice()) {
+        await this.saveBatchToMobileGallery(mediaList);
+        return;
+      }
+
+      // TRƯỜNG HỢP 2: TRÊN MÁY TÍNH (PC / Laptop)
+      // Tải trọn bộ 1 file ZIP nhanh chóng và tiện lợi.
       const session = this.activeSession();
       const num = session?.sessionNumber || 'chup';
       await this.downloadZip(mediaList, `Phien_${num}.zip`, this.zipSessionProgress);
     } finally {
       this.isZippingSession.set(false);
       this.zipSessionProgress.set('');
+    }
+  }
+
+  private async saveBatchToMobileGallery(mediaList: GalleryPhoto[]): Promise<void> {
+    const total = mediaList.length;
+
+    // Bước 1: Ưu tiên dùng Web Share API đa tệp (Hỗ trợ cả iOS Safari và Android Chrome)
+    // Giúp khách lưu toàn bộ ảnh cùng 1 lúc vào Thư viện ảnh (iOS: "Lưu X hình ảnh", Android: "Lưu vào máy / Google Photos / Zalo")
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        const files: File[] = [];
+        for (let i = 0; i < total; i++) {
+          this.zipSessionProgress.set(`Chuẩn bị ${i + 1}/${total}...`);
+          const photo = mediaList[i];
+          const url = this.driveService.getDownloadUrl(photo);
+          if (!url) continue;
+
+          try {
+            const res = await fetch(url);
+            if (res.ok) {
+              const blob = await res.blob();
+              let fileName = photo.name?.trim() || (this.isVideo(photo) ? `video_${i + 1}.mp4` : `photo_${i + 1}.jpg`);
+              if (!fileName.includes('.')) fileName += this.isVideo(photo) ? '.mp4' : '.jpg';
+              const mimeType = this.getShareMimeType(photo);
+              files.push(new File([blob], fileName, { type: mimeType }));
+            }
+          } catch (fetchErr) {
+            console.warn(`[Gallery] Failed to fetch photo ${i + 1} for share:`, fetchErr);
+          }
+        }
+
+        if (files.length > 0 && typeof navigator.canShare === 'function' && navigator.canShare({ files })) {
+          this.zipSessionProgress.set('Mở bảng lưu ảnh...');
+          await navigator.share({
+            files,
+            title: 'Trọn bộ ảnh sự kiện'
+          });
+          return;
+        }
+      } catch (err) {
+        if (this.isShareAbortError(err)) return;
+        console.warn('[Gallery] Web Share batch failed, falling back to sequential download:', err);
+      }
+    }
+
+    // Bước 2: Fallback khi Web Share không hỗ trợ (Tải lần lượt từng file ảnh JPG/MP4 vào máy)
+    // Các ảnh này sẽ tải thẳng vào thư mục "Download" của máy.
+    // Ứng dụng Bộ sưu tập / Thư viện ảnh trên Android sẽ tự động quét và hiển thị ngay các ảnh này!
+    for (let i = 0; i < total; i++) {
+      this.zipSessionProgress.set(`Đang lưu ${i + 1}/${total}...`);
+      const photo = mediaList[i];
+      const url = this.driveService.getDownloadUrl(photo);
+      if (url) {
+        let fileName = photo.name?.trim() || (this.isVideo(photo) ? `video_${i + 1}.mp4` : `photo_${i + 1}.jpg`);
+        if (!fileName.includes('.')) fileName += this.isVideo(photo) ? '.mp4' : '.jpg';
+        this.triggerDirectDownload(url, fileName);
+        if (i < total - 1) {
+          await new Promise(resolve => setTimeout(resolve, 600));
+        }
+      }
     }
   }
 
@@ -532,28 +616,28 @@ export class EventGallery implements OnInit, OnDestroy {
     });
   }
 
-  async downloadPhoto(photo: GalleryPhoto) {
+  async downloadPhoto(photo: GalleryPhoto | null | undefined) {
     if (!photo || this.isDownloading()) return;
 
     this.isDownloading.set(true);
     try {
+      const url = this.driveService.getDownloadUrl(photo);
+      if (!url) return;
+      const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg');
+
       // 1. Trên iPhone/iOS: Dùng Web Share API để mở bảng chia sẻ của iOS có nút "Lưu hình ảnh" (Save Image)
-      // giúp ảnh nhảy thẳng vào Cuộn camera (Apple Photos) mà KHÔNG nhảy sang tab khác!
+      // giúp ảnh nhảy thẳng vào Cuộn camera (Apple Photos) mà KHÔNG nhảy sang Files/tab khác!
       if (this.isIOSDevice() && typeof navigator.share === 'function') {
         try {
           let file = this.preparedShareFile;
           if (!file || this.preparedShareMediaId !== photo.mediaId) {
-            const url = this.driveService.getDownloadUrl(photo);
-            if (url) {
-              const res = await fetch(url);
-              if (res.ok) {
-                const blob = await res.blob();
-                const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg');
-                const mimeType = this.getShareMimeType(photo);
-                file = new File([blob], fileName, { type: mimeType });
-                this.preparedShareFile = file;
-                this.preparedShareMediaId = photo.mediaId;
-              }
+            const res = await fetch(url);
+            if (res.ok) {
+              const blob = await res.blob();
+              const mimeType = this.getShareMimeType(photo);
+              file = new File([blob], fileName, { type: mimeType });
+              this.preparedShareFile = file;
+              this.preparedShareMediaId = photo.mediaId;
             }
           }
 
@@ -563,22 +647,15 @@ export class EventGallery implements OnInit, OnDestroy {
           }
         } catch (error) {
           if (this.isShareAbortError(error)) return;
-          console.warn('[Gallery] iOS Web Share failed, falling back to direct/blob download:', error);
+          console.warn('[Gallery] iOS Web Share failed, falling back to direct download:', error);
         }
       }
 
-      // 2. In-App browser (Zalo, FB Messenger...): thường chặn Blob download -> Tải trực tiếp qua URL attachment
-      if (this.isInAppBrowser()) {
-        const url = this.driveService.getDownloadUrl(photo);
-        if (url) {
-          const fileName = photo.name?.trim() || (this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg');
-          this.triggerDirectDownload(url, fileName);
-          return;
-        }
-      }
-
-      // 3. Android, PC và fallback: Tải trực tiếp dưới dạng Blob Object URL
-      await this.downloadPhotoAsBlob(photo);
+      // 2. Android, PC và các nền tảng khác:
+      // Tải TRỰC TIẾP qua URL attachment của server (Content-Disposition: attachment).
+      // TUYỆT ĐỐI KHÔNG dùng fetch() + Blob Object URL trên Android vì sẽ làm mất User Gesture,
+      // dẫn đến việc Chrome Android chặn tải từ ảnh thứ 2 trở đi!
+      this.triggerDirectDownload(url, fileName);
     } finally {
       this.isDownloading.set(false);
     }
@@ -598,42 +675,6 @@ export class EventGallery implements OnInit, OnDestroy {
     } finally {
       this.isZippingAll.set(false);
       this.zipAllProgress.set('');
-    }
-  }
-
-  private async downloadPhotoAsBlob(photo: GalleryPhoto): Promise<void> {
-    const url = this.driveService.getDownloadUrl(photo);
-    if (!url) return;
-
-    let fileName = photo.name?.trim() || '';
-    if (!fileName) {
-      fileName = this.isVideo(photo) ? 'event-video.mp4' : 'event-photo.jpg';
-    } else if (!fileName.includes('.')) {
-      fileName += this.isVideo(photo) ? '.mp4' : '.jpg';
-    }
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = fileName;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-
-      setTimeout(() => {
-        URL.revokeObjectURL(blobUrl);
-        if (document.body.contains(link)) {
-          document.body.removeChild(link);
-        }
-      }, 3000);
-    } catch (err) {
-      console.warn('[Gallery] Blob download failed, falling back to direct link:', err);
-      this.triggerDirectDownload(url, fileName);
     }
   }
 
@@ -705,6 +746,22 @@ export class EventGallery implements OnInit, OnDestroy {
         }
       );
 
+      // Nếu là thiết bị di động và hỗ trợ Web Share, chia sẻ file ZIP qua hệ thống để lưu an toàn không bị chặn
+      if (this.isMobileDevice() && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        try {
+          const zipFile = new File([zipBlob], zipFileName, { type: 'application/zip' });
+          if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [zipFile] })) {
+            await navigator.share({
+              files: [zipFile],
+              title: zipFileName
+            });
+            return;
+          }
+        } catch (shareErr) {
+          if (this.isShareAbortError(shareErr)) return;
+        }
+      }
+
       const blobUrl = URL.createObjectURL(zipBlob);
       const link = document.createElement('a');
       link.href = blobUrl;
@@ -772,6 +829,13 @@ export class EventGallery implements OnInit, OnDestroy {
     const mediaType = this.isVideo(photo) ? 'video' : 'image';
     const fallback = this.isVideo(photo) ? 'video/mp4' : 'image/jpeg';
     return mimeType && new RegExp(`^${mediaType}/[a-z0-9.+-]+$`, 'i').test(mimeType) ? mimeType : fallback;
+  }
+
+  isMobileDevice(): boolean {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua) ||
+      (ua.includes('Mac') && typeof document !== 'undefined' && 'ontouchend' in document);
   }
 
   private isIOSDevice(): boolean {

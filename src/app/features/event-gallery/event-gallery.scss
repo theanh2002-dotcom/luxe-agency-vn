@@ -465,8 +465,29 @@ $radius-sm: 10px;
 
 .download-all-section {
   flex-shrink: 0;
-  padding: 0 24px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
   margin-bottom: 0;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+
+  .download-all-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    font-size: 13px;
+
+    &--secondary {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: none;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.22);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
 }
 
 .spinner-inline {
