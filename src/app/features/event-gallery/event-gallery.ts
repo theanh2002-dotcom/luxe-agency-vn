@@ -959,58 +959,31 @@ export class EventGallery implements OnInit, OnDestroy {
     return this.driveService.getLightboxUrl(photo);
   }
 
-  /** Grid preview: 2560px ảnh gốc sắc nét, video dùng thumbnail poster */
+  getVideoPreviewSrc(photo: GalleryPhoto): string {
+    if (!photo) return '';
+    const src = this.getVideoSrc(photo);
+    if (!src) return '';
+    return src.includes('#') ? src : `${src}#t=0.001`;
+  }
+
+  /** Grid preview: 2560px ảnh gốc sắc nét, video fallback SVG nếu render thẻ img */
   getPreviewSrc(photo: GalleryPhoto): string {
     if (!photo) return '';
-    if (this.isVideo(photo)) return this.getThumbSrc(photo);
+    if (this.isVideo(photo)) return this.VIDEO_FALLBACK_SVG;
     return this.getLightboxSrc(photo);
   }
 
-  private readonly VIDEO_FALLBACK_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><rect width="300" height="300" fill="%231a1a24"/><circle cx="150" cy="150" r="42" fill="%23d4af37" opacity="0.85"/><polygon points="142,135 166,150 142,165" fill="%23ffffff"/><text x="150" y="222" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" font-weight="700" fill="%23d4af37" text-anchor="middle" letter-spacing="1">VIDEO BTS</text></svg>';
+  readonly VIDEO_FALLBACK_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><rect width="300" height="300" fill="%231a1a24"/><circle cx="150" cy="150" r="42" fill="%23d4af37" opacity="0.85"/><polygon points="142,135 166,150 142,165" fill="%23ffffff"/><text x="150" y="222" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" font-weight="700" fill="%23d4af37" text-anchor="middle" letter-spacing="1">VIDEO BTS</text></svg>';
 
-  getVideoFallbackThumb(photo: GalleryPhoto): string {
-    if (!this.isVideo(photo)) return '';
-
-    // 1. Tìm ảnh cùng phiên chụp (shot hoặc final) chưa bị lỗi
-    const sessionId = photo.sessionId;
-    if (sessionId) {
-      const companion = this.photos().find(p => p.sessionId === sessionId && !this.isVideo(p) && !p._thumbError);
-      if (companion) {
-        return this.driveService.getThumbnailUrl(companion);
-      }
-      const activeS = this.activeSession();
-      if (activeS && activeS.sessionId === sessionId) {
-        const shot = activeS.shots?.find(s => !s._thumbError);
-        if (shot) return this.driveService.getThumbnailUrl(shot);
-        if (activeS.finalPhoto && !activeS.finalPhoto._thumbError) {
-          return this.driveService.getThumbnailUrl(activeS.finalPhoto);
-        }
-      }
-    }
-
-    // 2. Lấy ảnh đầu tiên trong danh sách photos nếu có
-    const anyPhoto = this.photos().find(p => !this.isVideo(p) && !p._thumbError);
-    if (anyPhoto) {
-      return this.driveService.getThumbnailUrl(anyPhoto);
-    }
-
-    // 3. Fallback sang SVG video poster sang trọng
+  getVideoFallbackThumb(_photo: GalleryPhoto): string {
     return this.VIDEO_FALLBACK_SVG;
   }
 
-  /** Thumbnail: s200-rw (nhẹ, WebP) */
+  /** Thumbnail: s200-rw (nhẹ, WebP) cho ảnh, SVG cho video */
   getThumbSrc(photo: GalleryPhoto): string {
     if (!photo) return '';
+    if (this.isVideo(photo)) return this.VIDEO_FALLBACK_SVG;
     if (photo.mediaId.startsWith('demo')) return photo.thumbnailUrl;
-
-    if (this.isVideo(photo)) {
-      if (photo._thumbError) {
-        // Tuyệt đối không trả về mediaUrl (file .mp4) vì thẻ <img> sẽ bị vỡ ảnh!
-        return this.getVideoFallbackThumb(photo);
-      }
-      return this.driveService.getThumbnailUrl(photo);
-    }
-
     if (photo._thumbError) return this.driveService.getHighResUrl(photo, 400);
     return this.driveService.getThumbnailUrl(photo);
   }
@@ -1018,24 +991,7 @@ export class EventGallery implements OnInit, OnDestroy {
   // ========== ERROR HANDLING ==========
 
   onThumbError(photo: GalleryPhoto) {
-    if (!photo) return;
-
-    if (this.isVideo(photo)) {
-      // Đối với video, Google Drive thường mất 1-3 phút sau upload để tạo thumbnail.
-      // Khi gặp 404, tạm thời kích hoạt fallback sang ảnh session và thử tải lại sau vài giây
-      const retries = photo._videoThumbRetries || 0;
-      photo._thumbError = true;
-      this.photos.update(pts => [...pts]);
-
-      if (retries < 5) {
-        photo._videoThumbRetries = retries + 1;
-        setTimeout(() => {
-          photo._thumbError = false;
-          this.photos.update(pts => [...pts]);
-        }, 5000);
-      }
-      return;
-    }
+    if (!photo || this.isVideo(photo)) return;
 
     if (!photo._thumbError) {
       photo._thumbError = true;

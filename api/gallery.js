@@ -383,7 +383,7 @@ function toPublicMedia(item, roleMeta = null) {
     slotIndex: roleMeta?.slotIndex || null,
     sessionId: roleMeta?.sessionId || null,
     createdAt: item.createdTime || item.modifiedTime || new Date().toISOString(),
-    thumbnailUrl: kind === 'video' ? `${mediaBase}?variant=thumbnail&size=1080` : `${mediaBase}?variant=image&size=2560`,
+    thumbnailUrl: kind === 'video' ? mediaBase : `${mediaBase}?variant=image&size=2560`,
     mediaUrl: kind === 'video' ? mediaBase : `${mediaBase}?variant=image&size=2560`,
     lightboxUrl: kind === 'video' ? mediaBase : `${mediaBase}?variant=image&size=2560`,
     downloadUrl: `${mediaBase}/download`

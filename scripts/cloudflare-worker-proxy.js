@@ -129,9 +129,6 @@ async function proxyOpaqueUpload(request, route, env) {
 }
 
 function buildOpaqueTarget(payload, download, isThumbnail, size) {
-  if (payload.kind === 'video' && isThumbnail && !download) {
-    return `https://drive.google.com/thumbnail?id=${encodeURIComponent(payload.fileId)}&sz=w${size}`;
-  }
   if (payload.kind === 'video' || download) {
     return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(payload.fileId)}`;
   }

@@ -74,8 +74,7 @@
                  [style.pointer-events]="item.originalIndex === selectedIndex() ? 'auto' : 'none'">
               
               <ng-container *ngIf="isVideo(item.photo); else mainPhotoImage">
-                <video [src]="getVideoSrc(item.photo)"
-                       [poster]="getThumbSrc(item.photo)"
+                <video [src]="getVideoPreviewSrc(item.photo)"
                        class="main-photo-video"
                        controls
                        playsinline
@@ -134,7 +133,16 @@
            class="grid-item" 
            [class.grid-item--new]="photo.isNew"
            (click)="openLightbox(i)">
-        <img [src]="getPreviewSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+        <ng-container *ngIf="isVideo(photo); else gridImg">
+          <video [src]="getVideoPreviewSrc(photo)"
+                 preload="metadata"
+                 muted
+                 playsinline
+                 class="grid-video-preview"></video>
+        </ng-container>
+        <ng-template #gridImg>
+          <img [src]="getPreviewSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+        </ng-template>
         <span class="video-badge" *ngIf="isVideo(photo)">▶ VIDEO</span>
         
         <div class="grid-overlay">
@@ -153,7 +161,16 @@
           <div *ngFor="let photo of photos(); let i = index" class="thumbnail-item"
             [class.thumbnail-item--active]="i === selectedIndex()" [class.thumbnail-item--new]="photo.isNew"
             (click)="selectPhoto(i)">
-            <img [src]="getPreviewSrc(photo)" [alt]="photo.name" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+            <ng-container *ngIf="isVideo(photo); else stripImg">
+              <video [src]="getVideoPreviewSrc(photo)"
+                     preload="metadata"
+                     muted
+                     playsinline
+                     class="strip-video-preview"></video>
+            </ng-container>
+            <ng-template #stripImg>
+              <img [src]="getPreviewSrc(photo)" [alt]="photo.name" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+            </ng-template>
             <span class="video-badge video-badge--small" *ngIf="isVideo(photo)">▶</span>
             <span class="new-badge" *ngIf="photo.isNew">Mới</span>
           </div>
@@ -212,7 +229,16 @@
            class="grid-item" 
            [class.grid-item--new]="photo.isNew"
            (click)="openSessionByPhoto(photo, i)">
-        <img [src]="getPreviewSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+        <ng-container *ngIf="isVideo(photo); else eventGridImg">
+          <video [src]="getVideoPreviewSrc(photo)"
+                 preload="metadata"
+                 muted
+                 playsinline
+                 class="grid-video-preview"></video>
+        </ng-container>
+        <ng-template #eventGridImg>
+          <img [src]="getPreviewSrc(photo)" [alt]="photo.name || 'Ảnh sự kiện'" loading="lazy" referrerpolicy="no-referrer" (error)="onThumbError(photo)" />
+        </ng-template>
         
         <span class="video-badge" *ngIf="isVideo(photo)">▶ VIDEO</span>
         <span class="session-badge-pill" *ngIf="photo.sessionInfo?.shotCount">
@@ -305,8 +331,7 @@
   <div class="lightbox-content" (click)="$event.stopPropagation()">
     <ng-container *ngIf="currentLightboxMedia() as media">
       <ng-container *ngIf="isVideo(media); else lightboxPhotoImage">
-        <video [src]="getVideoSrc(media)"
-               [poster]="getThumbSrc(media)"
+        <video [src]="getVideoPreviewSrc(media)"
                class="lightbox-video"
                controls
                playsinline
@@ -347,7 +372,16 @@
          class="lightbox-session-thumb"
          [class.lightbox-session-thumb--active]="idx === activeSessionMediaIndex()"
          (click)="selectSessionMedia(idx)">
-      <img [src]="getPreviewSrc(m)" [alt]="m.name" referrerpolicy="no-referrer" (error)="onThumbError(m)" />
+      <ng-container *ngIf="isVideo(m); else lbStripImg">
+        <video [src]="getVideoPreviewSrc(m)"
+               preload="metadata"
+               muted
+               playsinline
+               class="lb-strip-video-preview"></video>
+      </ng-container>
+      <ng-template #lbStripImg>
+        <img [src]="getPreviewSrc(m)" [alt]="m.name" referrerpolicy="no-referrer" (error)="onThumbError(m)" />
+      </ng-template>
       <span class="video-badge video-badge--small" *ngIf="isVideo(m)">▶</span>
     </div>
   </div>

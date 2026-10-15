@@ -412,11 +412,13 @@ $radius-sm: 10px;
   transition: all 0.25s ease;
   opacity: 0.6;
 
-  img {
+  img, video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s;
+    pointer-events: none;
+    background: #15151e;
   }
 
   &--active {
@@ -424,7 +426,7 @@ $radius-sm: 10px;
     opacity: 1;
     box-shadow: 0 0 0 2px rgba($gold, 0.3);
 
-    img {
+    img, video {
       transform: scale(1.05);
     }
   }
@@ -532,12 +534,23 @@ $radius-sm: 10px;
     transition: transform 0.35s ease;
   }
 
+  video {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    display: block;
+    object-fit: cover;
+    pointer-events: none;
+    background: #15151e;
+    transition: transform 0.35s ease;
+  }
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 28px rgba(43, 40, 37, 0.15);
     border-color: rgba($gold, 0.5);
 
-    img {
+    img, video {
       transform: scale(1.02);
     }
 
@@ -991,10 +1004,12 @@ $radius-sm: 10px;
   opacity: 0.65;
   transition: all 0.2s ease;
 
-  img {
+  img, video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    pointer-events: none;
+    background: #15151e;
   }
 
   &:hover {
