@@ -70,14 +70,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.15');
-  readonly releaseDate = signal('14/10/2026');
+  readonly currentVersion = signal('v1.0.16');
+  readonly releaseDate = signal('16/10/2026');
   readonly fileSize = signal('845.6 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
-  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=1JF9hX5l3z_S-V3-5cLrOczoqrfmJc_Yi&export=download&confirm=t';
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/1JF9hX5l3z_S-V3-5cLrOczoqrfmJc_Yi/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/1JF9hX5l3z_S-V3-5cLrOczoqrfmJc_Yi/view?usp=sharing';
+  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=17YxcpKz7c4LiwS9Drmlz9oy8Sw_3RgIj&export=download&confirm=t';
+  readonly googleDriveUrl = 'https://drive.google.com/file/d/17YxcpKz7c4LiwS9Drmlz9oy8Sw_3RgIj/view?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/17YxcpKz7c4LiwS9Drmlz9oy8Sw_3RgIj/view?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=sharing';
 
   downloadToastMessage = signal<string | null>(null);
@@ -317,10 +317,25 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.15',
-      releaseDate: '14/10/2026',
+      version: 'v1.0.16',
+      releaseDate: '16/10/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Nâng cấp trải nghiệm vận hành sự kiện thông minh: Tự động kích hoạt sự kiện và tạo thư mục Drive xem ảnh tức thì, tăng cường bảo mật Kiosk bằng mã PIN quản trị với phím tắt tiện lợi, sửa lỗi hiển thị chữ và lớp ảnh trong Thiết kế Khung, đồng thời tối ưu hóa tốc độ xử lý ảnh giúp máy Kiosk luôn mát mẻ và vận hành êm ái.',
+      downloadSize: '845.6 MB',
+      changes: [
+        { category: 'new', label: 'Tự động kích hoạt sự kiện khi chuyển đổi (Smart Event Switch)', text: 'Chỉ cần chọn sự kiện trong danh sách Thư viện Cloud, phần mềm sẽ tự động kích hoạt ngay lập tức mà không cần thêm thao tác xác nhận rườm rà. Thư mục lưu ảnh và mã QR của sự kiện mới cũng được tự động khởi tạo sẵn sàng cho khách chụp quét ảnh.' },
+        { category: 'improved', label: 'Bảo mật Cài đặt Kiosk bằng Mã PIN chuyên nghiệp', text: 'Toàn bộ mục Cài đặt được khóa chặt chẽ khi bật tính năng mã PIN quản trị. Phím Esc trên bàn phím máy Kiosk nay sẽ mở ngay hộp thoại nhập mã PIN để vào cài đặt nhanh chóng, tránh việc vô tình tắt phần mềm.' },
+        { category: 'fixed', label: 'Sửa lỗi thêm văn bản và lớp hiển thị trong Thiết kế Khung (Frame Designer)', text: 'Khắc phục hoàn toàn lỗi khi thêm chữ trên khung ảnh: văn bản hiển thị tức thì, thao tác mượt mà không bị văng khỏi trang chỉnh sửa, các lớp khung và ô ảnh được sắp xếp chính xác.' },
+        { category: 'improved', label: 'Tối ưu hóa hiệu năng xử lý ảnh chụp độ phân giải cao', text: 'Cải tiến bộ nhớ xử lý khi kết hợp vừa làm đẹp da vừa áp bộ lọc màu, giúp ảnh chụp 24MP xuất ra nhanh chóng và sắc nét, tiết kiệm tài nguyên máy tính và ngăn ngừa hiện tượng nóng máy trên các dòng Mini PC.' },
+        { category: 'fixed', label: 'Tự động khóa an toàn khi mở phòng chụp', text: 'Khi bấm bắt đầu phiên chụp hoặc khởi chạy Kiosk, hệ thống tự động xóa phiên xác thực cũ để đảm bảo lần vào cài đặt tiếp theo luôn bắt buộc phải nhập lại mã PIN bảo mật.' }
+      ]
+    },
+    {
+      version: 'v1.0.15',
+      releaseDate: '14/10/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Đột phá tối ưu hóa tốc độ Live View với bộ giải mã libjpeg-turbo SIMD AVX2 thuần túy (<1ms, 0 heap allocation), nâng cấp bộ nướng màu Direct 24-bit Flat Pointer LUT (<0.8ms, triệt tiêu banding), GPU Bicubic Scaling sắc nét, cùng hệ thống Chính sách Làm đẹp Chân dung AI mặc định theo sự kiện (Event Beauty Policy) và 10 thanh trượt tinh chỉnh chuyên sâu.',
       downloadSize: '845.6 MB',
       changes: [
@@ -519,16 +534,16 @@ export class SoftwarePage implements OnInit {
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
         this.releaseUpdates[0].downloadSize = response.installer.size == null ? '845.2 MB' : this.formatBytes(response.installer.size);
       } else {
-        // Keep latest static release v1.0.15 at top if API provides older version
-        this.currentVersion.set('v1.0.15');
-        this.releaseDate.set('13/10/2026');
-        this.fileSize.set('845.2 MB');
+        // Keep latest static release v1.0.16 at top if API provides older version
+        this.currentVersion.set('v1.0.16');
+        this.releaseDate.set('16/10/2026');
+        this.fileSize.set('845.6 MB');
         this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.15');
-      this.releaseDate.set('13/10/2026');
-      this.fileSize.set('845.2 MB');
+      this.currentVersion.set('v1.0.16');
+      this.releaseDate.set('16/10/2026');
+      this.fileSize.set('845.6 MB');
       this.installerAvailable.set(true);
     }
   }
