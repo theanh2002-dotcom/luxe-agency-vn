@@ -70,9 +70,9 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.16');
-  readonly releaseDate = signal('16/10/2026');
-  readonly fileSize = signal('845.6 MB');
+  readonly currentVersion = signal('v1.0.17');
+  readonly releaseDate = signal('19/10/2026');
+  readonly fileSize = signal('846.2 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
   readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=17YxcpKz7c4LiwS9Drmlz9oy8Sw_3RgIj&export=download&confirm=t';
@@ -317,10 +317,25 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.16',
-      releaseDate: '16/10/2026',
+      version: 'v1.0.17',
+      releaseDate: '19/10/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Tương thích toàn diện các dòng máy ảnh Fujifilm với bộ sưu tập 21 màu film cổ điển nghệ thuật, chụp tức thì không độ trễ; công nghệ làm đẹp da AI tự nhiên, mịn màng và đều màu từ trán xuống cổ không lộ dấu vết chỉnh sửa; cùng cơ chế tự động gửi ngay bức ảnh đẹp nhất lên Google Drive cho khách quét mã QR nhận ảnh.',
+      downloadSize: '846.2 MB',
+      changes: [
+        { category: 'new', label: 'Hỗ trợ đầy đủ các dòng máy ảnh Fujifilm', text: 'Chỉ cần cắm dây USB là nhận máy ngay, tương thích hầu hết các dòng máy ảnh Fuji phổ biến (X-T, X-H, X-S, GFX). Màn hình xem trước sắc nét, tự động khóa nét chuẩn xác trước khi chụp giúp bắt trọn từng khoảnh khắc tươi tắn của khách mà không bị trễ nhịp.' },
+        { category: 'new', label: 'Bộ sưu tập 21 màu ảnh Film nghệ thuật độc quyền từ Fujifilm', text: 'Khách chụp có thể thỏa thích lựa chọn các tone màu film cổ điển nổi tiếng (Classic Chrome, Classic Neg, Reala Ace, Vintage, Đen trắng hoài niệm...) trực tiếp trên màn hình, mang đến chất ảnh nghệ thuật độc đáo như chụp từ máy ảnh film thực thụ.' },
+        { category: 'improved', label: 'Làm đẹp da tự nhiên, xóa bỏ hoàn toàn viền ranh giới', text: 'Trí tuệ nhân tạo (AI) nhận diện khuôn mặt và làm mịn da mềm mại, sáng hồng tự nhiên và đều màu từ mặt xuống cổ. Công nghệ hòa trộn viền mới giúp ảnh đẹp tinh tế, giữ nguyên nét chân thực mà không hề để lại viền cắt hay cảm giác chỉnh sửa quá đà.' },
+        { category: 'improved', label: 'Tự động gửi ảnh đẹp nhất lên Google Drive', text: 'Sau khi khách chọn màu và ghép khung ảnh hoàn tất, phần mềm sẽ tự động lưu và tải bức ảnh hoàn chỉnh đẹp nhất lên Google Drive, giúp khách quét mã QR tải về ngay ảnh chất lượng cao để chia sẻ lên mạng xã hội.' },
+        { category: 'improved', label: 'Vận hành êm ái, bảo vệ máy ảnh suốt cả ngày', text: 'Màn hình ngắm sẽ tự động chuyển sang chế độ nghỉ khi không có khách đứng trước quầy chụp, giúp máy ảnh và máy tính luôn mát mẻ, tiết kiệm điện năng và vận hành bền bỉ, mượt mà trong suốt sự kiện dài.' }
+      ]
+    },
+    {
+      version: 'v1.0.16',
+      releaseDate: '16/10/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Nâng cấp trải nghiệm vận hành sự kiện thông minh: Tự động kích hoạt sự kiện và tạo thư mục Drive xem ảnh tức thì, tăng cường bảo mật Kiosk bằng mã PIN quản trị với phím tắt tiện lợi, sửa lỗi hiển thị chữ và lớp ảnh trong Thiết kế Khung, đồng thời tối ưu hóa tốc độ xử lý ảnh giúp máy Kiosk luôn mát mẻ và vận hành êm ái.',
       downloadSize: '845.6 MB',
       changes: [
@@ -534,16 +549,16 @@ export class SoftwarePage implements OnInit {
         this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
         this.releaseUpdates[0].downloadSize = response.installer.size == null ? '845.2 MB' : this.formatBytes(response.installer.size);
       } else {
-        // Keep latest static release v1.0.16 at top if API provides older version
-        this.currentVersion.set('v1.0.16');
-        this.releaseDate.set('16/10/2026');
-        this.fileSize.set('845.6 MB');
+        // Keep latest static release v1.0.17 at top if API provides older version
+        this.currentVersion.set('v1.0.17');
+        this.releaseDate.set('19/10/2026');
+        this.fileSize.set('846.2 MB');
         this.installerAvailable.set(true);
       }
     } catch {
-      this.currentVersion.set('v1.0.16');
-      this.releaseDate.set('16/10/2026');
-      this.fileSize.set('845.6 MB');
+      this.currentVersion.set('v1.0.17');
+      this.releaseDate.set('19/10/2026');
+      this.fileSize.set('846.2 MB');
       this.installerAvailable.set(true);
     }
   }
