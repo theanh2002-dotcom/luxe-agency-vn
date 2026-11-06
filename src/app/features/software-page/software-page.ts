@@ -70,14 +70,14 @@ interface PublicReleaseResponse {
 export class SoftwarePage implements OnInit {
   private readonly http = inject(HttpClient);
 
-  readonly currentVersion = signal('v1.0.17');
-  readonly releaseDate = signal('19/10/2026');
+  readonly currentVersion = signal('v1.0.60');
+  readonly releaseDate = signal('06/11/2026');
   readonly fileSize = signal('846.2 MB');
   readonly platform = 'Windows 10 / 11 (64-bit)';
   readonly installerAvailable = signal(true);
-  readonly downloadUrl = 'https://drive.usercontent.google.com/download?id=17YxcpKz7c4LiwS9Drmlz9oy8Sw_3RgIj&export=download&confirm=t';
-  readonly googleDriveUrl = 'https://drive.google.com/file/d/17YxcpKz7c4LiwS9Drmlz9oy8Sw_3RgIj/view?usp=sharing';
-  readonly googleDriveZipUrl = 'https://drive.google.com/file/d/17YxcpKz7c4LiwS9Drmlz9oy8Sw_3RgIj/view?usp=sharing';
+  readonly downloadUrl = 'https://tanhbooth-api.laihoanganh456.workers.dev/download/latest';
+  readonly googleDriveUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=sharing';
+  readonly googleDriveZipUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=sharing';
   readonly googleDriveFolderUrl = 'https://drive.google.com/drive/folders/12kUOKaVUdW9Bg3cdioG2PLshN5UhDHkD?usp=sharing';
 
   downloadToastMessage = signal<string | null>(null);
@@ -317,10 +317,24 @@ export class SoftwarePage implements OnInit {
 
   releaseUpdates: ReleaseUpdate[] = [
     {
-      version: 'v1.0.17',
-      releaseDate: '19/10/2026',
+      version: 'v1.0.60',
+      releaseDate: '06/11/2026',
       isLatest: true,
       tagText: 'Bản mới nhất',
+      summary: 'Tối ưu hóa toàn diện luồng sự kiện: Mặc định bật màn hình Xem lại & Chỉnh sửa (Review & Edit) cho phép kiểm tra khung ảnh, chụp lại (Retake) và tinh chỉnh trước khi in; nâng cấp hệ thống thư viện QR Cloud sang domain mới https://pica.photobooth.event-vn.com; tối ưu hóa xuất video hậu trường BTS 30 FPS sắc nét và hệ thống tự động cập nhật OTA 1 chạm qua Cloudflare.',
+      downloadSize: '846.2 MB',
+      changes: [
+        { category: 'new', label: 'Bật màn hình Xem lại & Chỉnh sửa mặc định ở Luồng Sự Kiện', text: 'Cho phép khách chụp và kỹ thuật viên xem lại ngay khung ảnh hoàn chỉnh sau khi chụp, hỗ trợ chụp lại các ô chưa ưng ý (tối đa 2 lần/ô), chỉnh lật gương hoặc áp dụng màu sắc/làm đẹp nhanh chóng trước khi chuyển sang bước in.' },
+        { category: 'improved', label: 'Cập nhật hệ thống Thư viện QR Cloud chuẩn hóa', text: 'Chuyển đổi toàn bộ liên kết chia sẻ ảnh và quét mã QR sang domain tốc độ cao pica.photobooth.event-vn.com, tải ảnh về điện thoại tức thì, không bị trễ mạng.' },
+        { category: 'improved', label: 'Tối ưu hóa Pipeline Video BTS chuyển động mượt mà', text: 'Nâng cấp bộ mã hóa video hậu trường chuẩn 30 FPS sắc nét, áp dụng chính xác bộ lọc màu đã chọn và tối ưu thời gian render dưới 5 giây.' },
+        { category: 'improved', label: 'Hệ thống Cập nhật Từ xa Cloudflare OTA 1 chạm', text: 'Hỗ trợ Kiosk tự động phát hiện bản cập nhật mới v1.0.60 và nâng cấp siêu tốc qua mạng mà không cần cài đặt lại thủ công.' }
+      ]
+    },
+    {
+      version: 'v1.0.17',
+      releaseDate: '19/10/2026',
+      isLatest: false,
+      tagText: 'Bản trước',
       summary: 'Tương thích toàn diện các dòng máy ảnh Fujifilm với bộ sưu tập 21 màu film cổ điển nghệ thuật, chụp tức thì không độ trễ; công nghệ làm đẹp da AI tự nhiên, mịn màng và đều màu từ trán xuống cổ không lộ dấu vết chỉnh sửa; cùng cơ chế tự động gửi ngay bức ảnh đẹp nhất lên Google Drive cho khách quét mã QR nhận ảnh.',
       downloadSize: '846.2 MB',
       changes: [
@@ -540,24 +554,27 @@ export class SoftwarePage implements OnInit {
       ));
       if (!response.ok || !response.release) throw new Error('No published release');
 
-      if (response.release.version === '1.0.15' && this.releaseUpdates.length > 0) {
-        this.currentVersion.set(`v${response.release.version}`);
-        this.releaseDate.set(this.formatDate(response.release.publishedAt));
-        this.fileSize.set(response.installer.size == null ? '845.2 MB' : this.formatBytes(response.installer.size));
-        this.installerAvailable.set(true);
+      const rawVer = response.release.version;
+      const formattedVer = rawVer.startsWith('v') ? rawVer : `v${rawVer}`;
+      this.currentVersion.set(formattedVer);
+      this.releaseDate.set(this.formatDate(response.release.publishedAt));
+      if (response.installer?.size != null) {
+        this.fileSize.set(this.formatBytes(response.installer.size));
+      }
+      this.installerAvailable.set(true);
+
+      if (this.releaseUpdates.length > 0 && this.releaseUpdates[0].version === formattedVer) {
         this.releaseUpdates[0].releaseDate = this.formatDate(response.release.publishedAt);
-        this.releaseUpdates[0].summary = response.release.notes?.trim() || this.releaseUpdates[0].summary;
-        this.releaseUpdates[0].downloadSize = response.installer.size == null ? '845.2 MB' : this.formatBytes(response.installer.size);
-      } else {
-        // Keep latest static release v1.0.17 at top if API provides older version
-        this.currentVersion.set('v1.0.17');
-        this.releaseDate.set('19/10/2026');
-        this.fileSize.set('846.2 MB');
-        this.installerAvailable.set(true);
+        if (response.release.notes?.trim()) {
+          this.releaseUpdates[0].summary = response.release.notes.trim();
+        }
+        if (response.installer?.size != null) {
+          this.releaseUpdates[0].downloadSize = this.formatBytes(response.installer.size);
+        }
       }
     } catch {
-      this.currentVersion.set('v1.0.17');
-      this.releaseDate.set('19/10/2026');
+      this.currentVersion.set('v1.0.60');
+      this.releaseDate.set('06/11/2026');
       this.fileSize.set('846.2 MB');
       this.installerAvailable.set(true);
     }
